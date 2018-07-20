@@ -1,0 +1,13 @@
+## Interface: 80000
+## Title: |cff00ffffEK|rMinimap
+## Version: A1
+## Author: EK
+## Notes: A square minimap.
+## X-Credits: Ooglogput, Chiril, ape47, sakaras, Siweia, Paopao
+
+#本體
+EKMinimap.lua
+#右鍵選單
+Clickmenu.lua
+#任務追蹤
+ObjectiveTracker.lua
