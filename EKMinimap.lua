@@ -1,10 +1,15 @@
 -- [[ Credit ]] --
 
 -- Felix S. , sakaras, ape47, iMinimap by Chiril, ooMinimap by Ooglogput, intMinimap by Int0xMonkey
+-- https://wow.gamepedia.com/DifficultyID
+-- rStatusButton by zork
+-- https://www.wowinterface.com/downloads/info24772-rStatusButton.html
 
 -- [[ Config ]] --
 
--- shift+alt按住標題移動，/rm 重置小地圖位置，/ro重置任務列表位置，alt分享ctrl放棄
+-- shift+alt按住標題移動任務，/rm 重置小地圖位置，/ro重置任務列表位置，alt分享ctrl放棄
+-- shift+alt quest title to drag ，/rm reset minimap position，/ro reset quset position，alt share quest, ctrl abandon quest
+
 local Scale = 1  					-- 縮放/Scale
 local x , y = 10, -20 				-- 座標/Position
 local AnchorPoint = "TOPLEFT" 		-- 錨點/Anchor point 
@@ -29,13 +34,14 @@ end
 
 -- [[ Core ]] --
 
+-- should do this at first
 local Minimap = Minimap
 
 -- Make A Square / 弄成方型
-function GetMinimapShape()
+local function GetMinimapShape()
 	return "SQUARE"
 end
---Minimap:SetHitRectInsets(left, right, top, bottom)	-- 俺要方的 不要扁的
+--Minimap:SetHitRectInsets(left, right, top, bottom)	-- 俺要方的 不要扁的 所以不切
 Minimap:SetMaskTexture("Interface\\Buttons\\WHITE8x8")
 Minimap:SetSize(160, 160)
 Minimap:SetScale(Scale)
@@ -62,7 +68,7 @@ end)
 
 -- Reset place / 重置位置
 Minimap:SetUserPlaced(true)
-SlashCmdList["RESETMINIMAP"] = function() 
+SlashCmdList["RESETMINIMAP"] = function()
     Minimap:SetUserPlaced(false)
     ReloadUI()
 end
@@ -213,8 +219,46 @@ GarrisonLandingPageMinimapButton:SetScale(0.5)
 
 -- Oderhall Mouseover FadeIn / 淡出淡入
 GarrisonLandingPageMinimapButton:SetAlpha(0)
-GarrisonLandingPageMinimapButton:SetScript("OnEnter", function()
+GarrisonLandingPageMinimapButton:SetScript("OnEnter", function(self)
+	-- fade in
 	securecall(UIFrameFadeIn, GarrisonLandingPageMinimapButton, 0.4, 0, 1)
+	
+	-- show exp/rep tooltip
+	GameTooltip:SetOwner(self, "ANCHOR_BOTTOM", (Minimap:GetWidth() * .7), -3)
+	--experience
+	if UnitLevel("player") < MAX_PLAYER_LEVEL and not IsXPUserDisabled() then
+		local cur, max = UnitXP("player"), UnitXPMax("player")
+		local lvl = UnitLevel("player")
+		local rested = GetXPExhaustion()
+		
+		GameTooltip:AddDoubleLine(XP, LEVEL.." "..lvl, 0, 1, 0.5, 0, 1, 0.5)
+		GameTooltip:AddDoubleLine( cur.."/"..max, (max-cur).."("..rested..")", 1, 1, 1, 1, 1, 1)
+	end
+	--honor
+	--if InActiveBattlefield() or IsInActiveWorldPVP() then
+		local cur, max = UnitHonor("player"), UnitHonorMax("player")
+		local lvl = UnitHonorLevel("player")
+		GameTooltip:AddDoubleLine(HONOR, LEVEL.." "..lvl, 0, 1, 0.5, 0, 1, 0.5)
+		GameTooltip:AddDoubleLine( cur.."/"..max, (max-cur), 1, 1, 1, 1, 1, 1)
+	--end
+	--reputation
+	local name, standing, min, max, cur = GetWatchedFactionInfo()
+	if name then
+		--GameTooltip:AddLine(name, 0, 1, 0.5, 1, 1, 1)
+		GameTooltip:AddDoubleLine(name, _G["FACTION_STANDING_LABEL"..standing], 0, 1, 0.5, 0, 1, 0.5)
+		GameTooltip:AddDoubleLine( cur.."/"..max, (max-cur), 1, 1, 1, 1, 1, 1)
+	end
+	--azerite
+	local azeriteItem = C_AzeriteItem.FindActiveAzeriteItem()
+	if azeriteItem then
+		local cur, max = C_AzeriteItem.GetAzeriteItemXPInfo(azeriteItem)
+		local lvl = C_AzeriteItem.GetPowerLevel(azeriteItem)
+		--local azerite = select(2, GetItemInfo(158075))
+
+		GameTooltip:AddDoubleLine(ARTIFACT_POWER, LEVEL.." "..lvl, 0, 1, 0.5, 0, 1, 0.5)
+		GameTooltip:AddDoubleLine( cur.." / "..max, (max-cur), 1, 1, 1, 1, 1, 1)
+	end
+	GameTooltip:Show()
 end)
 GarrisonLandingPageMinimapButton:SetScript("OnLeave", function()
 	securecall(UIFrameFadeOut, GarrisonLandingPageMinimapButton, 0.8, 1, 0)
@@ -313,12 +357,15 @@ RaidDifficulty:SetScript("OnEvent", function()
 			RaidDifficultyText:SetText("M")
 		elseif difficulty == 17	then
 			RaidDifficultyText:SetText(num .. "L")
-		elseif difficulty == 18 or difficulty == 19 or difficulty == 20 then
+			-- 暫時把pvevp場景戰役也放到event類
+		elseif difficulty == 18 or difficulty == 19 or difficulty == 20 or difficulty == 30 or difficulty == 29 then
 			RaidDifficultyText:SetText("E")
 		elseif difficulty == 23	then
 			RaidDifficultyText:SetText("5M")
-		elseif difficulty == 24 then
+		elseif difficulty == 24 or difficulty == 33 then
 			RaidDifficultyText:SetText("T")
+		elseif difficulty == 25 or difficulty == 32 or difficulty == 34 then
+			RaidDifficultyText:SetText("PVP")
 		end
 	elseif instanceType == "pvp" or instanceType == "arena" then
 		RaidDifficultyText:SetText("PVP")
