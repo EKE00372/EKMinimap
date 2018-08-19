@@ -1,9 +1,9 @@
 ## Interface: 80000
 ## Title: |cff00ffffEK|rMinimap
-## Version: A1
+## Version: R1
 ## Author: EK
 ## Notes: A square minimap.
-## X-Credits: Ooglogput, Chiril, ape47, sakaras, Siweia, Paopao
+## X-Credits: Ooglogput, Chiril, ape47, sakaras, Siweia, Paopao, Zork
 
 #本體
 EKMinimap.lua
