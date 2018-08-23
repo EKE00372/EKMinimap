@@ -42,7 +42,7 @@ local menuList = {
 			end
 			if (not GlyphFrame) then
 				LoadAddOn("Blizzard_GlyphUI")
-			end 
+			end
 			securecall(ToggleFrame, PlayerTalentFrame)
 		end,
 		notCheckable = true,
@@ -65,7 +65,7 @@ local menuList = {
 	},
 	{	-- 公會和社群
 		text = COMMUNITIES,		-- OLD: COMMUNITIES_FRAME_TITLE
-		icon = "Interface\\GossipFrame\\TabardGossipIcon",
+		icon = "Interface\\GossipFrame\\ChatBubbleGossipIcon",
 		arg1 = IsInGuild("player"),
 		func = function() 
 			ToggleCommunitiesFrame()
@@ -93,9 +93,9 @@ local menuList = {
 		end,
 		notCheckable = true,
 	},
-	{	--團隊搜尋器
-		text = ADVENTURE_JOURNAL,	-- DUNGEONS_BUTTON
-		icon = "Interface\\MINIMAP\\TRACKING\\None",
+	{	-- 地城與團隊
+		text = GROUP_FINDER,	-- DUNGEONS_BUTTON
+		icon = "Interface\\LFGFRAME\\BattleNetWorking0",
 		func = function() 
 			securecall(ToggleLFDParentFrame)	--OR securecall(PVEFrame_ToggleFrame, "GroupFinderFrame")
 		end,
@@ -103,7 +103,7 @@ local menuList = {
 	},
 	{	-- 收藏
 		text = COLLECTIONS, -- OLD: MOUNTS_AND_PETS
-		icon = "Interface\\MINIMAP\\TRACKING\\StableMaster",
+		icon = "Interface\\MINIMAP\\TRACKING\\Reagents",
 		func = function() 
 			if InCombatLockdown() then
 				print("|cffffff00"..ERR_NOT_IN_COMBAT.."|r") return
@@ -161,7 +161,7 @@ local menuList = {
 	},
 	{	-- 職業大廳報告
 		text = ORDER_HALL_LANDING_PAGE_TITLE,
-		icon = "Interface\\HELPFRAME\\OpenTicketIcon",
+		icon = "Interface\\GossipFrame\\WorkOrderGossipIcon",
 		func = function()			
 			securecall(ShowGarrisonLandingPage, 3)
 			--HideUIPanel(GarrisonLandingPage)
@@ -181,7 +181,7 @@ local menuList = {
 		text = RAID,
 		icon = "Interface\\TARGETINGFRAME\\UI-TargetingFrame-Skull",
 		func = function() 
-			securecall(ToggleFriendsFrame, 4)
+			securecall(ToggleFriendsFrame, 3)
 		end,
 		notCheckable = true,
 	},
@@ -235,17 +235,6 @@ local menuList = {
 		end,
 		notCheckable = true,
 	},
-	--[[{	-- DBM
-		text = "DBM",
-		func = function()
-			if not IsAddOnLoaded("DBM-Core") then
-				print("尚未啟用DBM")
-			else
-				DBM:LoadGUI()
-			end
-		end,
-		notCheckable = true,
-	},]]--
 	{	-- 重載
 		text = RELOADUI,
 		colorCode = "|cff999999",
@@ -254,28 +243,6 @@ local menuList = {
 		end,
 		notCheckable = true,
 	},
-	--[[{	-- 遊戲選項
-		text = MAINMENU_BUTTON,
-		func = function()
-			securecall(ToggleGameMenu)
-		end,
-		notCheckable = true,
-	},
-	{	-- 登出
-		text = LOGOUT,
-		func = function()
-			Logout()
-		end,
-		notCheckable = true,
-	},
-	{	-- 退出
-		text = EXIT_GAME,
-		func = function()
-			ForceQuit()
-		end,
-		notCheckable = true,
-	},
-	]]--
 }
 
 -- Right Click for Game Menu, Left Click for Track Menu / 右鍵遊戲選單，中鍵追蹤選單
