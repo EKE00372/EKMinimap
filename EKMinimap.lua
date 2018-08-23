@@ -1,9 +1,12 @@
 -- [[ Credit ]] --
 
 -- Felix S. , sakaras, ape47, iMinimap by Chiril, ooMinimap by Ooglogput, intMinimap by Int0xMonkey
+-- DifficultyID list
 -- https://wow.gamepedia.com/DifficultyID
 -- rStatusButton by zork
 -- https://www.wowinterface.com/downloads/info24772-rStatusButton.html
+-- Hide order hall bar
+-- https://github.com/destroyerdust/Class-Hall
 
 -- [[ Config ]] --
 
@@ -109,28 +112,6 @@ end)
 CalendarAnnouncer:RegisterEvent("CALENDAR_UPDATE_PENDING_INVITES")
 CalendarAnnouncer:RegisterEvent("PLAYER_ENTERING_WORLD")
 
--- Better Place For World State Frame / 戰場資源條
---[[local function WorldStateFix()
-	WorldStateAlwaysUpFrame:ClearAllPoints()
-	WorldStateAlwaysUpFrame:SetPoint("TOP", "UIParent", "TOP", 0, -10)
-	for i = 1, NUM_ALWAYS_UP_UI_FRAMES do
-		local frame = _G["AlwaysUpFrame" .. i]
-		
-		local text = _G["AlwaysUpFrame" .. i .. "Text"]
-		text:ClearAllPoints()
-		text:SetPoint("CENTER", frame, "CENTER", -i, 0)
-		text:SetFont(GameFontNormal:GetFont(), 14, "OUTLINE")
-		text:SetShadowColor(0, 0, 0, 0)
-		text:SetJustifyH("CENTER")
-		
-		local icon = _G["AlwaysUpFrame" .. i .. "Icon"]
-		icon:ClearAllPoints()
-		icon:SetPoint("RIGHT", text, "LEFT", 12, -8)
-	end
-end
-hooksecurefunc("WorldStateAlwaysUpFrame_Update", WorldStateFix)]]--
-
---BattlegroundChatFiltersMisin
 -- [[ Hide Script ]] --
 
 -- Hide Clock / 隱藏時鐘
@@ -244,7 +225,6 @@ GarrisonLandingPageMinimapButton:SetScript("OnEnter", function(self)
 	--reputation
 	local name, standing, min, max, cur = GetWatchedFactionInfo()
 	if name then
-		--GameTooltip:AddLine(name, 0, 1, 0.5, 1, 1, 1)
 		GameTooltip:AddDoubleLine(name, _G["FACTION_STANDING_LABEL"..standing], 0, 1, 0.5, 0, 1, 0.5)
 		GameTooltip:AddDoubleLine( cur.."/"..max, (max-cur), 1, 1, 1, 1, 1, 1)
 	end
@@ -253,36 +233,25 @@ GarrisonLandingPageMinimapButton:SetScript("OnEnter", function(self)
 	if azeriteItem then
 		local cur, max = C_AzeriteItem.GetAzeriteItemXPInfo(azeriteItem)
 		local lvl = C_AzeriteItem.GetPowerLevel(azeriteItem)
-		--local azerite = select(2, GetItemInfo(158075))
 
 		GameTooltip:AddDoubleLine(ARTIFACT_POWER, LEVEL.." "..lvl, 0, 1, 0.5, 0, 1, 0.5)
-		GameTooltip:AddDoubleLine( cur.." / "..max, (max-cur), 1, 1, 1, 1, 1, 1)
+		GameTooltip:AddDoubleLine( cur.."/"..max, (max-cur), 1, 1, 1, 1, 1, 1)
 	end
+	--islandweekly
+	local iwqID = C_IslandsQueue.GetIslandsWeeklyQuestID()
+	if iwqID and IsQuestFlaggedCompleted(iwqID) then
+		GameTooltip:AddDoubleLine(ISLANDS_HEADER, COMPLETE, 0, 1, 0.5, 0, 1, 0.5)
+	elseif iwqID then
+		local _, _, _, cur, max = GetQuestObjectiveInfo(iwqID, 1, false)
+		GameTooltip:AddDoubleLine(ISLANDS_HEADER, INCOMPLETE, 0, 1, 0.5, 0, 1, 0.5)
+		GameTooltip:AddDoubleLine( cur.."/"..max, (max-cur), 1, 1, 1, 1, 1, 1)
+  end
 	GameTooltip:Show()
 end)
 GarrisonLandingPageMinimapButton:SetScript("OnLeave", function()
 	securecall(UIFrameFadeOut, GarrisonLandingPageMinimapButton, 0.8, 1, 0)
 end)
 
--- MiniMapTracking / 小地圖追蹤
---[[MiniMapTracking:SetParent(Minimap)
-MiniMapTracking:SetScale(0.8)
-MiniMapTracking:ClearAllPoints()
-MiniMapTracking:SetPoint("BOTTOM", GarrisonLandingPageMinimapButton, "TOP", 0, 0)
-MiniMapTrackingButton:SetNormalTexture("Interface\\HelpFrame\\HelpIcon-CharacterStuck.blp")
---MiniMapTrackingButton:SetHighlightTexture(nil)
-MiniMapTrackingButton:SetPushedTexture(nil)
-MiniMapTrackingBackground:Hide()
-MiniMapTrackingButtonBorder:Hide()
-
-MiniMapTracking:SetAlpha(0)
-MiniMapTrackingButton:SetScript("OnEnter", function()
-	securecall(UIFrameFadeIn, MiniMapTracking, 0.4, 0, 1)
-end)
-MiniMapTrackingButton:SetScript("OnLeave", function()
-	securecall(UIFrameFadeOut, MiniMapTracking, 0.8, 1, 0)
-end)
-]]--
 -- [[ Instance Difficulty ]] -- 
 
 -- Hide Blizzard / 隱藏暴雪的難度旗子
@@ -339,38 +308,55 @@ RaidDifficulty:SetScript("OnEvent", function()
 			RaidDifficultyText:SetText("10H")
 		elseif difficulty == 6 then
 			RaidDifficultyText:SetText("25H")
+		-- Old LFR (before SOO)
 		elseif difficulty == 7 then
 			RaidDifficultyText:SetText("LFR")
+		-- Challenge Mode and Mythic+
 		elseif difficulty == 8 then
-			RaidDifficultyText:SetText("M"..mplus)	-- Challenge Mode and Mythic+
+			RaidDifficultyText:SetText("M"..mplus)	
 		elseif difficulty == 9 then
 			RaidDifficultyText:SetText("40R")
-		elseif difficulty == 11	then
+		-- 11 MOP英雄事件 39 BFA英雄海嶼
+		elseif difficulty == 11	or difficulty == 39 then
 			RaidDifficultyText:SetText("3H")
-		elseif difficulty == 12	then 
+		-- 12 MOP普通事件 38 BFA普通海嶼
+		elseif difficulty == 12 and difficulty == 38 then 
 			RaidDifficultyText:SetText("3N")
+		-- 40 BFA傳奇海嶼
+		elseif difficulty == 40 then 
+			RaidDifficultyText:SetText("3M")
+		-- Flex normal raid
 		elseif difficulty == 14	then
 			RaidDifficultyText:SetText(num .. "N")
+		-- Flex heroic raid
 		elseif difficulty == 15	then
 			RaidDifficultyText:SetText(num .. "H")
+		-- Mythic raid since WOD
 		elseif difficulty == 16	then
 			RaidDifficultyText:SetText("M")
+		-- LFR
 		elseif difficulty == 17	then
 			RaidDifficultyText:SetText(num .. "L")
-			-- 暫時把pvevp場景戰役也放到event類
-		elseif difficulty == 18 or difficulty == 19 or difficulty == 20 or difficulty == 30 or difficulty == 29 then
+		-- 18 Event 19 Event 20 Event Scenario(劇情事件) 30 Event
+		elseif difficulty == 18 or difficulty == 19 or difficulty == 20 or difficulty == 30 then
 			RaidDifficultyText:SetText("E")
 		elseif difficulty == 23	then
 			RaidDifficultyText:SetText("5M")
+		-- 24 Timewalking(地城時光) 33 Timewalking(團隊時光)
 		elseif difficulty == 24 or difficulty == 33 then
 			RaidDifficultyText:SetText("T")
-		elseif difficulty == 25 or difficulty == 32 or difficulty == 34 then
+		-- 25 World PvP Scenario 32 World PvP Scenario( 34 PVP 45 PVP
+		elseif difficulty == 25 or difficulty == 32 or difficulty == 34 or difficulty == 45 then
 			RaidDifficultyText:SetText("PVP")
+		-- 29 pvevp事件(這什麼玩意?)
+		elseif difficulty == 29 then
+			RaidDifficultyText:SetText("PvEvP")
 		end
 	elseif instanceType == "pvp" or instanceType == "arena" then
 		RaidDifficultyText:SetText("PVP")
 	else
-		RaidDifficultyText:SetText("")
+		-- just notice you are in dungeon
+		RaidDifficultyText:SetText("D")
 	end
 	
 	if not IsInInstance() then
@@ -438,7 +424,7 @@ WhoPing:SetScript("OnEvent", function(_, _, unit)
 	anim:Play()
 end)
 
--- Hide order hall bar: https://github.com/destroyerdust/Class-Hall
+-- Hide order hall bar
 local HideOH = CreateFrame("Frame")
 HideOH:SetScript("OnUpdate", function(self,...)
 	local OrderHallCommandBar = OrderHallCommandBar
@@ -450,31 +436,3 @@ HideOH:SetScript("OnUpdate", function(self,...)
 	OrderHall_CheckCommandBar = function () end
 	self:SetScript("OnUpdate", nil)
 end)
-	
---right click toggle garrison page
---[[
-GarrisonLandingPageMinimapButton:SetScript("OnClick", function(self, button, down)
-	if button == "LeftButton" then
-		if (GarrisonLandingPage and GarrisonLandingPage:IsShown()) then
-			HideUIPanel(GarrisonLandingPage)
-		else
-			ShowGarrisonLandingPage(C_Garrison.GetLandingPageGarrisonType())
-		end
-	elseif button == "RightButton" then
-		if (GarrisonLandingPage and GarrisonLandingPage:IsShown()) then
-			HideUIPanel(GarrisonLandingPage)
-		else
-			ShowGarrisonLandingPage(LE_GARRISON_TYPE_6_0)
-		end
-	end
-end)
-GarrisonLandingPageMinimapButton:RegisterForClicks("LeftButtonUp", "RightButtonUp")
-]]--
-
---[[
-GarrisonLandingPageMinimapButton:HookScript("OnClick", function(self, button, down)
-   if not (button == "RightButton" and not down) then return end
-   HideUIPanel(GarrisonLandingPage)
-   ShowGarrisonLandingPage(LE_GARRISON_TYPE_6_0)
-end)
-GarrisonLandingPageMinimapButton:RegisterForClicks("LeftButtonUp", "RightButtonUp")]]--
