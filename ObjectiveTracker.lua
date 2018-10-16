@@ -7,7 +7,6 @@ local fontsize = 18
 local ClassColor = (CUSTOM_CLASS_COLORS or RAID_CLASS_COLORS)[select(2,UnitClass("player"))] 
 
 -- [[ Core ]] --
-
 if not IsAddOnLoaded("Blizzard_ObjectiveTracker") then
 	LoadAddOn("Blizzard_ObjectiveTracker")
 end
@@ -23,7 +22,7 @@ OTF:SetUserPlaced(true)
 
 -- Make a Frame for Drag / 創建一個供移動的框架
 local OTFMove = CreateFrame("FRAME", nil, OTF)
-OTFMove:SetHeight(20)
+OTFMove:SetHeight(fontsize+2)
 OTFMove:SetPoint("TOPLEFT", OTF)
 OTFMove:SetPoint("TOPRIGHT", OTF)
 --OTFMove:SetFrameStrata("HIGH")
@@ -124,48 +123,105 @@ end)
 
 -- [[ Skin ]] --
 
--- 大標題
-if IsAddOnLoaded("Blizzard_ObjectiveTracker") then
-	hooksecurefunc("ObjectiveTracker_Update", function(reason, id)
-	   if OTF.MODULES then
-			for i = 1, #OTF.MODULES do
-				OTF.MODULES[i].Header.Background:SetAtlas(nil)
-				OTF.MODULES[i].Header.Background:Hide()
-				OTF.MODULES[i].Header.Text:SetFont(STANDARD_TEXT_FONT, fontsize, "OUTLINE")
-				OTF.MODULES[i].Header.Text:SetShadowOffset(0, 0)
-				OTF.MODULES[i].Header.Text:SetWordWrap(true)
-				OTF.MODULES[i].Header.Text:ClearAllPoints()
-				OTF.MODULES[i].Header.Text:SetPoint("RIGHT", OTF.MODULES[i].Header, 0, 0)
-				OTF.MODULES[i].Header.Text:SetJustifyH("RIGHT")
-				OTF.MODULES[i].Header:SetWidth(OTF:GetWidth()-20)
-			end
-		end
-	end)
+-- icon / 圖示
+local function reskinQuestIcon(_, block)
+	-- quest item icon
+	local itemButton = block.itemButton
+	if itemButton and not itemButton.styled then
+		itemButton:SetNormalTexture("")
+		itemButton:SetPushedTexture("")
+		itemButton:GetHighlightTexture():SetColorTexture(1, 1, 1, .25)
+		itemButton.icon:SetTexCoord(.08, .92, .08, .92)
+		
+		local bg = itemButton:CreateTexture(nil, "BACKGROUND")
+		bg:SetTexture("Interface\\Buttons\\WHITE8x8")
+		bg:SetPoint("TOPLEFT", itemButton, "TOPLEFT", -1, 1)
+		bg:SetPoint("BOTTOMRIGHT", itemButton, "BOTTOMRIGHT", 1, -1)
+		bg:SetVertexColor(0, 0, 0)
+
+		bg.shadow = CreateFrame("Frame", nil, itemButton)
+		bg.shadow:SetPoint("TOPLEFT", -3, 3)
+		bg.shadow:SetPoint("BOTTOMRIGHT", 3, -3)
+		bg.shadow:SetFrameStrata(Minimap:GetFrameStrata())
+		bg.shadow:SetFrameLevel(Minimap:GetFrameLevel()-1)
+		bg.shadow:SetFrameLevel(0)
+		bg.shadow:SetBackdrop({edgeFile = "Interface\\addons\\EKMinimap\\Media\\glow", edgeSize = 3,})
+		bg.shadow:SetBackdropBorderColor(0, 0, 0)
+		
+		itemButton.styled = true
+	end
+
+	-- lfg eye icon
+	local rightButton = block.rightButton
+	if rightButton and not rightButton.styled then
+		rightButton:SetNormalTexture("")
+		rightButton:SetPushedTexture("")
+		rightButton:GetHighlightTexture():SetColorTexture(1, 1, 1, .25)
+		
+		local bg = rightButton:CreateTexture(nil, "BACKGROUND")
+		bg:SetTexture("Interface\\Buttons\\WHITE8x8")
+		bg:SetPoint("TOPLEFT", rightButton, "TOPLEFT", -1, 1)
+		bg:SetPoint("BOTTOMRIGHT", rightButton, "BOTTOMRIGHT", 1, -1)
+		bg:SetVertexColor(0, 0, 0)
+
+		bg.shadow = CreateFrame("Frame", nil, rightButton)
+		bg.shadow:SetPoint("TOPLEFT", -3, 3)
+		bg.shadow:SetPoint("BOTTOMRIGHT", 3, -3)
+		bg.shadow:SetFrameStrata(Minimap:GetFrameStrata())
+		bg.shadow:SetFrameLevel(Minimap:GetFrameLevel()-1)
+		bg.shadow:SetFrameLevel(0)
+		bg.shadow:SetBackdrop({edgeFile = "Interface\\addons\\EKMinimap\\Media\\glow", edgeSize = 3,})
+		bg.shadow:SetBackdropBorderColor(0, 0, 0)
+		
+		--rightButton:SetSize(22, 22)
+		--rightButton.Icon:SetParent(bg)
+		--rightButton.Icon:SetSize(20, 20)
+
+		rightButton.styled = true
+	end
+end
+hooksecurefunc(QUEST_TRACKER_MODULE, "SetBlockHeader", reskinQuestIcon)
+hooksecurefunc(WORLD_QUEST_TRACKER_MODULE, "AddObjective", reskinQuestIcon)
+
+-- main title / 大標題
+local function reskinHeader(header)
+	-- hide background
+	header.Background:SetAtlas(nil)
+	header.Background:Hide()
+	-- set text style
+	header.Text:SetFont(STANDARD_TEXT_FONT, fontsize, "OUTLINE")
+	header.Text:SetShadowColor(0, 0, 0, 1)
+	header.Text:SetShadowOffset(0, 0)
+	header.Text:SetWordWrap(false)
+	header.Text:ClearAllPoints()
+	header.Text:SetPoint("RIGHT", header, -5, 0)
+	header.Text:SetJustifyH("RIGHT")
 end
 
--- 任務標題
+local headers = {
+	ObjectiveTrackerBlocksFrame.QuestHeader,
+	ObjectiveTrackerBlocksFrame.AchievementHeader,
+	ObjectiveTrackerBlocksFrame.ScenarioHeader,
+	BONUS_OBJECTIVE_TRACKER_MODULE.Header,
+	WORLD_QUEST_TRACKER_MODULE.Header,
+}
+for _, header in pairs(headers) do reskinHeader(header) end
+
+-- quest title / 任務標題
 hooksecurefunc(QUEST_TRACKER_MODULE, "SetBlockHeader", function(_, block)
 	block.HeaderText:SetFont(STANDARD_TEXT_FONT, fontsize-2, "OUTLINE")
 	block.HeaderText:SetShadowColor(0, 0, 0, 1)
 	block.HeaderText:SetShadowOffset(0, 0)
+	block.HeaderText:SetWordWrap(false)
 	block.HeaderText:SetTextColor(ClassColor.r, ClassColor.g, ClassColor.b)
 	block.HeaderText:SetJustifyH("LEFT")
-	block.HeaderText:SetWidth(OTF:GetWidth()-20)
-	block.HeaderText:SetHeight(15)
-	
-	local heightcheck = block.HeaderText:GetNumLines()
-	if heightcheck == 2 then
-		local height = block:GetHeight()
-		block:SetHeight(height + 2)
-	end
 end)
 local function hoverquest(_, block)
 	block.HeaderText:SetTextColor(ClassColor.r, ClassColor.g, ClassColor.b)
 end
-hooksecurefunc(QUEST_TRACKER_MODULE, "OnBlockHeaderEnter", hoverquest)
 hooksecurefunc(QUEST_TRACKER_MODULE, "OnBlockHeaderLeave", hoverquest)
 
--- 成就標題
+-- achievement title / 成就標題
 hooksecurefunc(ACHIEVEMENT_TRACKER_MODULE, "SetBlockHeader", function(_, block)
 	local trackedAchievements = {GetTrackedAchievements()}
 
@@ -177,19 +233,18 @@ hooksecurefunc(ACHIEVEMENT_TRACKER_MODULE, "SetBlockHeader", function(_, block)
 			block.HeaderText:SetFont(STANDARD_TEXT_FONT, fontsize-2, "OUTLINE")
 			block.HeaderText:SetShadowColor(0, 0, 0, 1)
 			block.HeaderText:SetShadowOffset(0, 0)
+			block.HeaderText:SetWordWrap(false)
 			block.HeaderText:SetTextColor(ClassColor.r, ClassColor.g, ClassColor.b)
 			block.HeaderText:SetJustifyH("LEFT")
-			block.HeaderText:SetWidth(OTF:GetWidth()-20)
 		end
 	end
 end)
 local function hoverachieve(_, block)
 	block.HeaderText:SetTextColor(ClassColor.r, ClassColor.g, ClassColor.b)
 end
-hooksecurefunc(ACHIEVEMENT_TRACKER_MODULE, "OnBlockHeaderEnter", hoverachieve)
 hooksecurefunc(ACHIEVEMENT_TRACKER_MODULE, "OnBlockHeaderLeave", hoverachieve)
 
--- 地城標題
+-- scenario frame / 地城標題
 ScenarioStageBlock:HookScript("OnShow", function()
 	if not ScenarioStageBlock.skinned then
 		ScenarioStageBlock.NormalBG:SetAlpha(0)
@@ -210,15 +265,18 @@ ScenarioStageBlock:HookScript("OnShow", function()
 	end
 end)
 
--- 內文
+-- description / 內文
 hooksecurefunc(DEFAULT_OBJECTIVE_TRACKER_MODULE, "AddObjective", function(self, block, objectiveKey, _, lineType)
 	local line = self:GetLine(block, objectiveKey, lineType)
 	line.Text:SetWidth(OTF:GetWidth()-20)
-	
 	line.Text:SetFont(STANDARD_TEXT_FONT, fontsize-4, "OUTLINE")
 	line.Text:SetShadowOffset(0, 0)
 	line.Text:SetShadowColor(0, 0, 0, 1)
-		
+	
+	--line.Text:SetWordWrap(false)	
+	--line.Text:SetIndentedWordWrap(false)
+	--line.Text:SetNonSpaceWrap(false)
+	
 	--[[if  line.FadeOutAnim then   -- ?
 		local a = line.FadeOutAnim:GetAnimations()
 		a:SetStartDelay(0)
@@ -226,6 +284,8 @@ hooksecurefunc(DEFAULT_OBJECTIVE_TRACKER_MODULE, "AddObjective", function(self, 
 	
 	if line.Dash and line.Dash:IsShown() then
 		line.Dash:SetFont(STANDARD_TEXT_FONT, fontsize-4, "OUTLINE")
+		line.Dash:SetShadowOffset(0, 0)
+		line.Dash:SetShadowColor(0, 0, 0, 1)
 		line.Dash:SetText("-")
 	end
 end)
