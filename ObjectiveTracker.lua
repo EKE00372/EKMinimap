@@ -80,6 +80,7 @@ Minimize.plus:Hide()
 -- Close Title / 收起後的標題
 local Title = OTF.HeaderMenu.Title
 Title:SetFont(STANDARD_TEXT_FONT, fontsize, "OUTLINE")
+Title:SetTextColor(1, 0.75, 0)
 Title:SetShadowOffset(0, 0)
 Title:SetShadowColor(0, 0, 0, 1)
 Title:ClearAllPoints()
@@ -123,65 +124,6 @@ end)
 
 -- [[ Skin ]] --
 
--- icon / 圖示
-local function reskinQuestIcon(_, block)
-	-- quest item icon
-	local itemButton = block.itemButton
-	if itemButton and not itemButton.styled then
-		itemButton:SetNormalTexture("")
-		itemButton:SetPushedTexture("")
-		itemButton:GetHighlightTexture():SetColorTexture(1, 1, 1, .25)
-		itemButton.icon:SetTexCoord(.08, .92, .08, .92)
-		
-		local bg = itemButton:CreateTexture(nil, "BACKGROUND")
-		bg:SetTexture("Interface\\Buttons\\WHITE8x8")
-		bg:SetPoint("TOPLEFT", itemButton, "TOPLEFT", -1, 1)
-		bg:SetPoint("BOTTOMRIGHT", itemButton, "BOTTOMRIGHT", 1, -1)
-		bg:SetVertexColor(0, 0, 0)
-
-		bg.shadow = CreateFrame("Frame", nil, itemButton)
-		bg.shadow:SetPoint("TOPLEFT", -3, 3)
-		bg.shadow:SetPoint("BOTTOMRIGHT", 3, -3)
-		bg.shadow:SetFrameStrata(Minimap:GetFrameStrata())
-		bg.shadow:SetFrameLevel(Minimap:GetFrameLevel()-1)
-		bg.shadow:SetFrameLevel(0)
-		bg.shadow:SetBackdrop({edgeFile = "Interface\\addons\\EKMinimap\\Media\\glow", edgeSize = 3,})
-		bg.shadow:SetBackdropBorderColor(0, 0, 0)
-		
-		itemButton.styled = true
-	end
-
-	-- lfg eye icon
-	local rightButton = block.rightButton
-	if rightButton and not rightButton.styled then
-		rightButton:SetNormalTexture("")
-		rightButton:SetPushedTexture("")
-		rightButton:GetHighlightTexture():SetColorTexture(1, 1, 1, .25)
-		
-		local bg = rightButton:CreateTexture(nil, "BACKGROUND")
-		bg:SetTexture("Interface\\Buttons\\WHITE8x8")
-		bg:SetPoint("TOPLEFT", rightButton, "TOPLEFT", -1, 1)
-		bg:SetPoint("BOTTOMRIGHT", rightButton, "BOTTOMRIGHT", 1, -1)
-		bg:SetVertexColor(0, 0, 0)
-
-		bg.shadow = CreateFrame("Frame", nil, rightButton)
-		bg.shadow:SetPoint("TOPLEFT", -3, 3)
-		bg.shadow:SetPoint("BOTTOMRIGHT", 3, -3)
-		bg.shadow:SetFrameStrata(Minimap:GetFrameStrata())
-		bg.shadow:SetFrameLevel(Minimap:GetFrameLevel()-1)
-		bg.shadow:SetFrameLevel(0)
-		bg.shadow:SetBackdrop({edgeFile = "Interface\\addons\\EKMinimap\\Media\\glow", edgeSize = 3,})
-		bg.shadow:SetBackdropBorderColor(0, 0, 0)
-		
-		--rightButton:SetSize(22, 22)
-		--rightButton.Icon:SetParent(bg)
-		--rightButton.Icon:SetSize(20, 20)
-
-		rightButton.styled = true
-	end
-end
-hooksecurefunc(QUEST_TRACKER_MODULE, "SetBlockHeader", reskinQuestIcon)
-hooksecurefunc(WORLD_QUEST_TRACKER_MODULE, "AddObjective", reskinQuestIcon)
 
 -- main title / 大標題
 local function reskinHeader(header)
@@ -190,6 +132,7 @@ local function reskinHeader(header)
 	header.Background:Hide()
 	-- set text style
 	header.Text:SetFont(STANDARD_TEXT_FONT, fontsize, "OUTLINE")
+	header.Text:SetTextColor(1, 0.75, 0)
 	header.Text:SetShadowColor(0, 0, 0, 1)
 	header.Text:SetShadowOffset(0, 0)
 	header.Text:SetWordWrap(false)
@@ -243,49 +186,3 @@ local function hoverachieve(_, block)
 	block.HeaderText:SetTextColor(ClassColor.r, ClassColor.g, ClassColor.b)
 end
 hooksecurefunc(ACHIEVEMENT_TRACKER_MODULE, "OnBlockHeaderLeave", hoverachieve)
-
--- scenario frame / 地城標題
-ScenarioStageBlock:HookScript("OnShow", function()
-	if not ScenarioStageBlock.skinned then
-		ScenarioStageBlock.NormalBG:SetAlpha(0)
-		ScenarioStageBlock.FinalBG:SetAlpha(0)
-		ScenarioStageBlock.GlowTexture:SetTexture(nil)
-
-		ScenarioStageBlock.Stage:SetFont(STANDARD_TEXT_FONT, fontsize-2, "OUTLINE")
-		ScenarioStageBlock.Stage:SetTextColor(1, 1, 1)
-		ScenarioStageBlock.Stage:SetShadowOffset(0, 0)
-
-		ScenarioStageBlock.Name:SetFont(STANDARD_TEXT_FONT, fontsize-2, "OUTLINE")
-		ScenarioStageBlock.Name:SetShadowOffset(0, 0)
-
-		ScenarioStageBlock.CompleteLabel:SetFont(STANDARD_TEXT_FONT, fontsize-2, "OUTLINE")
-		ScenarioStageBlock.CompleteLabel:SetTextColor(1, 1, 1)
-		ScenarioStageBlock.CompleteLabel:SetShadowOffset(0, 0)
-		ScenarioStageBlock.skinned = true
-	end
-end)
-
--- description / 內文
-hooksecurefunc(DEFAULT_OBJECTIVE_TRACKER_MODULE, "AddObjective", function(self, block, objectiveKey, _, lineType)
-	local line = self:GetLine(block, objectiveKey, lineType)
-	line.Text:SetWidth(OTF:GetWidth()-20)
-	line.Text:SetFont(STANDARD_TEXT_FONT, fontsize-4, "OUTLINE")
-	line.Text:SetShadowOffset(0, 0)
-	line.Text:SetShadowColor(0, 0, 0, 1)
-	
-	--line.Text:SetWordWrap(false)	
-	--line.Text:SetIndentedWordWrap(false)
-	--line.Text:SetNonSpaceWrap(false)
-	
-	--[[if  line.FadeOutAnim then   -- ?
-		local a = line.FadeOutAnim:GetAnimations()
-		a:SetStartDelay(0)
-	end]]--
-	
-	if line.Dash and line.Dash:IsShown() then
-		line.Dash:SetFont(STANDARD_TEXT_FONT, fontsize-4, "OUTLINE")
-		line.Dash:SetShadowOffset(0, 0)
-		line.Dash:SetShadowColor(0, 0, 0, 1)
-		line.Dash:SetText("-")
-	end
-end)
