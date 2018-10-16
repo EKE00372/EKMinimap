@@ -81,8 +81,8 @@ SLASH_RESETMINIMAP2 = "/rm"
 -- Background / ≠I¥∫
 local Background = Minimap:CreateTexture(nil, "BACKGROUND")
 Background:SetTexture("Interface\\Buttons\\WHITE8x8")
-Background:SetPoint("TOPLEFT", Minimap , "TOPLEFT", -1, 1)
-Background:SetPoint("BOTTOMRIGHT", Minimap , "BOTTOMRIGHT", 1, -1)
+Background:SetPoint("TOPLEFT", Minimap, "TOPLEFT", -1, 1)
+Background:SetPoint("BOTTOMRIGHT", Minimap, "BOTTOMRIGHT", 1, -1)
 Background:SetVertexColor(0, 0, 0)
 
 Background.shadow = CreateFrame("Frame", nil, Minimap)
@@ -92,7 +92,7 @@ Background.shadow:SetFrameStrata(Minimap:GetFrameStrata())
 Background.shadow:SetFrameLevel(Minimap:GetFrameLevel()-1)
 Background.shadow:SetFrameLevel(0)
 Background.shadow:SetBackdrop({edgeFile = "Interface\\addons\\EKMinimap\\Media\\glow", edgeSize = 5,})
-Background.shadow:SetBackdropBorderColor(0,0,0)
+Background.shadow:SetBackdropBorderColor(0, 0, 0)
 
 -- ¡Ù¬√∂Í∞È
 Minimap:SetArchBlobRingScalar(0)
