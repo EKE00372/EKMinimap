@@ -3,11 +3,9 @@
 ## Version: R1
 ## Author: EK
 ## Notes: A square minimap.
-## X-Credits: Ooglogput, Chiril, ape47, sakaras, Siweia, Paopao, Zork
+## X-Credits: Ooglogput, Chiril, ape47, sakaras, Siweia, Paopao
 
-#本體
+Config.lua
 EKMinimap.lua
-#右鍵選單
 Clickmenu.lua
-#任務追蹤
 ObjectiveTracker.lua

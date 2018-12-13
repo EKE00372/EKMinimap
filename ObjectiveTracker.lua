@@ -1,10 +1,7 @@
+local C, G = unpack(select(2, ...))
+if not C.objectFrame then return end
+
 -- [[ Credits ]] --
-
--- [[ Config ]] --
-
-local height = 600
-local fontsize = 18
-local ClassColor = (CUSTOM_CLASS_COLORS or RAID_CLASS_COLORS)[select(2,UnitClass("player"))] 
 
 -- [[ Core ]] --
 if not IsAddOnLoaded("Blizzard_ObjectiveTracker") then
@@ -16,13 +13,13 @@ local OTF = ObjectiveTrackerFrame
 OTF:SetClampedToScreen(true)
 OTF:ClearAllPoints()
 OTF:SetPoint("TOPRIGHT", UIParent, "TOPRIGHT", -100, -170)
-OTF:SetHeight(height)
+OTF:SetHeight(C.height)
 OTF:SetMovable(true)
 OTF:SetUserPlaced(true)
 
 -- Make a Frame for Drag / 創建一個供移動的框架
 local OTFMove = CreateFrame("FRAME", nil, OTF)
-OTFMove:SetHeight(fontsize+2)
+OTFMove:SetHeight(G.obfontSize+2)
 OTFMove:SetPoint("TOPLEFT", OTF)
 OTFMove:SetPoint("TOPRIGHT", OTF)
 --OTFMove:SetFrameStrata("HIGH")
@@ -60,7 +57,7 @@ Minimize:SetPushedTexture("")
 
 -- Close  / 關閉按鈕
 Minimize.minus = Minimize:CreateFontString(nil, "OVERLAY")
-Minimize.minus:SetFont(STANDARD_TEXT_FONT, fontsize, "OUTLINE")
+Minimize.minus:SetFont(G.font, G.obfontSize, G.obfontFlag)
 Minimize.minus:SetText(">")
 Minimize.minus:SetPoint("CENTER")
 Minimize.minus:SetTextColor(1, 1, 1)
@@ -69,7 +66,7 @@ Minimize.minus:SetShadowColor(0, 0, 0, 1)
 
 -- Open / 開啟按鈕
 Minimize.plus = Minimize:CreateFontString(nil, "OVERLAY")
-Minimize.plus:SetFont(STANDARD_TEXT_FONT, fontsize, "OUTLINE")
+Minimize.plus:SetFont(G.font, G.obfontSize, G.obfontFlag)
 Minimize.plus:SetText("<")
 Minimize.plus:SetPoint("CENTER")
 Minimize.plus:SetTextColor(1, 1, 1)
@@ -79,7 +76,7 @@ Minimize.plus:Hide()
 
 -- Close Title / 收起後的標題
 local Title = OTF.HeaderMenu.Title
-Title:SetFont(STANDARD_TEXT_FONT, fontsize, "OUTLINE")
+Title:SetFont(G.font, G.obfontSize, G.obfontFlag)
 Title:SetTextColor(1, 0.75, 0)
 Title:SetShadowOffset(0, 0)
 Title:SetShadowColor(0, 0, 0, 1)
@@ -131,7 +128,7 @@ local function reskinHeader(header)
 	header.Background:SetAtlas(nil)
 	header.Background:Hide()
 	-- set text style
-	header.Text:SetFont(STANDARD_TEXT_FONT, fontsize, "OUTLINE")
+	header.Text:SetFont(G.font, G.obfontSize, G.obfontFlag)
 	header.Text:SetTextColor(1, 0.75, 0)
 	header.Text:SetShadowColor(0, 0, 0, 1)
 	header.Text:SetShadowOffset(0, 0)
@@ -152,15 +149,15 @@ for _, header in pairs(headers) do reskinHeader(header) end
 
 -- quest title / 任務標題
 hooksecurefunc(QUEST_TRACKER_MODULE, "SetBlockHeader", function(_, block)
-	block.HeaderText:SetFont(STANDARD_TEXT_FONT, fontsize-2, "OUTLINE")
+	block.HeaderText:SetFont(G.font, G.obfontSize-2, G.obfontFlag)
 	block.HeaderText:SetShadowColor(0, 0, 0, 1)
 	block.HeaderText:SetShadowOffset(0, 0)
 	block.HeaderText:SetWordWrap(false)
-	block.HeaderText:SetTextColor(ClassColor.r, ClassColor.g, ClassColor.b)
+	block.HeaderText:SetTextColor(G.Ccolors.r, G.Ccolors.g, G.Ccolors.b)
 	block.HeaderText:SetJustifyH("LEFT")
 end)
 local function hoverquest(_, block)
-	block.HeaderText:SetTextColor(ClassColor.r, ClassColor.g, ClassColor.b)
+	block.HeaderText:SetTextColor(G.Ccolors.r, G.Ccolors.g, G.Ccolors.b)
 end
 hooksecurefunc(QUEST_TRACKER_MODULE, "OnBlockHeaderLeave", hoverquest)
 
@@ -173,16 +170,31 @@ hooksecurefunc(ACHIEVEMENT_TRACKER_MODULE, "SetBlockHeader", function(_, block)
 		local _, achievementName, _, completed, _, _, _, description, _, icon, _, _, wasEarnedByMe = GetAchievementInfo(achieveID)
 
 		if not wasEarnedByMe then
-			block.HeaderText:SetFont(STANDARD_TEXT_FONT, fontsize-2, "OUTLINE")
+			block.HeaderText:SetFont(G.font, G.obfontSize-2, G.obfontFlag)
 			block.HeaderText:SetShadowColor(0, 0, 0, 1)
 			block.HeaderText:SetShadowOffset(0, 0)
 			block.HeaderText:SetWordWrap(false)
-			block.HeaderText:SetTextColor(ClassColor.r, ClassColor.g, ClassColor.b)
+			block.HeaderText:SetTextColor(G.Ccolors.r, G.Ccolors.g, G.Ccolors.b)
 			block.HeaderText:SetJustifyH("LEFT")
 		end
 	end
 end)
 local function hoverachieve(_, block)
-	block.HeaderText:SetTextColor(ClassColor.r, ClassColor.g, ClassColor.b)
+	block.HeaderText:SetTextColor(G.Ccolors.r, G.Ccolors.g, G.Ccolors.b)
 end
 hooksecurefunc(ACHIEVEMENT_TRACKER_MODULE, "OnBlockHeaderLeave", hoverachieve)
+
+
+hooksecurefunc(DEFAULT_OBJECTIVE_TRACKER_MODULE, "AddObjective", function(self, block, objectiveKey, _, lineType)
+	local line = self:GetLine(block, objectiveKey, lineType)
+	line.Text:SetFont(G.font, G.obfontSize-4, G.obfontFlag)
+	line.Text:SetShadowColor(0, 0, 0, 1)
+	line.Text:SetShadowOffset(0, 0)
+		
+	if line.Dash and line.Dash:IsShown() then
+		line.Dash:SetFont(G.font, G.obfontSize-4, G.obfontFlag)
+		line.Dash:SetText("★")
+		line.Dash:SetShadowColor(0, 0, 0, 1)
+		line.Dash:SetShadowOffset(0, 0)
+	end
+end)
