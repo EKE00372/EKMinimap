@@ -1,3 +1,5 @@
+local C, G = unpack(select(2, ...))
+
 -- [[ Credit ]] --
 
 -- Felix S. , sakaras, ape47, iMinimap by Chiril, ooMinimap by Ooglogput, intMinimap by Int0xMonkey
@@ -8,25 +10,12 @@
 -- Hide order hall bar
 -- https://github.com/destroyerdust/Class-Hall
 
--- [[ Config ]] --
-
--- shift+alt按住標題移動任務，/rm 重置小地圖位置，/ro重置任務列表位置，alt分享ctrl放棄
--- shift+alt quest title to drag ，/rm reset minimap position，/ro reset quset position，alt share quest, ctrl abandon quest
-
-local Scale = 1  					-- 縮放/Scale
-local x , y = 10, -20 				-- 座標/Position
-local AnchorPoint = "TOPLEFT" 		-- 錨點/Anchor point 
-local Announce = false  			-- 行事曆有邀請時高亮邊框/show yellow border when get invite
-
 -- [[ style ]] --
 
--- class color / 職業顏色
-local ClassColor = (CUSTOM_CLASS_COLORS or RAID_CLASS_COLORS)[select(2,UnitClass("player"))]
-
 -- Create font Style / 字型
-local function CreateFS(parent, size, justify)
-	local frame = parent:CreateFontString(nil, "OVERLAY") 
-	frame:SetFont(GameFontNormal:GetFont(), 14, "THINOUTLINE")
+local function CreateFS(parent, justify)
+	local frame = parent:CreateFontString(nil, "OVERLAY")
+	frame:SetFont(G.font, G.fontSize, G.fontFlag)
 	frame:SetShadowColor(0, 0, 0, 0)
 	frame:SetShadowOffset(0, 0)
 	if justify then
@@ -44,15 +33,14 @@ local Minimap = Minimap
 local function GetMinimapShape()
 	return "SQUARE"
 end
---Minimap:SetHitRectInsets(left, right, top, bottom)	-- 俺要方的 不要扁的 所以不切
-Minimap:SetMaskTexture("Interface\\Buttons\\WHITE8x8")
+Minimap:SetMaskTexture(G.Mask)
 Minimap:SetSize(160, 160)
-Minimap:SetScale(Scale)
+Minimap:SetScale(C.scale)
 Minimap:SetFrameStrata("LOW")
 Minimap:SetFrameLevel(3)
 
 Minimap:ClearAllPoints()
-Minimap:SetPoint(AnchorPoint, UIParent, x, y)
+Minimap:SetPoint(C.anchor, UIParent, unpack(C.Point))
 MinimapCluster:ClearAllPoints()
 MinimapCluster:SetAllPoints(Minimap)
 
@@ -80,7 +68,7 @@ SLASH_RESETMINIMAP2 = "/rm"
 
 -- Background / 背景
 local Background = Minimap:CreateTexture(nil, "BACKGROUND")
-Background:SetTexture("Interface\\Buttons\\WHITE8x8")
+Background:SetTexture(G.Tex)
 Background:SetPoint("TOPLEFT", Minimap, "TOPLEFT", -1, 1)
 Background:SetPoint("BOTTOMRIGHT", Minimap, "BOTTOMRIGHT", 1, -1)
 Background:SetVertexColor(0, 0, 0)
@@ -91,7 +79,7 @@ Background.shadow:SetPoint("BOTTOMRIGHT", 5, -5)
 Background.shadow:SetFrameStrata(Minimap:GetFrameStrata())
 Background.shadow:SetFrameLevel(Minimap:GetFrameLevel()-1)
 Background.shadow:SetFrameLevel(0)
-Background.shadow:SetBackdrop({edgeFile = "Interface\\addons\\EKMinimap\\Media\\glow", edgeSize = 5,})
+Background.shadow:SetBackdrop({edgeFile = G.glow, edgeSize = 5,})
 Background.shadow:SetBackdropBorderColor(0, 0, 0)
 
 -- 隱藏圓圈
@@ -101,7 +89,7 @@ Minimap:SetQuestBlobRingScalar(0)
 -- Border Announce for Calendar / 行事曆有邀請時變黃
 local CalendarAnnouncer = CreateFrame("Frame")
 CalendarAnnouncer:SetScript("OnEvent", function(self, event, ...)
-	if Announce then
+	if announce then
 		if CalendarGetNumPendingInvites() > 0 then
 			Background:SetVertexColor(1, 1, 0)
 		else
@@ -146,7 +134,6 @@ local HideAll = {
 for i, v in pairs(HideAll) do
 	getglobal(v).Show = function() end
 	getglobal(v):Hide()
-	--getglobal(v):UnregisterAllEvents()
 end
 
 -- [[ Indicator ]] --
@@ -154,7 +141,7 @@ end
 -- Queue Button /佇列圖示
 QueueStatusMinimapButton:ClearAllPoints()
 QueueStatusMinimapButton:SetParent(Minimap)
-if AnchorPoint == "TOPLEFT" or AnchorPoint == "BOTTOMLEFT" then
+if C.anchor == "TOPLEFT" or C.anchor == "BOTTOMLEFT" then
 	QueueStatusMinimapButton:SetPoint("TOPRIGHT", Minimap, 0, 0)
 else
 	QueueStatusMinimapButton:SetPoint("TOPLEFT", Minimap, 0, 0)
@@ -163,7 +150,7 @@ QueueStatusMinimapButtonBorder:Hide()
 QueueStatusMinimapButton:SetFrameLevel(10)
 
 -- Queue Tooltip fix / 滑鼠提示位置調整
-if AnchorPoint == "TOPLEFT" or AnchorPoint == "BOTTOMLEFT" then
+if C.anchor == "TOPLEFT" or C.anchor == "BOTTOMLEFT" then
 	QueueStatusFrame:ClearAllPoints()
 	QueueStatusFrame:SetPoint("TOPRIGHT", Minimap, "TOPRIGHT", 282, -10)
 else
@@ -174,27 +161,27 @@ end
 -- Mail Frame / 信件提示
 MiniMapMailFrame:ClearAllPoints()
 MiniMapMailFrame:SetParent(Minimap)
-if AnchorPoint == "TOPLEFT" or AnchorPoint == "BOTTOMLEFT" then
+if C.anchor == "TOPLEFT" or C.anchor == "BOTTOMLEFT" then
 	MiniMapMailFrame:SetPoint("BOTTOMLEFT", Minimap, 0, 0)
 else
 	MiniMapMailFrame:SetPoint("BOTTOMRIGHT", Minimap, 0, 0)
 end
 MiniMapMailBorder:Hide()
-MiniMapMailIcon:SetTexture("Interface\\AddOns\\EKMinimap\\Media\\mail.tga")
+MiniMapMailIcon:SetTexture(G.mail)
 --MiniMapMailIcon:SetTexture("Interface\\HelpFrame\\ReportLagIcon-Mail.blp")
 --MiniMapMailIcon:SetSize(24,24)
 
 -- Garrison Icon / 要塞和職業大廳
 GarrisonLandingPageMinimapButton:ClearAllPoints()
 GarrisonLandingPageMinimapButton:SetParent(Minimap)
-if AnchorPoint == "TOPLEFT" or AnchorPoint == "BOTTOMLEFT" then
+if C.anchor == "TOPLEFT" or C.anchor == "BOTTOMLEFT" then
 	GarrisonLandingPageMinimapButton:SetPoint("BOTTOMRIGHT", Minimap, -3, 5)
 else
 	GarrisonLandingPageMinimapButton:SetPoint("BOTTOMLEFT", Minimap, 3, 5)
 end
 hooksecurefunc("GarrisonLandingPageMinimapButton_UpdateIcon", function(button)
-	button:GetNormalTexture():SetTexture("Interface\\HelpFrame\\HelpIcon-ReportLag.blp")
-		button:GetPushedTexture():SetTexture("Interface\\HelpFrame\\HelpIcon-ReportLag.blp")
+	button:GetNormalTexture():SetTexture(G.report)
+		button:GetPushedTexture():SetTexture()
 	end)
 GarrisonLandingPageMinimapButton:SetScale(0.5)
 
@@ -263,16 +250,16 @@ GuildInstanceDifficulty.Show = function() return end
 -- Creat Frame / 創建框體
 local RaidDifficulty = CreateFrame("Frame", nil, Minimap)
 RaidDifficulty:SetSize(44, 44)
-if AnchorPoint == "TOPLEFT" or AnchorPoint == "BOTTOMLEFT" then
+if C.anchor == "TOPLEFT" or C.anchor == "BOTTOMLEFT" then
 	RaidDifficulty:SetPoint("TOPLEFT", Minimap,  -5, 5)
 else
 	RaidDifficulty:SetPoint("TOPRIGHT", Minimap, 5, 5)
 end
-RaidDifficulty.Texture = RaidDifficulty:CreateTexture(nil, 'OVERLAY')
+RaidDifficulty.Texture = RaidDifficulty:CreateTexture(nil, "OVERLAY")
 RaidDifficulty.Texture:SetAllPoints(true)
-RaidDifficulty.Texture:SetTexture("Interface\\AddOns\\EKMinimap\\Media\\difficulty.tga")
+RaidDifficulty.Texture:SetTexture(G.diff)
 RaidDifficulty.Texture:SetAlpha(.8)
-RaidDifficulty.Texture:SetVertexColor(ClassColor.r, ClassColor.g, ClassColor.b)
+RaidDifficulty.Texture:SetVertexColor(G.Ccolors.r, G.Ccolors.g, G.Ccolors.b)
 RaidDifficulty:Hide()
 RaidDifficulty:RegisterEvent("PLAYER_ENTERING_WORLD")
 RaidDifficulty:RegisterEvent("PLAYER_DIFFICULTY_CHANGED")
@@ -284,7 +271,7 @@ RaidDifficulty:RegisterEvent("CHALLENGE_MODE_COMPLETED")
 RaidDifficulty:RegisterEvent("CHALLENGE_MODE_RESET")
 
 -- Difficulty Text / 難度文字
-local RaidDifficultyText = CreateFS(RaidDifficulty, 10, "CENTER")
+local RaidDifficultyText = CreateFS(RaidDifficulty, "CENTER")
 RaidDifficultyText:SetPoint("CENTER")
 
 -- Difficulty / 地城難度(與公會團隊)
@@ -292,7 +279,6 @@ RaidDifficulty:SetScript("OnEvent", function()
 	local _, instanceType = IsInInstance()
 	local difficulty = select(3, GetInstanceInfo())
 	local num = select(9, GetInstanceInfo())
-	--local _, instanceType, difficulty, _, _, _, _, _, instanceGroupSize = GetInstanceInfo()
 	local mplus = select(1, C_ChallengeMode.GetActiveKeystoneInfo()) or ""
 	
 	if instanceType == "party" or instanceType == "raid" or instanceType == "scenario" then
@@ -345,7 +331,7 @@ RaidDifficulty:SetScript("OnEvent", function()
 		-- 24 Timewalking(地城時光) 33 Timewalking(團隊時光)
 		elseif difficulty == 24 or difficulty == 33 then
 			RaidDifficultyText:SetText("T")
-		-- 25 World PvP Scenario 32 World PvP Scenario( 34 PVP 45 PVP
+		-- 25 World PvP Scenario 32 World PvP Scenario 34 PVP 45 PVP
 		elseif difficulty == 25 or difficulty == 32 or difficulty == 34 or difficulty == 45 then
 			RaidDifficultyText:SetText("PVP")
 		-- 29 pvevp事件(這什麼玩意?)
@@ -399,7 +385,7 @@ WhoPing:SetSize(100, 20)
 WhoPing:SetPoint("BOTTOM", Minimap, 0, 2)
 WhoPing:RegisterEvent("MINIMAP_PING")
 
-local WhoPingText = CreateFS(WhoPing, 10, "CENTER")
+local WhoPingText = CreateFS(WhoPing, "CENTER")
 WhoPingText:SetPoint("CENTER")
 
 local anim = WhoPing:CreateAnimationGroup()
@@ -420,7 +406,7 @@ WhoPing:SetScript("OnEvent", function(_, _, unit)
 	local name = GetUnitName(unit)
 	anim:Stop()
 	WhoPingText:SetText(name)
-	WhoPingText:SetTextColor(ClassColor.r, ClassColor.g, ClassColor.b)
+	WhoPingText:SetTextColor(G.Ccolors.r, G.Ccolors.g, G.Ccolors.b)
 	anim:Play()
 end)
 

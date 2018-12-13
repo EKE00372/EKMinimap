@@ -1,4 +1,8 @@
+local C, G = unpack(select(2, ...))
+if not C.clickMenu then return end
+
 -- [[ Credit ]] --
+
 -- NeavUI by Neal: https://www.wowinterface.com/downloads/info13981-NeavUI.html#info
 -- ClickMenu by 10leej: https://www.wowinterface.com/downloads/info22660-ClickMenu.html
 
@@ -224,7 +228,7 @@ local menuList = {
 		isTitle = true,
 		notCheckable = true,
 	},
-	{	-- bigwigs
+	--[[{	-- bigwigs
 		text = "BigWigs",
 		func = function()
 			if not IsAddOnLoaded("Bigwigs") then
@@ -234,7 +238,7 @@ local menuList = {
 			end
 		end,
 		notCheckable = true,
-	},
+	},]]--
 	{	-- 重載
 		text = RELOADUI,
 		colorCode = "|cff999999",
