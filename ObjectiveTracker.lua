@@ -187,13 +187,17 @@ hooksecurefunc(ACHIEVEMENT_TRACKER_MODULE, "OnBlockHeaderLeave", hoverachieve)
 
 hooksecurefunc(DEFAULT_OBJECTIVE_TRACKER_MODULE, "AddObjective", function(self, block, objectiveKey, _, lineType)
 	local line = self:GetLine(block, objectiveKey, lineType)
-	line.Text:SetFont(G.font, G.obfontSize-4, G.obfontFlag)
+	line.Text:SetFont(G.font, G.obfontSize-2, G.obfontFlag)
 	line.Text:SetShadowColor(0, 0, 0, 1)
 	line.Text:SetShadowOffset(0, 0)
 		
 	if line.Dash and line.Dash:IsShown() then
-		line.Dash:SetFont(G.font, G.obfontSize-4, G.obfontFlag)
-		line.Dash:SetText("★")
+		line.Dash:SetFont(G.font, G.obfontSize-2, G.obfontFlag)
+		if C.star then
+			line.Dash:SetText("★ ")
+			else
+			line.Dash:SetText("-")
+		end
 		line.Dash:SetShadowColor(0, 0, 0, 1)
 		line.Dash:SetShadowOffset(0, 0)
 	end
