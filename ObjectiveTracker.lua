@@ -190,6 +190,7 @@ hooksecurefunc(DEFAULT_OBJECTIVE_TRACKER_MODULE, "AddObjective", function(self, 
 	line.Text:SetFont(G.font, G.obfontSize-2, G.obfontFlag)
 	line.Text:SetShadowColor(0, 0, 0, 1)
 	line.Text:SetShadowOffset(0, 0)
+	line.Text:SetWidth(OTF:GetWidth()-25)
 		
 	if line.Dash and line.Dash:IsShown() then
 		line.Dash:SetFont(G.font, G.obfontSize-2, G.obfontFlag)
