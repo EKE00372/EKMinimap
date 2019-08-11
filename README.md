@@ -1,17 +1,14 @@
 # EKMinimap
 
-A Square Miniamp.
+A Square Miniamp, Classic version.
 
 ## Feature
 
 * Square minimap, 1px border and 5px shadow.
 * Hide elements: timer/location/scale/buttons etc.
 * Indicator:
-  * orderhall icon: fade in when mouseover, and show exp/honor/rep when hover.
   * new mail
-  * LFG
-  * difficulty flag
-* TO DO: 戰場資源條優化
+  * tracking
 * Scale
   * Scroll to scale map
   * ALT+scroll to scale frame
@@ -19,9 +16,8 @@ A Square Miniamp.
   * Default on topleft, you can change default position in EKMinimap.lua.
   * ALT+right click to drag
   * /rm for reset
-* Right click for micro menu, middle click for track menu
-* Objective tracker  
+* Right click for micro menu
+* Quest watch frame  
   * Outline 
-  * Class color on title
+  * Class color title
   * ALT+right click title to drag
-  * /ro for reset
