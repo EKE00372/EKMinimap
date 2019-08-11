@@ -2,16 +2,38 @@ local C, G = unpack(select(2, ...))
 
 -- [[ style ]] --
 
--- Create font Style / 字型
+-- Create font style / 字型
 local function CreateFS(parent, justify)
 	local frame = parent:CreateFontString(nil, "OVERLAY")
+	
 	frame:SetFont(G.font, G.fontSize, G.fontFlag)
 	frame:SetShadowColor(0, 0, 0, 0)
 	frame:SetShadowOffset(0, 0)
+	
 	if justify then
 		frame:SetJustifyH(justify)
 	end
+	
 	return frame
+end
+
+-- Create shadow border / 陰影邊框
+local CreateShadow = function(parent, anchor, size)
+	local sd = CreateFrame("Frame", nil, parent)
+	local framelvl = parent:GetFrameLevel()
+	
+	sd:ClearAllPoints()
+	sd:SetPoint("TOPLEFT", anchor, -size, size)
+	sd:SetPoint("BOTTOMRIGHT", anchor, size, -size)
+	sd:SetFrameLevel(framelvl == 0 and 0 or framelvl-1)
+	sd:SetBackdrop({
+		edgeFile = G.glow,	-- 陰影邊框
+		edgeSize = size,		-- 邊框大小
+	})
+	--sd:SetBackdropColor(0, 0, 0, 1)
+	sd:SetBackdropBorderColor(0, 0, 0, 1)
+	
+	return sd
 end
 
 --================================================--
@@ -42,6 +64,8 @@ local Minimap = Minimap
 	MinimapCluster:ClearAllPoints()
 	MinimapCluster:SetAllPoints(Minimap)
 	-- MinimapCluster:EnableMouse(false)
+	-- Shadow Border
+	Minimap.BG = CreateShadow(Minimap, Minimap, 5)
 
 	-- Movable
 	Minimap:SetMovable(true)
@@ -64,24 +88,6 @@ local Minimap = Minimap
 	end
 	SLASH_RESETMINIMAP1 = "/resetminimap"
 	SLASH_RESETMINIMAP2 = "/rm"
-
--- [[ Background / 背景 ]] --
-
-local Background = Minimap:CreateTexture(nil, "BACKGROUND")
-	-- 背景和邊框
-	Background:SetTexture(G.Tex)
-	Background:SetPoint("TOPLEFT", Minimap, "TOPLEFT", -1, 1)
-	Background:SetPoint("BOTTOMRIGHT", Minimap, "BOTTOMRIGHT", 1, -1)
-	Background:SetVertexColor(0, 0, 0)
-	-- 毛絨絨
-	Background.shadow = CreateFrame("Frame", nil, Minimap)
-	Background.shadow:SetPoint("TOPLEFT", -5, 5)
-	Background.shadow:SetPoint("BOTTOMRIGHT", 5, -5)
-	Background.shadow:SetFrameStrata(Minimap:GetFrameStrata())
-	Background.shadow:SetFrameLevel(Minimap:GetFrameLevel()-1)
-	Background.shadow:SetFrameLevel(0)
-	Background.shadow:SetBackdrop({edgeFile = G.glow, edgeSize = 5,})
-	Background.shadow:SetBackdropBorderColor(0, 0, 0)
 
 -- [[ Hide Script ]] --
 
@@ -131,14 +137,17 @@ end
 MiniMapMailBorder:Hide()
 MiniMapMailIcon:SetTexture(G.mail)
 
+-- Minimap Tracker / 追蹤
 MiniMapTrackingFrame:ClearAllPoints()
 if C.anchor == "TOPLEFT" or C.anchor == "BOTTOMLEFT" then
-	MiniMapTrackingFrame:SetPoint("BOTTOMRIGHT", Minimap, 0, 3)
+	MiniMapTrackingFrame:SetPoint("BOTTOMRIGHT", Minimap, 0, 0)
 else
-	MiniMapTrackingFrame:SetPoint("BOTTOMLEFT", Minimap, 0, 3)
+	MiniMapTrackingFrame:SetPoint("BOTTOMLEFT", Minimap, 0, 0)
 end
 MiniMapTrackingBorder:Hide()
+MiniMapTrackingIcon:SetScale(0.8)
 MiniMapTrackingIcon:SetTexCoord(.08, .92, .08, .92)
+MiniMapTrackingFrame.BG = CreateShadow(MiniMapTrackingFrame, MiniMapTrackingIcon, 3)
 
 --================================================--
 -----------------    [[ Misc ]]    -----------------
