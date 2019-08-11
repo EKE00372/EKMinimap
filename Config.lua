@@ -54,8 +54,8 @@ local MediaFolder = "Interface\\AddOns\\EKMinimap\\Media\\"
 ----------------------
 
 	C.scale = 1  				-- 縮放 / Scale
-	C.anchor = "TOPLEFT"		-- 錨點 / Anchor "TOPLEFT" "TOPRIGHT" "BOTTOMLEFT" "BOTTOMRIGHT" etc.
-	C.Point = {10, -10}			-- 位置 / Position
+	C.anchor = "TOPRIGHT"		-- 錨點 / Anchor "TOPLEFT" "TOPRIGHT" "BOTTOMLEFT" "BOTTOMRIGHT" etc.
+	C.Point = {-10, -10}			-- 位置 / Position
 
 --------------------------
 -- Quest watch settings --
