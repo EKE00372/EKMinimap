@@ -1,10 +1,6 @@
 local C, G = unpack(select(2, ...))
-if not C.clickMenu then return end
 
--- [[ Credit ]] --
-
--- NeavUI by Neal: https://www.wowinterface.com/downloads/info13981-NeavUI.html#info
--- ClickMenu by 10leej: https://www.wowinterface.com/downloads/info22660-ClickMenu.html
+if not C.ClickMenu then return end
 
 --  [[ Click Menu ]] --
 
