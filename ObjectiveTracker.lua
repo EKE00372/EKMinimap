@@ -4,26 +4,27 @@ if not C.objectFrame then return end
 
 -- [[ Anchor ]] --
 
-local OTF = QuestWatchFrame
+local QWF = QuestWatchFrame
 
-local function SetOTF()
-	OTF:SetClampedToScreen(true)
-	OTF:ClearAllPoints()
-	--OTF:SetPoint("TOP", Minimap, "BOTTOM", -100, -60)
-	OTF:SetPoint(unpack(C.WatchFrame))
-	OTF:SetHeight(C.height)
-	OTF:SetMovable(true)
-	OTF:SetUserPlaced(true)
+local function SetQWF()
+	-- parent frame
+	QWF:SetClampedToScreen(true)
+	QWF:ClearAllPoints()
+	QWF:SetPoint(unpack(C.WatchFrame))
+	QWF:SetSize(C.Width, C.Height)
+	QWF:SetMovable(true)
+	QWF:SetUserPlaced(true)	
 end
 
 -- [[ Skin ]] --
 
-local function SetOTFText()
-	local HeaderBar = CreateFrame("StatusBar", nil, QuestWatchFrame)
+local function SetQWFText()
+	local HeaderBar = CreateFrame("StatusBar", nil, QWF)
 	local HeaderText = HeaderBar:CreateFontString(nil, "OVERLAY")
 	
-	HeaderBar:SetSize(QuestWatchFrame:GetWidth(), 2)
-	HeaderBar:SetPoint("TOPLEFT", QuestWatchFrame, 0, -2)
+	-- title line
+	HeaderBar:SetSize(QWF:GetWidth(), 2)
+	HeaderBar:SetPoint("TOPLEFT", QWF, 0, -2)
 	HeaderBar:SetStatusBarTexture(G.Tex)
 	HeaderBar:SetStatusBarColor(G.Ccolors.r, G.Ccolors.g, G.Ccolors.b)
 
@@ -35,10 +36,11 @@ local function SetOTFText()
 	sd:SetBackdrop({edgeFile = G.glow, edgeSize = 3,})
 	sd:SetBackdropBorderColor(0, 0, 0)
 
+	-- title
 	HeaderText:SetFont(G.font, G.obfontSize, G.obfontFlag)
 	HeaderText:SetTextColor(G.Ccolors.r, G.Ccolors.g, G.Ccolors.b)
 	HeaderText:SetShadowOffset(0, 0)
-	HeaderText:SetPoint("LEFT", HeaderBar, "LEFT", -2, 18)
+	HeaderText:SetPoint("LEFT", HeaderBar, "LEFT", -2, G.obfontSize)
 	HeaderText:SetText(CURRENT_QUESTS)
 	
 	-- Change font of watched quests
@@ -48,12 +50,13 @@ local function SetOTFText()
 		Line:SetFont(G.font, G.obfontSize-2, G.obfontFlag)
 		Line:SetHeight(G.obfontSize)
 		Line:SetShadowOffset(0, 0)
+		Line:SetWidth(QWF:GetWidth()+20)
 	end
 end
 
 local function loadAddon()
-	SetOTF()
-	SetOTFText()
+	SetQWF()
+	SetQWFText()
 end
 
 local function eventHandler(self, event, ...)

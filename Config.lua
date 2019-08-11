@@ -1,11 +1,11 @@
 local EKMinimap, ns = ...
-ns[1] = {} -- C, config
-ns[2] = {} -- G, globals (Optionnal)
+	ns[1] = {} -- C, config
+	ns[2] = {} -- G, globals (Optionnal)
 
 local C, G = unpack(select(2, ...))
 
--- alt+右鍵按住移動，/rm 重置小地圖位置，/ro重置任務列表位置，alt分享ctrl放棄
--- alt+right click to drag, /rm reset minimap position, /ro reset quset position, alt click title share quest, ctrl abandon quest
+-- alt+右鍵按住移動，/rm 重置小地圖位置，滾輪縮放區域，alt滾輪縮放大小
+-- alt+right click to drag, /rm reset minimap position, scroll to scale zone, alt+scroll to scale minimap frame
 
 -- [[ Global ]] --
 
@@ -14,7 +14,6 @@ local C, G = unpack(select(2, ...))
 
 -- [[ Textures ]] --
 
-	G.Mask = "Interface\\Buttons\\WHITE8x8"
 	G.Tex = "Interface\\Buttons\\WHITE8x8"
 	G.glow = "Interface\\addons\\EKMinimap\\Media\\glow"
 	G.mail = "Interface\\AddOns\\EKMinimap\\Media\\mail.tga"
@@ -38,12 +37,12 @@ local C, G = unpack(select(2, ...))
 	-- minimap
 	C.scale = 1  					-- 縮放 / Scale
 	C.anchor = "TOPRIGHT"			-- 錨點 / Anchor "TOPLEFT" "TOPRIGHT" "BOTTOMLEFT" etc.
-	C.Point = {-10, -20}			-- 位置 / Position
+	C.Point = {-10, -10}			-- 位置 / Position
 
 	-- objectframe
-	C.height = 600
-	C.star = true					-- show quest line desh as a star. maybe you'll get "?" if your font dosnt support this.
-	C.WatchFrame = {"TOP", Minimap, "BOTTOM", -100, -60}
+	C.Height = 600
+	C.Width = 200
+	C.WatchFrame = {"TOPLEFT", Minimap, "BOTTOMLEFT", -60, -60}
 	
 -- [[ Credit ]] --
 
