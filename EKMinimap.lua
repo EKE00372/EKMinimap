@@ -23,7 +23,7 @@ local Minimap = Minimap
 local function GetMinimapShape()
 	return "SQUARE"
 end
-Minimap:SetMaskTexture(G.Mask)
+Minimap:SetMaskTexture(G.Tex)
 Minimap:SetSize(160, 160)
 Minimap:SetScale(C.scale)
 Minimap:SetFrameStrata("LOW")
