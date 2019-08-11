@@ -17,7 +17,8 @@ A Square Miniamp, Classic version.
   * ALT+right click to drag
   * /rm for reset
 * Right click for micro menu
-* Quest watch frame  
-  * Outline 
+* Quest watch frame
+  * Outline
   * Class color title
   * ALT+right click title to drag
+  * /rq for reset

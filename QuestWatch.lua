@@ -2,27 +2,33 @@ local C, G = unpack(select(2, ...))
 
 if not C.QuestWatch then return end
 
--- [[ Anchor ]] --
+-- [[ Position ]] --
 
 local QWF = QuestWatchFrame
-
-local function SetQWF()
-	-- parent frame
-	--QWF:SetClampedToScreen(true)
-	QWF:ClearAllPoints()	
-	QWF:SetPoint(unpack(C.WatchFrame))
+	QWF:SetClampedToScreen(true)
 	QWF:SetMovable(true)
 	QWF:SetUserPlaced(true)
-end
+	QWF:ClearAllPoints()
+	QWF.ClearAllPoints = function() end
+	--QWF:SetPoint("TOPLEFT", UIParent, "TOPRIGHT", -300, -200)
+	QWF:SetPoint(unpack(C.QWF))
+	QWF.SetPoint = function() end
 
 -- [[ Moveable ]] --
+
+  --tooltip for icon func
+local function QWF_Tooltip(self)
+	GameTooltip:SetOwner(self, "ANCHOR_TOP")
+	GameTooltip:AddLine(DRAG_MODEL, 0, 1, 0.5, 1, 1, 1)
+	GameTooltip:Show()
+end
 
 -- Make a Frame for Drag / 創建一個供移動的框架
 local QWFMove = CreateFrame("FRAME", "QWFdrag", QWF)
 	-- Create frame for click
 	QWFMove:SetSize(140, G.QfontSize + 2)
 	QWFMove:SetPoint("TOPLEFT", QWF, 0, G.QfontSize)
-	QWFMove:SetFrameStrata("HIGH")
+	QWFMove:SetFrameStrata("BACKGROUND")
 	QWFMove:EnableMouse(true)
 	-- Make it drag-able
 	QWFMove:RegisterForDrag("RightButton")
@@ -38,19 +44,32 @@ local QWFMove = CreateFrame("FRAME", "QWFdrag", QWF)
 		local frame = self:GetParent()
 		frame:StopMovingOrSizing()
 	end)
+	-- Show tooltip for drag
+	QWFMove:SetScript("OnEnter", function(self)
+		QWF_Tooltip(self)
+	end)
+	QWFMove:SetScript("OnLeave", function(self)
+		GameTooltip:Hide()
+	end)
+	-- Reset / 重置
+	SlashCmdList["RESETQUEST"] = function() 
+		QWF:SetUserPlaced(false)
+		ReloadUI()
+	end
+	SLASH_RESETQUEST1 = "/resetquest"
+	SLASH_RESETQUEST2 = "/rq"
 
--- [[ Skin ]] --
+-- [[ Style ]] --
 
-local function SetQWFText()
-	local HeaderBar = CreateFrame("StatusBar", nil, QWF)
-	local HeaderText = HeaderBar:CreateFontString(nil, "OVERLAY")
-	
+local HeaderBar = CreateFrame("StatusBar", nil, QWF)
+local HeaderText = HeaderBar:CreateFontString(nil, "OVERLAY")
+
 	-- title line
 	HeaderBar:SetSize(140, 3)
 	HeaderBar:SetPoint("TOPLEFT", QWF, 0, -2)
 	HeaderBar:SetStatusBarTexture(G.Tex)
 	HeaderBar:SetStatusBarColor(G.Ccolors.r, G.Ccolors.g, G.Ccolors.b)
-
+	-- title line shadow
 	sd = CreateFrame("Frame", nil, HeaderBar)
 	sd:SetPoint("TOPLEFT", -3, 3)
 	sd:SetPoint("BOTTOMRIGHT", 3, -3)
@@ -74,18 +93,3 @@ local function SetQWFText()
 		Line:SetHeight(G.QfontSize+2)
 		Line:SetShadowOffset(0, 0)
 	end
-end
-
-local function LoadAddon()
-	SetQWF()
-	SetQWFText()
-end
-
-local function eventHandler(self, event, ...)
-	LoadAddon()
-end 
-
-local EVENT = CreateFrame("FRAME", "defaultsetting")
-	EVENT:RegisterEvent("PLAYER_LOGIN")
-	EVENT:RegisterEvent("PLAYER_ENTERING_WORLD")
-	EVENT:SetScript("OnEvent", eventHandler)

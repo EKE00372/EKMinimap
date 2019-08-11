@@ -73,7 +73,7 @@ local menuList = {
 				LoadAddOn("Blizzard_GuildUI")
 			end
 			--GuildFrame_Toggle()
-			securecall(ToggleFriendsFrame, 3) 
+			securecall(ToggleFriendsFrame, 3)
 		end,
 		notCheckable = true,
 	},
