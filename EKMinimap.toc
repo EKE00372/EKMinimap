@@ -1,6 +1,6 @@
-## Interface: 80100
+## Interface: 11302
 ## Title: |cff00ffffEK|rMinimap
-## Version: R1.3
+## Version: C1.0
 ## Author: EK
 ## Notes: A square minimap.
 ## X-Credits: Ooglogput, Chiril, ape47, sakaras, Siweia, Paopao
