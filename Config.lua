@@ -42,10 +42,10 @@ local MediaFolder = "Interface\\AddOns\\EKMinimap\\Media\\"
 -----------
 
 	G.font = STANDARD_TEXT_FONT		-- 字型 / Font
-	-- Minimap
+	-- Minimap font / 小地圖字型
 	G.fontSize = 14
 	G.fontFlag = "THINOUTLINE"
-	-- QuestWatchFrame
+	-- QuestWatchFrame / 任務追蹤字型
 	G.QfontSize = 18
 	G.QfontFlag = "OUTLINE"
 
