@@ -1,6 +1,6 @@
 ## Interface: 11302
 ## Title: |cff00ffffEK|rMinimap_Classic
-## Version: C1.3
+## Version: C1.4
 ## Author: EK
 ## Notes: A square minimap.
 

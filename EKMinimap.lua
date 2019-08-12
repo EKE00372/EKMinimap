@@ -153,6 +153,39 @@ MiniMapTrackingFrame.BG = CreateShadow(MiniMapTrackingFrame, MiniMapTrackingIcon
 -----------------    [[ Misc ]]    -----------------
 --================================================--
 
+local WMF = WorldMapFrame
+	WMF:SetScale(0.6)
+	WMF.BlackoutFrame.Blackout:SetAlpha(0)
+	--WMF.BlackoutFrame.Blackout = function() end
+	WMF.BlackoutFrame:EnableMouse(false)
+	WorldMapFrame.ScrollContainer.GetCursorPosition = function(f)
+		local x,y = MapCanvasScrollControllerMixin.GetCursorPosition(f)
+		local s = WorldMapFrame:GetScale()
+		
+		return x/s, y/s
+	end
+	-- Movable
+	WMF:SetMovable(true)
+	WMF:SetUserPlaced(true)
+	--WMF:ClearAllPoints()
+	--WMF:SetPoint("LEFT", UIParent)
+	-- Alt+right click to drag frame
+	WMF:RegisterForDrag("RightButton")
+	WMF:SetScript("OnDragStart", function(self)
+		if IsAltKeyDown() then
+			self:StartMoving()
+		end
+	end)
+	WMF:SetScript("OnDragStop", function(self)
+		self:StopMovingOrSizing()
+	end)
+	-- Fadeout
+	if event == "PLAYER_STOPPED_MOVING" then
+		PlayerMovementFrameFader.AddDeferredFrame(WMF, 1, 3.0, .5)
+	else
+		PlayerMovementFrameFader.AddDeferredFrame(WMF, .3, 3.0, .5)
+	end
+
 -- [[ Scroll ]] --
 
 -- Scroll Zoom, Alt+Scroll Scale / 滾輪縮放區域，alt滾輪縮放大小
