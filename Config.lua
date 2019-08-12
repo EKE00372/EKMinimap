@@ -33,7 +33,7 @@ local MediaFolder = "Interface\\AddOns\\EKMinimap\\Media\\"
 
 	G.Tex = "Interface\\Buttons\\WHITE8x8"
 	G.glow = MediaFolder.."glow.tga"
-	G.mail = MediaFolder.."mail.tga"
+	G.mail = MediaFolder.."mail.blp"
 	G.diff = MediaFolder.."difficulty.tga"
 	G.report = "Interface\\HelpFrame\\HelpIcon-ReportLag.blp"
 
