@@ -167,8 +167,10 @@ local WMF = WorldMapFrame
 	-- Movable
 	WMF:SetMovable(true)
 	WMF:SetUserPlaced(true)
-	--WMF:ClearAllPoints()
-	--WMF:SetPoint("LEFT", UIParent)
+	WMF:ClearAllPoints()
+	WMF.ClearAllPoints = function() end			-- 使座標可自訂義
+	WMF:SetPoint("LEFT", UIParent)				-- 畫面左邊
+	--WMF.SetPoint = function() end				-- 使拖動過的位置可以被儲存
 	-- Alt+right click to drag frame
 	WMF:RegisterForDrag("RightButton")
 	WMF:SetScript("OnDragStart", function(self)
@@ -179,6 +181,13 @@ local WMF = WorldMapFrame
 	WMF:SetScript("OnDragStop", function(self)
 		self:StopMovingOrSizing()
 	end)
+	-- Reset / 重置
+	--[[SlashCmdList["RESETMAP"] = function()
+		WMF:SetUserPlaced(false)
+		ReloadUI()
+	end
+	SLASH_RESETMAP1 = "/resetmap"
+	SLASH_RESETMAP2 = "/rmm"]]--
 	-- Fadeout
 	if event == "PLAYER_STOPPED_MOVING" then
 		PlayerMovementFrameFader.AddDeferredFrame(WMF, 1, 3.0, .5)
