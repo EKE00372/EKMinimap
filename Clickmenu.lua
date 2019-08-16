@@ -34,7 +34,7 @@ local menuList = {
 		notCheckable = true,
 	},
 	{	--天賦
-		text = TALENTS_BUTTON,
+		text = TALENTS,
 		icon = "Interface\\MINIMAP\\TRACKING\\Ammunition",
 		func = function() 
 			if (not PlayerTalentFrame) then
@@ -47,20 +47,29 @@ local menuList = {
 		end,
 		notCheckable = true,
 	},
+	{	-- 任務日誌
+		text = QUESTLOG_BUTTON,	-- OLD: QUESTLOG_BUTTON
+		icon = "Interface\\GossipFrame\\ActiveQuestIcon",
+		func = function()
+			securecall(ToggleFrame, QuestLogFrame)
+		end,
+		notCheckable = true,
+	},
 	{	-- 地圖
 		text = WORLD_MAP,	-- OLD: QUESTLOG_BUTTON
-		icon = "Interface\\GossipFrame\\ActiveQuestIcon",
+		--icon = "Interface\\GossipFrame\\ActiveQuestIcon",
+		icon = "Interface\\WorldMap\\UI-World-Icon",
 		func = function() 
 			securecall(ToggleFrame, WorldMapFrame)
 			MaximizeUIPanel(WorldMapFrame)
 		end,
 		notCheckable = true,
 	},
-	{	-- 任務日誌
-		text = QUESTLOG_BUTTON,	-- OLD: QUESTLOG_BUTTON
-		icon = "Interface\\GossipFrame\\ActiveQuestIcon",
-		func = function()
-			securecall(ToggleFrame, QuestLogFrame)
+	{	-- 好友
+		text = SOCIAL_BUTTON,
+		icon = "Interface\\FriendsFrame\\UI-Toast-ChatInviteIcon",
+		func = function() 
+			securecall(ToggleFriendsFrame, 1) 
 		end,
 		notCheckable = true,
 	},
@@ -74,14 +83,6 @@ local menuList = {
 			end
 			--GuildFrame_Toggle()
 			securecall(ToggleFriendsFrame, 3)
-		end,
-		notCheckable = true,
-	},
-	{	-- 好友
-		text = SOCIAL_BUTTON,
-		icon = "Interface\\FriendsFrame\\PlusManz-BattleNet",
-		func = function() 
-			securecall(ToggleFriendsFrame, 1) 
 		end,
 		notCheckable = true,
 	},
@@ -107,13 +108,14 @@ local menuList = {
 		text = PLAYER_V_PLAYER,
 		icon = "Interface\\MINIMAP\\TRACKING\\BattleMaster",
 		func = function() 
-			--securecall(ToggleHonorFrame) 
+			--securecall(ToggleHonorFrame)
+			securecall(ToggleCharacter, "HonorFrame")
 		end,
 		notCheckable = true,
 	},
 	{	-- 團隊
 		text = RAID,
-		icon = "Interface\\TARGETINGFRAME\\UI-TargetingFrame-Skull",
+		icon = "Interface\\Buttons\\UI-GuildButton-PublicNote-Up",
 		func = function() 
 			securecall(ToggleFriendsFrame, 4)
 		end,
@@ -128,8 +130,8 @@ local menuList = {
 		notCheckable = true,
 	},
 	{	-- 語音
-		text = VOICE,
-		icon = "Interface\\CHATFRAME\\UI-ChatIcon-Blizz",
+		text = CHANNEL,
+		icon = "Interface\\CHATFRAME\\UI-ChatIcon-ArmoryChat-AwayMobile",
 		func = function()
 			ToggleChannelFrame()
 		end,
@@ -161,9 +163,9 @@ local menuList = {
 	},
 }
 
--- Right Click for Game Menu, Left Click for Track Menu / 右鍵遊戲選單，中鍵追蹤選單
+-- Right Click for Game Menu / 右鍵遊戲選單
 Minimap:SetScript("OnMouseUp", function(self, button)
-	if (button == "RightButton") then
+	if button == "RightButton" then
 		EasyMenu(menuList, menuFrame, self, (Minimap:GetWidth() * .7), -3, "MENU", 3)
 	else
 		Minimap_OnClick(self)

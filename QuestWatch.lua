@@ -6,17 +6,17 @@ if not C.QuestWatch then return end
 
 local QWF = QuestWatchFrame
 	QWF:SetClampedToScreen(true)
-	QWF:SetMovable(true)
-	QWF:SetUserPlaced(true)
 	QWF:ClearAllPoints()
 	QWF.ClearAllPoints = function() end	-- 使座標可自訂義
 	--QWF:SetPoint("TOPLEFT", UIParent, "TOPRIGHT", -300, -200)
 	QWF:SetPoint(unpack(C.QWF))
 	QWF.SetPoint = function() end		-- 使拖動過的位置可以被儲存
+	QWF:SetMovable(true)
+	QWF:SetUserPlaced(true)
 
 -- [[ Moveable ]] --
 
-  --tooltip for icon func
+--tooltip for drag
 local function QWF_Tooltip(self)
 	GameTooltip:SetOwner(self, "ANCHOR_TOP")
 	GameTooltip:AddLine(DRAG_MODEL, 0, 1, 0.5, 1, 1, 1)
