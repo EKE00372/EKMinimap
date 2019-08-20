@@ -24,7 +24,7 @@ end
 
 -- [[ Make A Square / 弄成方型 ]] --
 
-local function GetMinimapShape()
+function GetMinimapShape()
 	return "SQUARE"
 end
 
@@ -47,8 +47,6 @@ local Minimap = Minimap
 	-- 隱藏圓圈
 	Minimap:SetArchBlobRingScalar(0)
 	Minimap:SetQuestBlobRingScalar(0)
-
-	-- Move
 	
 	-- Movable
 	Minimap:SetMovable(true)
@@ -93,31 +91,31 @@ local Background = Minimap:CreateTexture(nil, "BACKGROUND")
 -- [[ Border Announce for Calendar / 行事曆有邀請時變黃 ]] --
 
 local CalendarAnnouncer = CreateFrame("Frame")
-CalendarAnnouncer:SetScript("OnEvent", function(self, event, ...)
-	if announce then
-		if CalendarGetNumPendingInvites() > 0 then
-			Background:SetVertexColor(1, 1, 0)
-		else
-			Background:SetVertexColor(0, 0, 0)
-		end
-	else return end
-end)
-CalendarAnnouncer:RegisterEvent("CALENDAR_UPDATE_PENDING_INVITES")
-CalendarAnnouncer:RegisterEvent("PLAYER_ENTERING_WORLD")
+	CalendarAnnouncer:SetScript("OnEvent", function(self, event, ...)
+		if C.announce then
+			if CalendarGetNumPendingInvites() > 0 then
+				Background:SetVertexColor(1, 1, 0)
+			else
+				Background:SetVertexColor(0, 0, 0)
+			end
+		else return end
+	end)
+	CalendarAnnouncer:RegisterEvent("CALENDAR_UPDATE_PENDING_INVITES")
+	CalendarAnnouncer:RegisterEvent("PLAYER_ENTERING_WORLD")
 
 -- [[ Hide Script ]] --
 
 -- Hide Clock / 隱藏時鐘
 local ClockFrame = CreateFrame("Frame", nil, UIParent)
-ClockFrame:SetScript("OnEvent", function(self, event, name)
-	if name == "Blizzard_TimeManager" then
-		TimeManagerClockButton:Hide()
-		TimeManagerClockButton:SetScript("OnShow", function(self)
+	ClockFrame:SetScript("OnEvent", function(self, event, name)
+		if name == "Blizzard_TimeManager" then
 			TimeManagerClockButton:Hide()
-		end)
-	end
-end)
-ClockFrame:RegisterEvent("ADDON_LOADED")
+			TimeManagerClockButton:SetScript("OnShow", function(self)
+				TimeManagerClockButton:Hide()
+			end)
+		end
+	end)
+	ClockFrame:RegisterEvent("ADDON_LOADED")
 
 -- Hide All / 隱藏各種
 local HideAll = {
@@ -180,6 +178,7 @@ else
 end
 MiniMapMailBorder:Hide()
 MiniMapMailIcon:SetTexture(G.mail)
+MiniMapMailIcon:SetTexture("Interface\\MINIMAP\\TRACKING\\Mailbox.blp")
 
 -- [[ Garrison Icon / 要塞和職業大廳 ]] --
 
@@ -205,37 +204,35 @@ GarrisonLandingPageMinimapButton:SetScript("OnEnter", function(self)
 	-- fade in
 	securecall(UIFrameFadeIn, GarrisonLandingPageMinimapButton, .4, 0, 1)
 	
-	-- show exp/rep tooltip
+	-- Show tooltip
 	GameTooltip:SetOwner(self, "ANCHOR_BOTTOM", (Minimap:GetWidth() * .7), -3)
 	
-	--experience
+	-- Experience
 	if UnitLevel("player") < MAX_PLAYER_LEVEL and not IsXPUserDisabled() then
 		local cur, max = UnitXP("player"), UnitXPMax("player")
 		local lvl = UnitLevel("player")
 		local rested = GetXPExhaustion()
 		
 		GameTooltip:AddDoubleLine(XP, LEVEL.." "..lvl, 0, 1, .5, 0, 1, .5)
-		GameTooltip:AddDoubleLine( cur.."/"..max, (max-cur).."("..rested..")", 1, 1, 1, 1, 1, 1)
+		GameTooltip:AddDoubleLine(cur.."/"..max, (max-cur).."("..rested..")", 1, 1, 1, 1, 1, 1)
 	end
 	
-	--honor
-	--if InActiveBattlefield() or IsInActiveWorldPVP() then
-		local cur, max = UnitHonor("player"), UnitHonorMax("player")
-		local lvl = UnitHonorLevel("player")
+	-- Honor
+	local cur, max = UnitHonor("player"), UnitHonorMax("player")
+	local lvl = UnitHonorLevel("player")
 		
-		GameTooltip:AddDoubleLine(HONOR, LEVEL.." "..lvl, 0, 1, .5, 0, 1, .5)
-		GameTooltip:AddDoubleLine( cur.."/"..max, (max-cur), 1, 1, 1, 1, 1, 1)
-	--end
+	GameTooltip:AddDoubleLine(HONOR, LEVEL.." "..lvl, 0, 1, .5, 0, 1, .5)
+	GameTooltip:AddDoubleLine(cur.."/"..max, (max-cur), 1, 1, 1, 1, 1, 1)
 	
-	--reputation
+	-- Reputation
 	local name, standing, min, max, cur = GetWatchedFactionInfo()
 	
 	if name then
 		GameTooltip:AddDoubleLine(name, _G["FACTION_STANDING_LABEL"..standing], 0, 1, 0.5, 0, 1, 0.5)
-		GameTooltip:AddDoubleLine( cur.."/"..max, (max-cur), 1, 1, 1, 1, 1, 1)
+		GameTooltip:AddDoubleLine(cur.."/"..max, (max-cur), 1, 1, 1, 1, 1, 1)
 	end
 	
-	--azerite
+	-- azerite
 	local azeriteItem = C_AzeriteItem.FindActiveAzeriteItem()
 	
 	if azeriteItem then
@@ -243,10 +240,10 @@ GarrisonLandingPageMinimapButton:SetScript("OnEnter", function(self)
 		local lvl = C_AzeriteItem.GetPowerLevel(azeriteItem)
 
 		GameTooltip:AddDoubleLine(ARTIFACT_POWER, LEVEL.." "..lvl, 0, 1, .5, 0, 1, .5)
-		GameTooltip:AddDoubleLine( cur.."/"..max, (max-cur), 1, 1, 1, 1, 1, 1)
+		GameTooltip:AddDoubleLine(cur.."/"..max, (max-cur), 1, 1, 1, 1, 1, 1)
 	end
 	
-	--islandweekly
+	-- island weekly
 	local iwqID = C_IslandsQueue.GetIslandsWeeklyQuestID()
 	
 	if iwqID and IsQuestFlaggedCompleted(iwqID) then
@@ -255,7 +252,7 @@ GarrisonLandingPageMinimapButton:SetScript("OnEnter", function(self)
 		local _, _, _, cur, max = GetQuestObjectiveInfo(iwqID, 1, false)
 		
 		GameTooltip:AddDoubleLine(ISLANDS_HEADER, INCOMPLETE, 0, 1, .5, 0, 1, .5)
-		GameTooltip:AddDoubleLine( cur.."/"..max, (max-cur), 1, 1, 1, 1, 1, 1)
+		GameTooltip:AddDoubleLine(cur.."/"..max, (max-cur), 1, 1, 1, 1, 1, 1)
 	end
 
 	GameTooltip:Show()
@@ -379,12 +376,6 @@ local RaidDifficulty = CreateFrame("Frame", nil, Minimap)
 			-- just notice you are in dungeon
 			RaidDifficultyText:SetText("D")
 		end
-
-		--[[if GuildInstanceDifficulty:IsShown() then
-			RaidDifficultyText:SetTextColor(0, .9, 0)
-		else
-			RaidDifficultyText:SetTextColor(1, 1, 1)
-		end]]--
 		
 		if not inInstance then
 			RaidDifficulty:Hide()
@@ -443,24 +434,29 @@ local WhoPing = CreateFrame("Frame", nil, Minimap)
 	anim.fader:SetSmoothing("OUT")
 	anim.fader:SetStartDelay(3)
 
-WhoPing:SetScript("OnEvent", function(_, _, unit)
-	local name = GetUnitName(unit)
-	anim:Stop()
-	WhoPingText:SetText(name)
-	WhoPingText:SetTextColor(G.Ccolors.r, G.Ccolors.g, G.Ccolors.b)
-	anim:Play()
-end)
+	WhoPing:SetScript("OnEvent", function(_, _, unit)
+		local class = select(2, UnitClass(unit))
+		local name = GetUnitName(unit)
+		local classcolor = 	(CUSTOM_CLASS_COLORS or RAID_CLASS_COLORS)[class]
+		
+		anim:Stop()
+		WhoPingText:SetText(name)
+		WhoPingText:SetTextColor(classcolor.r, classcolor.g, classcolor.b)
+		anim:Play()
+	end)
 
 -- [[ Hide order hall bar ]] --
 
 local HideOH = CreateFrame("Frame")
 HideOH:SetScript("OnUpdate", function(self,...)
 	local OrderHallCommandBar = OrderHallCommandBar
+	
 	if OrderHallCommandBar then
 		OrderHallCommandBar:Hide()
 		OrderHallCommandBar:UnregisterAllEvents()
 		OrderHallCommandBar.Show = function() end
 	end
-	OrderHall_CheckCommandBar = function () end
+	
+	OrderHall_CheckCommandBar = function() end
 	self:SetScript("OnUpdate", nil)
 end)

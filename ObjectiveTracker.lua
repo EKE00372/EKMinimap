@@ -1,6 +1,6 @@
 local C, G = unpack(select(2, ...))
 
-if not C.objectFrame then return end
+if not C.ObjectTracker then return end
 
 --================================================--
 -----------------    [[ Core ]]    -----------------
@@ -12,26 +12,33 @@ if not IsAddOnLoaded("Blizzard_ObjectiveTracker") then
 	LoadAddOn("Blizzard_ObjectiveTracker")
 end
 
--- [[ Objective Frame ]] --
+-- [[ Position ]] --
 
 local OTF = ObjectiveTrackerFrame
-	-- Core
 	OTF:SetClampedToScreen(true)
 	OTF:ClearAllPoints()
-	OTF:SetPoint(unpack(C.ObFrame))
+	OTF:SetPoint(unpack(C.OTF))
 	OTF:SetHeight(C.height)
 	OTF:SetMovable(true)
 	OTF:SetUserPlaced(true)
 
-	-- Move
+-- [[ Moveable ]] --
 	
-	-- Make a Frame for Drag / 創建一個供移動的框架
-	local OTFMove = CreateFrame("FRAME", nil, OTF)
+--tooltip for drag
+local function OTF_Tooltip(self)
+	GameTooltip:SetOwner(self, "ANCHOR_TOP")
+	GameTooltip:AddDoubleLine(DRAG_MODEL, "Alt + |TInterface\\TUTORIALFRAME\\UI-TUTORIAL-FRAME:13:11:0:-1:512:512:12:66:333:411|t", 0, 1, 0.5, 1, 1, 1)
+	GameTooltip:Show()
+end
+
+-- Make a Frame for Drag / 創建一個供移動的框架
+local OTFMove = CreateFrame("FRAME", "OTFdrag", OTF)
 	OTFMove:SetHeight(G.obfontSize + 2)
 	OTFMove:SetPoint("TOPLEFT", OTF)
 	OTFMove:SetPoint("TOPRIGHT", OTF)
-	--OTFMove:SetFrameStrata("HIGH")
+	OTFMove:SetFrameStrata("BACKGROUND")	-- or HIGH? not sure
 	OTFMove:EnableMouse(true)
+	-- Make it drag-able
 	OTFMove:RegisterForDrag("RightButton")
 	OTFMove:SetHitRectInsets(-5, -5, -5, -5)
 	-- Alt+right click to drag frame
@@ -44,6 +51,13 @@ local OTF = ObjectiveTrackerFrame
 	OTFMove:SetScript("OnDragStop", function(self, button)
 		local frame = self:GetParent()
 		frame:StopMovingOrSizing()
+	end)
+	-- Show tooltip for drag
+	OTFMove:SetScript("OnEnter", function(self)
+		OTF_Tooltip(self)
+	end)
+	OTFMove:SetScript("OnLeave", function(self)
+		GameTooltip:Hide()
 	end)
 	-- Reset / 重置
 	SlashCmdList["RESETQUEST"] = function() 
@@ -78,6 +92,24 @@ local Minimize = OTF.HeaderMenu.MinimizeButton
 	Minimize.plus:SetShadowColor(0, 0, 0, 1)
 	Minimize.plus:Hide()
 
+	-- Let It Work / 使其工作
+	Minimize:HookScript("OnEnter", function()
+		Minimize.minus:SetTextColor(.7, .5, 0)
+		Minimize.plus:SetTextColor(.7, .5, 0)
+	end)
+	Minimize:HookScript("OnLeave", function()
+		Minimize.minus:SetTextColor(1, 1, 1)
+		Minimize.plus:SetTextColor(1, 1, 1)
+	end)
+	hooksecurefunc("ObjectiveTracker_Collapse", function()
+		Minimize.plus:Show()
+		Minimize.minus:Hide()
+	end)
+	hooksecurefunc("ObjectiveTracker_Expand",  function()
+		Minimize.plus:Hide()
+		Minimize.minus:Show()
+	end)
+
 -- Close Title / 收起後的標題
 local Title = OTF.HeaderMenu.Title
 	Title:SetFont(G.font, G.obfontSize, G.obfontFlag)
@@ -86,25 +118,7 @@ local Title = OTF.HeaderMenu.Title
 	Title:SetShadowColor(0, 0, 0, 1)
 	Title:ClearAllPoints()
 	Title:SetPoint("RIGHT", Minimize, "LEFT", 0, 0)
-
--- Let It Work / 使其工作
-Minimize:HookScript("OnEnter", function()
-	Minimize.minus:SetTextColor(.7, .5, 0)
-	Minimize.plus:SetTextColor(.7, .5, 0)
-end)
-Minimize:HookScript("OnLeave", function()
-	Minimize.minus:SetTextColor(1, 1, 1)
-	Minimize.plus:SetTextColor(1, 1, 1)
-end)
-hooksecurefunc("ObjectiveTracker_Collapse", function()
-	Minimize.plus:Show()
-	Minimize.minus:Hide()
-end)
-hooksecurefunc("ObjectiveTracker_Expand",  function()
-	Minimize.plus:Hide()
-	Minimize.minus:Show()
-end)
-
+	
 --================================================--
 -----------------    [[ Misc ]]    -----------------
 --================================================--

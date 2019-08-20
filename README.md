@@ -11,17 +11,16 @@ A Square Miniamp.
   * new mail
   * LFG
   * difficulty flag
-* TO DO: 戰場資源條優化
 * Scale
   * Scroll to scale map
   * ALT+scroll to scale frame
 * Move
-  * Default on topleft, you can change default position in EKMinimap.lua.
+  * Default on topleft, you can change default position in Config.lua.
   * ALT+right click to drag
   * /rm for reset
-* Right click for micro menu, middle click for track menu
+* Right click for micro menu, middle click for tracking menu
 * Objective tracker  
-  * Outline 
-  * Class color on title
+  * Outline
+  * Class color on title, highlight when hovor, alt+click to share, ctrl+click to abandon
   * ALT+right click title to drag
   * /ro for reset
