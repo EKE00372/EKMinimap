@@ -1,5 +1,6 @@
 local C, G = unpack(select(2, ...))
-if not C.clickMenu then return end
+
+if not C.ClickMenu then return end
 
 -- [[ Credit ]] --
 
@@ -11,12 +12,15 @@ if not C.clickMenu then return end
 -- Right Click Menu List
 local menuFrame = CreateFrame("Frame", "MinimapRightClickMenu", UIParent, "UIDropDownMenuTemplate")
 local menuList = {
-	{	-- 標題
+	-- 標題
+	{
 		text = MAINMENU_BUTTON,
 		isTitle = true,
 		notCheckable = true,
 	},
-	{	-- 角色
+	
+	-- 角色
+	{
 		text = CHARACTER_BUTTON,
 		icon = "Interface\\PaperDollInfoFrame\\UI-EquipmentManager-Toggle",
 		func = function()
@@ -24,7 +28,9 @@ local menuList = {
 		end,
 		notCheckable = true,
 	},
-	{	-- 法術書
+	
+	-- 法術書
+	{
 		text = SPELLBOOK_ABILITIES_BUTTON,
 		icon = "Interface\\MINIMAP\\TRACKING\\Class",
 		func = function() 
@@ -37,7 +43,9 @@ local menuList = {
 		end,
 		notCheckable = true,
 	},
-	{	--天賦
+	
+	--天賦
+	{
 		text = TALENTS_BUTTON,
 		icon = "Interface\\MINIMAP\\TRACKING\\Ammunition",
 		func = function() 
@@ -67,9 +75,9 @@ local menuList = {
 		end,
 		notCheckable = true,
 	},
-	{	-- 公會和社群
+	{	-- 社群
 		text = COMMUNITIES,		-- OLD: COMMUNITIES_FRAME_TITLE
-		icon = "Interface\\GossipFrame\\ChatBubbleGossipIcon",
+		icon = "Interface\\FriendsFrame\\UI-Toast-ChatInviteIcon",
 		arg1 = IsInGuild("player"),
 		func = function() 
 			ToggleCommunitiesFrame()
@@ -251,10 +259,10 @@ local menuList = {
 
 -- Right Click for Game Menu, Left Click for Track Menu / 右鍵遊戲選單，中鍵追蹤選單
 Minimap:SetScript("OnMouseUp", function(self, button)
-	if (button == "RightButton") then
-		EasyMenu(menuList, menuFrame, self, (Minimap:GetWidth() * .7), -3, "MENU", 3)
-	elseif (button == "MiddleButton") then
-		ToggleDropDownMenu(1, nil, MiniMapTrackingDropDown, self, (Minimap:GetWidth() * .7), -3)
+	if button == "RightButton" then
+		EasyMenu(menuList, menuFrame, self, (Minimap:GetWidth() * .7), -3, "MENU", 2)
+	elseif button == "MiddleButton" then
+		ToggleDropDownMenu(1, nil, MiniMapTrackingDropDown, self, (Minimap:GetWidth() * .7), -3, nil, nil, 2)
 	else
 		Minimap_OnClick(self)
 	end

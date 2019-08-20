@@ -16,13 +16,15 @@ local MediaFolder = "Interface\\AddOns\\EKMinimap\\Media\\"
 -- Golbal --
 ------------
 
-	C.objectFrame = true	-- Style Objetc frame
-	C.clickMenu = true		-- Minimap clickmenu
+	C.ObjectTracker = true	-- Style Objetc frame / 啟用追蹤美化
+	C.ClickMenu = true		-- Minimap clickmenu / 啟用點擊選單
 	
+	-- slash cmd / 指令
 	-- /rm 重置小地圖位置 / reset minimap frame position
 	-- /ro 重置任務列表位置 / reset object frame position
 	
 	-- 小地圖中鍵追蹤選單，右鍵微型選單 / middle button click: tracking menu; right click: micro menu
+	-- 滾輪縮放區域，alt+滾輪縮放大小 / scroll to scale zone, alt+scroll to scale minimap frame
 	-- alt+右鍵按住移動 / alt+right click to drag
 	-- alt分享ctrl放棄 / alt click title share quest, ctrl abandon quest
 	
@@ -32,7 +34,7 @@ local MediaFolder = "Interface\\AddOns\\EKMinimap\\Media\\"
 
 	G.Tex = "Interface\\Buttons\\WHITE8x8"
 	G.glow = MediaFolder.."glow.tga"
-	G.mail = MediaFolder.."mail.tga"
+	G.mail = "Interface\\MINIMAP\\TRACKING\\Mailbox.blp"  -- "Interface\\HELPFRAME\\ReportLagIcon-Mail.blp"
 	G.diff = MediaFolder.."difficulty.tga"
 	G.report = "Interface\\HelpFrame\\HelpIcon-ReportLag.blp"
 
@@ -40,11 +42,11 @@ local MediaFolder = "Interface\\AddOns\\EKMinimap\\Media\\"
 -- Fonts --
 -----------
 
-	G.font = STANDARD_TEXT_FONT		-- 字體 / font (or use"GameFontHighlight:GetFont()"to get default game font
-	-- minimap
+	G.font = STANDARD_TEXT_FONT		-- 字體 / font
+	-- minimap / 小地圖字型
 	G.fontSize = 14
 	G.fontFlag = "THINOUTLINE"
-	-- objectframe
+	-- objectframe / 追蹤字型
 	G.obfontSize = 18
 	G.obfontFlag = "OUTLINE"
 
@@ -53,7 +55,7 @@ local MediaFolder = "Interface\\AddOns\\EKMinimap\\Media\\"
 ----------------------
 
 	C.scale = 1  					-- 縮放 / Scale
-	C.anchor = "TOPLEFT"			-- 錨點 / Anchor "TOPLEFT" "TOPRIGHT" "BOTTOMLEFT" etc.
+	C.anchor = "TOPLEFT"			-- 錨點 / Anchor "TOPLEFT" "TOPRIGHT" "BOTTOMLEFT" "BOTTOMRIGHT" etc.
 	C.Point = {10, -20}				-- 位置 / Position
 	C.announce = false  			-- 行事曆有邀請時高亮邊框/show yellow border when get invite
 
@@ -61,9 +63,9 @@ local MediaFolder = "Interface\\AddOns\\EKMinimap\\Media\\"
 -- Object settings --
 ----------------------
 
-	C.ObFrame = {"TOPRIGHT", UIParent, "TOPRIGHT", -100, -170}
-	C.height = 600
-	C.star = true					-- show quest line desh as a star. maybe you'll get "?" if your font dosnt support this.
+	C.OTF = {"TOPRIGHT", UIParent, "TOPRIGHT", -100, -170}
+	C.height = 600					-- 追蹤框高度 / Object frame hight
+	C.star = true					-- 項目星型標記 / show quest line desh as a star. maybe you'll get "?" if your font dosnt support this.
 	
 -------------
 -- Credits --
