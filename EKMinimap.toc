@@ -1,6 +1,6 @@
 ## Interface: 11302
 ## Title: |cff00ffffEK|rMinimap_Classic
-## Version: C1.4
+## Version: C1.5
 ## Author: EK
 ## Notes: A square minimap.
 
@@ -8,3 +8,4 @@ Config.lua
 QuestWatch.lua
 EKMinimap.lua
 Clickmenu.lua
+Map.lua

@@ -1,10 +1,10 @@
-local C, G = unpack(select(2, ...))
+ï»¿local C, G = unpack(select(2, ...))
 
 --====================================================--
 -----------------    [[ Function ]]    -----------------
 --====================================================--
 
--- Create font style / ¦r«¬
+-- Create font style / å­—å‹
 local function CreateFS(parent, justify)
 	local frame = parent:CreateFontString(nil, "OVERLAY")
 	
@@ -19,7 +19,7 @@ local function CreateFS(parent, justify)
 	return frame
 end
 
--- Create shadow border / ³±¼vÃä®Ø
+-- Create shadow border / é™°å½±é‚Šæ¡†
 local CreateShadow = function(parent, anchor, size)
 	local sd = CreateFrame("Frame", nil, parent)
 	local framelvl = parent:GetFrameLevel()
@@ -29,8 +29,8 @@ local CreateShadow = function(parent, anchor, size)
 	sd:SetPoint("BOTTOMRIGHT", anchor, size, -size)
 	sd:SetFrameLevel(framelvl == 0 and 0 or framelvl-1)
 	sd:SetBackdrop({
-		edgeFile = G.glow,	-- ³±¼vÃä®Ø
-		edgeSize = size,		-- Ãä®Ø¤j¤p
+		edgeFile = G.glow,	-- é™°å½±é‚Šæ¡†
+		edgeSize = size,	-- é‚Šæ¡†å¤§å°
 	})
 	--sd:SetBackdropColor(0, 0, 0, 1)
 	sd:SetBackdropBorderColor(0, 0, 0, 1)
@@ -42,7 +42,7 @@ end
 -----------------    [[ Core ]]    -----------------
 --================================================--
 
--- [[ Make A Square / §Ë¦¨¤è«¬ ]] --
+-- [[ Make A Square / å¼„æˆæ–¹å‹ ]] --
 
 function GetMinimapShape()
 	return "SQUARE"
@@ -53,8 +53,8 @@ end
 local Minimap = Minimap
 	-- Core
 	Minimap:SetMaskTexture(G.Tex)
-	Minimap:SetSize(160, 160)
-	Minimap:SetScale(C.scale)
+	Minimap:SetSize(C.size, C.size)
+	Minimap:SetScale(1)
 	Minimap:SetFrameStrata("LOW")
 	Minimap:SetFrameLevel(3)
 	-- Position
@@ -62,7 +62,7 @@ local Minimap = Minimap
 	Minimap:SetPoint(C.anchor, UIParent, unpack(C.Point))
 	MinimapCluster:ClearAllPoints()
 	MinimapCluster:SetAllPoints(Minimap)
-	-- ÁãÂI©ó¤p¦a¹Ïªº¨ä¥L¤¸¯À¡A¤ñ¦p­@¤[«×¸ò¸ü¨ã¨º¨Ç°­ª±·N
+	-- éŒ¨é»æ–¼å°åœ°åœ–çš„å…¶ä»–å…ƒç´ ï¼Œæ¯”å¦‚è€ä¹…åº¦è·Ÿè¼‰å…·é‚£äº›é¬¼ç©æ„
 	MinimapCluster:ClearAllPoints()
 	MinimapCluster:SetAllPoints(Minimap)
 	-- MinimapCluster:EnableMouse(false)
@@ -82,7 +82,7 @@ local Minimap = Minimap
 	Minimap:SetScript("OnDragStop", function(self)
 		self:StopMovingOrSizing()
 	end)
-	-- Reset / ­«¸m
+	-- Reset / é‡ç½®
 	Minimap:SetUserPlaced(true)
 	SlashCmdList["RESETMINIMAP"] = function()
 		Minimap:SetUserPlaced(false)
@@ -93,7 +93,7 @@ local Minimap = Minimap
 
 -- [[ Hide Script ]] --
 
--- Hide Clock / ÁôÂÃ®ÉÄÁ
+-- Hide Clock / éš±è—æ™‚é˜
 local ClockFrame = CreateFrame("Frame", nil, UIParent)
 ClockFrame:SetScript("OnEvent", function(self, event, name)
 	if name == "Blizzard_TimeManager" then
@@ -105,19 +105,19 @@ ClockFrame:SetScript("OnEvent", function(self, event, name)
 end)
 ClockFrame:RegisterEvent("ADDON_LOADED")
 
--- Hide All / ÁôÂÃ¦UºØ
+-- Hide All / éš±è—å„ç¨®
 local HideAll = {
-	"MinimapBorder",
+	"MinimapBorder",			-- å¤§åœˆ
 	"MinimapBorderTop",
-	"MinimapNorthTag",
-	"MiniMapWorldMapButton",
-	"MinimapZoneTextButton",
+	"MinimapNorthTag",			-- æŒ‡åŒ—é‡
+	"MiniMapWorldMapButton",	-- ä¸–ç•Œåœ°åœ–
+	"MinimapZoneTextButton",	-- å€åŸŸåå­—
 	"MinimapToggleButton",
-	"MinimapZoomIn",
-	"MinimapZoomOut",
-	"GameTimeFrame",
+	"MinimapZoomIn",			-- æ”¾å¤§
+	"MinimapZoomOut",			-- ç¸®å°
+	"GameTimeFrame",			-- æ™‚é–“
 	"SubZoneTextFrame",
-	"DurabilityFrame",
+	"DurabilityFrame",			-- è£å‚™è€ä¹…åº¦
 }
 for i, v in pairs(HideAll) do
 	getglobal(v).Show = function() end
@@ -128,7 +128,7 @@ end
 -----------------    [[ Indicator ]]    -----------------
 --=====================================================--
 
--- Mail Frame / «H¥ó´£¥Ü
+-- Mail Frame / ä¿¡ä»¶æç¤º
 MiniMapMailFrame:ClearAllPoints()
 MiniMapMailFrame:SetParent(Minimap)
 if C.anchor == "TOPLEFT" or C.anchor == "BOTTOMLEFT" then
@@ -139,7 +139,7 @@ end
 MiniMapMailBorder:Hide()
 MiniMapMailIcon:SetTexture(G.mail)
 
--- Minimap Tracker / °lÂÜ
+-- Minimap Tracker / è¿½è¹¤
 MiniMapTrackingFrame:ClearAllPoints()
 if C.anchor == "TOPLEFT" or C.anchor == "BOTTOMLEFT" then
 	MiniMapTrackingFrame:SetPoint("BOTTOMRIGHT", Minimap, 0, 0)
@@ -155,52 +155,9 @@ MiniMapTrackingFrame.BG = CreateShadow(MiniMapTrackingFrame, MiniMapTrackingIcon
 -----------------    [[ Misc ]]    -----------------
 --================================================--
 
-local WMF = WorldMapFrame
-	WMF:SetScale(0.6)							-- Scale / ÁY©ñ
-	WMF.BlackoutFrame.Blackout:SetAlpha(0)		-- No background / ¥h­I
-	--WMF.BlackoutFrame.Blackout = function() end
-	WMF.BlackoutFrame:EnableMouse(false)		-- Click through / ÂIÀ»¬ï³z	
-	-- Cursor match scale / ·Æ¹«¸òÀHÁY©ñ
-	WMF.ScrollContainer.GetCursorPosition = function(f)
-		local x,y = MapCanvasScrollControllerMixin.GetCursorPosition(f)
-		local s = WorldMapFrame:GetScale()
-		
-		return x/s, y/s
-	end
-	-- Movable
-	WMF:SetMovable(true)						-- ¨Ï¦a¹Ï¥i²¾°Ê
-	WMF:SetUserPlaced(true)
-	WMF:ClearAllPoints()
-	WMF.ClearAllPoints = function() end			-- ¨Ï®y¼Ğ¥i¦Û­q¸q
-	WMF:SetPoint("LEFT", UIParent)				-- Default at left / ªì©l¤Æ©óµe­±¥ªÃä
-	--WMF.SetPoint = function() end				-- ¨Ï©ì°Ê¹Lªº¦ì¸m¥i¥H³QÀx¦s¡A¤£·Q¡A¨Æ¦h
-	-- Alt+right click to drag frame / alt+¥kÁä©ì°Ê
-	WMF:RegisterForDrag("RightButton")
-	WMF:SetScript("OnDragStart", function(self)
-		if IsAltKeyDown() then
-			self:StartMoving()
-		end
-	end)
-	WMF:SetScript("OnDragStop", function(self)
-		self:StopMovingOrSizing()
-	end)
-	-- Reset / ­«¸m
-	--[[SlashCmdList["RESETMAP"] = function()
-		WMF:SetUserPlaced(false)
-		ReloadUI()
-	end
-	SLASH_RESETMAP1 = "/resetmap"
-	SLASH_RESETMAP2 = "/rmm"]]--
-	-- Fadeout when moving / ²¾°Ê®É²H¥X
-	if event == "PLAYER_STOPPED_MOVING" then
-		PlayerMovementFrameFader.AddDeferredFrame(WMF, 1, 3.0, .5)
-	else
-		PlayerMovementFrameFader.AddDeferredFrame(WMF, .3, 3.0, .5)
-	end
-
 -- [[ Scroll ]] --
 
--- Scroll Zoom, Alt+Scroll Scale / ºu½üÁY©ñ°Ï°ì¡Aaltºu½üÁY©ñ¤j¤p
+-- Scroll Zoom, Alt+Scroll Scale / æ»¾è¼ªç¸®æ”¾å€åŸŸï¼Œaltæ»¾è¼ªç¸®æ”¾å¤§å°
 local function OnMouseWheel(self, delta)
 	if IsAltKeyDown() then
 		local i = Minimap:GetScale()
@@ -221,7 +178,7 @@ Minimap:SetScript("OnMouseWheel", OnMouseWheel)
 
 -- [[ Ping ]] --
 
--- Show minimap ping / Åã¥Ü½ÖÂIÀ»¤F¤p¦a¹Ï
+-- Show minimap ping / é¡¯ç¤ºèª°é»æ“Šäº†å°åœ°åœ–
 local WhoPing = CreateFrame("Frame", nil, Minimap)
 	WhoPing:SetSize(100, 20)
 	WhoPing:SetPoint("BOTTOM", Minimap, 0, 2)

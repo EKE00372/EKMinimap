@@ -16,8 +16,9 @@ local MediaFolder = "Interface\\AddOns\\EKMinimap\\Media\\"
 -- Golbal --
 ------------
 
-	C.QuestWatch = true		-- Style Quest Watch Frame / 啟用任務追蹤美化
-	C.ClickMenu = true		-- Minimap Click Menu / 啟用右鍵微型選單
+	C.QuestWatch = true		-- Enable Quest Watch Frame Style / 啟用任務追蹤美化
+	C.ClickMenu = true		-- Enable Minimap Click Menu / 啟用右鍵微型選單
+	C.Map = true			-- Enable Map fadeout and custom size / 啟用大地圖增強
 	
 	-- alt+右鍵按住移動 / alt+right click to drag
 	-- 小地圖右鍵微型選單 / right click on minimap: micro menu
@@ -53,9 +54,16 @@ local MediaFolder = "Interface\\AddOns\\EKMinimap\\Media\\"
 -- Minimap settings --
 ----------------------
 
-	C.scale = 1  				-- 縮放 / Scale
+	C.size = 160  				-- 尺寸 / Size
 	C.anchor = "TOPRIGHT"		-- 錨點 / Anchor "TOPLEFT" "TOPRIGHT" "BOTTOMLEFT" "BOTTOMRIGHT" etc.
-	C.Point = {-10, -10}			-- 位置 / Position
+	C.Point = {-10, -10}		-- 位置 / Position
+
+------------------
+-- Map settings --
+------------------
+
+	C.scale = 0.6				-- 縮放 / Scale
+	C.fade = 0.6				-- 移動時的淡出透明度 / Fadeout alpha when moving
 
 --------------------------
 -- Quest watch settings --
