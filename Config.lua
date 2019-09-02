@@ -12,9 +12,9 @@ local C, G = unpack(select(2, ...))
 
 local MediaFolder = "Interface\\AddOns\\EKMinimap\\Media\\"
 
-------------
--- Golbal --
-------------
+-------------------
+-- Golbal / 全局 --
+-------------------
 
 	C.QuestWatch = true		-- Enable Quest Watch Frame Style / 啟用任務追蹤美化
 	C.ClickMenu = true		-- Enable Minimap Click Menu / 啟用右鍵微型選單
@@ -28,53 +28,51 @@ local MediaFolder = "Interface\\AddOns\\EKMinimap\\Media\\"
 	-- /rm 重置小地圖位置 / reset minimap frame position
 	-- /rq 重置任務追蹤為置 / reset quest watch frame position
 	
--------------
--- Texture --
--------------
+--------------------
+-- Texture / 材質 --
+--------------------
 
 	G.Tex = "Interface\\Buttons\\WHITE8x8"
 	G.glow = MediaFolder.."glow.tga"
 	G.mail = MediaFolder.."mail.blp"
-	G.diff = MediaFolder.."difficulty.tga"
-	G.report = "Interface\\HelpFrame\\HelpIcon-ReportLag.blp"
 
------------
--- Fonts --
------------
+------------------
+-- Fonts / 字型 --
+------------------
 
 	G.font = STANDARD_TEXT_FONT		-- 字型 / Font
 	-- Minimap font / 小地圖字型
-	G.fontSize = 14
-	G.fontFlag = "THINOUTLINE"
+	G.fontSize = 14					-- 大小 / size
+	G.fontFlag = "THINOUTLINE"		-- 描邊 / outline
 	-- QuestWatchFrame / 任務追蹤字型
-	G.QfontSize = 18
-	G.QfontFlag = "OUTLINE"
+	G.QfontSize = 18				-- 大小 / size
+	G.QfontFlag = "OUTLINE"			-- 描邊 / outline
 
-----------------------
--- Minimap settings --
-----------------------
+-------------------------------
+-- Minimap settings / 小地圖 --
+-------------------------------
 
 	C.size = 160  				-- 尺寸 / Size
 	C.anchor = "TOPRIGHT"		-- 錨點 / Anchor "TOPLEFT" "TOPRIGHT" "BOTTOMLEFT" "BOTTOMRIGHT" etc.
 	C.Point = {-10, -10}		-- 位置 / Position
 
-------------------
--- Map settings --
-------------------
+---------------------------
+-- Map settings / 大地圖 --
+---------------------------
 
 	C.scale = 0.6				-- 縮放 / Scale
 	C.fade = true				-- 移動時的淡出 / Fadeout when moving
 	C.alpha = 0.6				-- 淡出透明度 / Fadeout alpha
 
---------------------------
--- Quest watch settings --
---------------------------
+-------------------------------------
+-- Quest watch settings / 任務追蹤 --
+-------------------------------------
 
 	C.QWF = {"TOPLEFT", UIParent, "TOPRIGHT", -300, -200}			-- 位置 / Position
 
--------------
--- Credits --
--------------
+--------------------
+-- Credits / 銘謝 --
+--------------------
 
 	-- Felix S., sakaras, ape47, iMinimap by Chiril, ooMinimap by Ooglogput, intMinimap by Int0xMonkey
 	-- NeavUI by Neal
