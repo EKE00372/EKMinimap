@@ -21,7 +21,7 @@ local WMF = WorldMapFrame
 	
 	-- Movable
 	WMF:SetMovable(true)						-- 使地圖可移動
-	WMF:SetUserPlaced(true)
+	WMF:SetUserPlaced(true)						-- 使框架可以超出畫面
 	WMF:ClearAllPoints()
 	WMF.ClearAllPoints = function() end			-- 使座標可自訂義
 	WMF:SetPoint("LEFT", UIParent)				-- Default at left / 初始化於畫面左邊
@@ -47,8 +47,16 @@ local WMF = WorldMapFrame
 	SLASH_RESETMAP2 = "/rmp"
 	
 	-- Fadeout when moving / 移動時淡出
-	if event == "PLAYER_STOPPED_MOVING" then
-		PlayerMovementFrameFader.AddDeferredFrame(WMF, 1, 3.0, .5)
-	else
-		PlayerMovementFrameFader.AddDeferredFrame(WMF, C.fade, 3.0, .5)
-	end
+	local MoveFade = CreateFrame("Frame")
+	MoveFade:SetScript("OnEvent", function(_, event, ...)
+		local PMFF = PlayerMovementFrameFader
+		
+		if event == "PLAYER_STOPPED_MOVING" then
+			PMFF.AddDeferredFrame(WMF, 1, 1, .5)
+		elseif event == "PLAYER_STARTED_MOVING" then
+			PMFF.AddDeferredFrame(WMF, C.alpha, 1, .5)
+		end
+	end)
+
+	MoveFade:RegisterEvent("PLAYER_STARTED_MOVING")
+	MoveFade:RegisterEvent("PLAYER_STOPPED_MOVING")

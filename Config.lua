@@ -63,7 +63,8 @@ local MediaFolder = "Interface\\AddOns\\EKMinimap\\Media\\"
 ------------------
 
 	C.scale = 0.6				-- 縮放 / Scale
-	C.fade = 0.6				-- 移動時的淡出透明度 / Fadeout alpha when moving
+	C.fade = true				-- 移動時的淡出 / Fadeout when moving
+	C.alpha = 0.6				-- 淡出透明度 / Fadeout alpha
 
 --------------------------
 -- Quest watch settings --

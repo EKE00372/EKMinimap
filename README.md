@@ -14,11 +14,13 @@ A Square Miniamp, Classic version.
   * ALT+scroll to scale frame
 * Move
   * Default on topleft, you can change default position in EKMinimap.lua.
-  * ALT+right click to drag
-  * /rm for reset
+  * ALT+right click to drag, /rm for reset
 * Right click for micro menu
 * Quest watch frame
   * Outline
   * Class color title
-  * ALT+right click title to drag
-  * /rq for reset
+  * ALT+right click title to drag, /rq for reset
+* Map
+  * Movabble, ALT+right click head to drag, /rmp to reset
+  * No background
+  * Fadeout when moving
