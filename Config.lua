@@ -26,17 +26,18 @@ local MediaFolder = "Interface\\AddOns\\EKMinimap\\Media\\"
 	-- 小地圖中鍵追蹤選單，右鍵微型選單 / middle button click: tracking menu; right click: micro menu
 	-- 滾輪縮放區域，alt+滾輪縮放大小 / scroll to scale zone, alt+scroll to scale minimap frame
 	-- alt+右鍵按住移動 / alt+right click to drag
-	-- alt分享ctrl放棄 / alt click title share quest, ctrl abandon quest
+	-- alt分享ctrl放棄 / alt click title share quest, ctrl click abandon quest
 	
 -------------
 -- Texture --
 -------------
 
+	G.Mask = MediaFolder.."mask.blp"
 	G.Tex = "Interface\\Buttons\\WHITE8x8"
-	G.glow = MediaFolder.."glow.tga"
-	G.mail = "Interface\\MINIMAP\\TRACKING\\Mailbox.blp"  -- "Interface\\HELPFRAME\\ReportLagIcon-Mail.blp"
-	G.diff = MediaFolder.."difficulty.tga"
-	G.report = "Interface\\HelpFrame\\HelpIcon-ReportLag.blp"
+	G.Glow = MediaFolder.."glow.tga"
+	G.Mail = "Interface\\MINIMAP\\TRACKING\\Mailbox.blp"  -- "Interface\\HELPFRAME\\ReportLagIcon-Mail.blp"
+	G.Diff = MediaFolder.."difficulty.tga"
+	G.Report = "Interface\\HelpFrame\\HelpIcon-ReportLag.blp"
 
 -----------
 -- Fonts --
@@ -54,10 +55,10 @@ local MediaFolder = "Interface\\AddOns\\EKMinimap\\Media\\"
 -- Minimap settings --
 ----------------------
 
-	C.scale = 1  					-- 縮放 / Scale
-	C.anchor = "TOPLEFT"			-- 錨點 / Anchor "TOPLEFT" "TOPRIGHT" "BOTTOMLEFT" "BOTTOMRIGHT" etc.
-	C.Point = {10, -20}				-- 位置 / Position
-	C.announce = false  			-- 行事曆有邀請時高亮邊框/show yellow border when get invite
+	C.Scale = 1  								-- 縮放 / Scale
+	C.Size = 160  								-- 縮放 / Scale
+	C.Point = {"TOPLEFT", UIParent, 10, -10}	-- 位置 / Position
+	--C.Point = {"TOPRIGHT", UIParent, -10, -10}-- 位置 / Position
 
 ----------------------
 -- Object settings --
