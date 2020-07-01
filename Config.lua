@@ -65,8 +65,8 @@ local MediaFolder = "Interface\\AddOns\\EKMinimap\\Media\\"
 ----------------------
 
 	C.OTF = {"TOPRIGHT", UIParent, "TOPRIGHT", -100, -170}
-	C.height = 600					-- 追蹤框高度 / Object frame hight
-	C.star = true					-- 項目星型標記 / show quest line desh as a star. maybe you'll get "?" if your font dosnt support this.
+	C.Height = 600					-- 追蹤框高度 / Object frame hight
+	C.Star = true					-- 項目星型標記 / show quest line desh as a star. maybe you'll get "?" if your font dosnt support this.
 	
 -------------
 -- Credits --
@@ -79,3 +79,5 @@ local MediaFolder = "Interface\\AddOns\\EKMinimap\\Media\\"
 	-- https://www.wowinterface.com/downloads/info24772-rStatusButton.html
 	-- Hide order hall bar
 	-- https://github.com/destroyerdust/Class-Hall
+	-- NeavUI by Neal: https://www.wowinterface.com/downloads/info13981-NeavUI.html#info
+	-- ClickMenu by 10leej: https://www.wowinterface.com/downloads/info22660-ClickMenu.html

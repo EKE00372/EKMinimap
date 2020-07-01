@@ -1,6 +1,7 @@
 local C, G = unpack(select(2, ...))
-
 if not C.ObjectTracker then return end
+
+local OTF = ObjectiveTrackerFrame
 
 --================================================--
 -----------------    [[ Core ]]    -----------------
@@ -12,20 +13,149 @@ if not IsAddOnLoaded("Blizzard_ObjectiveTracker") then
 	LoadAddOn("Blizzard_ObjectiveTracker")
 end
 
--- [[ Position ]] --
-
-local OTF = ObjectiveTrackerFrame
-	OTF:SetClampedToScreen(true)
+local function updateOTFPos()
 	OTF:ClearAllPoints()
 	OTF:SetPoint(unpack(C.OTF))
-	OTF:SetHeight(C.height)
-	OTF:SetMovable(true)
-	OTF:SetUserPlaced(true)
+end
 
--- [[ Moveable ]] --
+local function setOTF()
+	updateOTFPos()
+	OTF:SetClampedToScreen(true)
+	OTF:SetHeight(C.Height)
+	OTF:SetMovable(true)
+	OTF:EnableMouse(true)
+	OTF:SetUserPlaced(true)
+end
+
+--================================================--
+-----------------    [[ Block ]]    -----------------
+--================================================--
+
+local function styleQuestBlock()
+	-- [[ main title / 大標題 ]] --
+
+	local function reskinHeader(header)
+		header.Background:SetAtlas(nil)
+		header.Background:Hide()
+		
+		header.Text:SetFont(G.font, G.obfontSize, G.obfontFlag)
+		header.Text:SetTextColor(1, .75, 0)
+		header.Text:SetShadowColor(0, 0, 0, 1)
+		header.Text:SetShadowOffset(0, 0)
+		header.Text:SetWordWrap(false)
+		
+		header.Text:ClearAllPoints()
+		header.Text:SetPoint("RIGHT", header, -5, 0)
+		header.Text:SetJustifyH("RIGHT")
+	end
+
+	local headers = {
+		ObjectiveTrackerBlocksFrame.QuestHeader,
+		ObjectiveTrackerBlocksFrame.AchievementHeader,
+		ObjectiveTrackerBlocksFrame.ScenarioHeader,
+		BONUS_OBJECTIVE_TRACKER_MODULE.Header,
+		WORLD_QUEST_TRACKER_MODULE.Header,
+	}
+	for _, header in pairs(headers) do
+		reskinHeader(header)
+	end
+
+	-- [[ quest title / 任務標題 ]] --
+
+	hooksecurefunc(QUEST_TRACKER_MODULE, "SetBlockHeader", function(_, block)
+		block.HeaderText:SetFont(G.font, G.obfontSize - 2, G.obfontFlag)
+		block.HeaderText:SetShadowColor(0, 0, 0, 1)
+		block.HeaderText:SetShadowOffset(0, 0)
+		block.HeaderText:SetWordWrap(false)
+		block.HeaderText:SetTextColor(G.Ccolors.r, G.Ccolors.g, G.Ccolors.b)
+		block.HeaderText:SetJustifyH("LEFT")
+	end)
+
+	local function hoverquest(_, block)
+		block.HeaderText:SetTextColor(G.Ccolors.r, G.Ccolors.g, G.Ccolors.b)
+	end
+
+	hooksecurefunc(QUEST_TRACKER_MODULE, "OnBlockHeaderLeave", hoverquest)
+
+	-- [[ achievement title / 成就標題 ]] --
+
+	hooksecurefunc(ACHIEVEMENT_TRACKER_MODULE, "SetBlockHeader", function(_, block)
+		local trackedAchievements = {GetTrackedAchievements()}
+
+		for i = 1, #trackedAchievements do
+			local achieveID = trackedAchievements[i]
+			local _, achievementName, _, completed, _, _, _, description, _, icon, _, _, wasEarnedByMe = GetAchievementInfo(achieveID)
+
+			if not wasEarnedByMe then
+				block.HeaderText:SetFont(G.font, G.obfontSize - 2, G.obfontFlag)
+				block.HeaderText:SetShadowColor(0, 0, 0, 1)
+				block.HeaderText:SetShadowOffset(0, 0)
+				block.HeaderText:SetWordWrap(false)
+				block.HeaderText:SetTextColor(G.Ccolors.r, G.Ccolors.g, G.Ccolors.b)
+				block.HeaderText:SetJustifyH("LEFT")
+			end
+		end
+	end)
+
+	local function hoverachieve(_, block)
+		block.HeaderText:SetTextColor(G.Ccolors.r, G.Ccolors.g, G.Ccolors.b)
+	end
+
+	hooksecurefunc(ACHIEVEMENT_TRACKER_MODULE, "OnBlockHeaderLeave", hoverachieve)
+
+	-- [[ 細項與內文 ]] --
+
+	hooksecurefunc(DEFAULT_OBJECTIVE_TRACKER_MODULE, "AddObjective", function(self, block, objectiveKey, _, lineType)
+		local line = self:GetLine(block, objectiveKey, lineType)
+		
+		line.Text:SetFont(G.font, G.obfontSize - 4, G.obfontFlag)
+		line.Text:SetShadowColor(0, 0, 0, 1)
+		line.Text:SetShadowOffset(0, 0)
+		line.Text:SetWidth(OTF:GetWidth() - 25)
+			
+		if line.Dash and line.Dash:IsShown() then
+			line.Dash:SetFont(G.font, G.obfontSize - 2, G.obfontFlag)
+			
+			if C.star then
+				line.Dash:SetText("★ ")
+			else
+				line.Dash:SetText("-")
+			end
+			
+			line.Dash:SetShadowColor(0, 0, 0, 1)
+			line.Dash:SetShadowOffset(0, 0)
+		end
+	end)
+end
+
+--================================================--
+-----------------    [[ Misc ]]    -----------------
+--================================================--
+
+-- [[ Quick Click: Alt to Share, Ctrl to Abandon / 快速按鍵：alt分享ctrl放棄 ]]--
+
+local function QuestHook(id)
+	local questLogIndex = GetQuestLogIndexByID(id)
 	
---tooltip for drag
-local function OTF_Tooltip(self)
+	if IsControlKeyDown() and CanAbandonQuest(id) then
+		QuestMapQuestOptions_AbandonQuest(id)
+	elseif IsAltKeyDown() and GetQuestLogPushable(questLogIndex) then
+		QuestMapQuestOptions_ShareQuest(id)
+	end
+end
+
+hooksecurefunc(QUEST_TRACKER_MODULE, "OnBlockHeaderClick", function(self, block)
+	QuestHook(block.id)
+end)
+hooksecurefunc("QuestMapLogTitleButton_OnClick", function(self)
+	QuestHook(self.questID)
+end)
+
+--===================================================--
+-----------------    [[ Movable ]]    -----------------
+--===================================================--
+
+local function createOTFTooltip(self)
 	GameTooltip:SetOwner(self, "ANCHOR_TOP")
 	GameTooltip:AddDoubleLine(DRAG_MODEL, "Alt + |TInterface\\TUTORIALFRAME\\UI-TUTORIAL-FRAME:13:11:0:-1:512:512:12:66:333:411|t", 0, 1, 0.5, 1, 1, 1)
 	GameTooltip:Show()
@@ -36,36 +166,10 @@ local OTFMove = CreateFrame("FRAME", "OTFdrag", OTF)
 	OTFMove:SetHeight(G.obfontSize + 2)
 	OTFMove:SetPoint("TOPLEFT", OTF)
 	OTFMove:SetPoint("TOPRIGHT", OTF)
-	OTFMove:SetFrameStrata("BACKGROUND")	-- or HIGH? not sure
+	OTFMove:SetFrameLevel(OTF:GetFrameLevel()+2)
 	OTFMove:EnableMouse(true)
-	-- Make it drag-able
 	OTFMove:RegisterForDrag("RightButton")
 	OTFMove:SetHitRectInsets(-5, -5, -5, -5)
-	-- Alt+right click to drag frame
-	OTFMove:SetScript("OnDragStart", function(self, button)
-		if IsAltKeyDown() then
-			local frame = self:GetParent()
-			frame:StartMoving()
-		end
-	end)
-	OTFMove:SetScript("OnDragStop", function(self, button)
-		local frame = self:GetParent()
-		frame:StopMovingOrSizing()
-	end)
-	-- Show tooltip for drag
-	OTFMove:SetScript("OnEnter", function(self)
-		OTF_Tooltip(self)
-	end)
-	OTFMove:SetScript("OnLeave", function(self)
-		GameTooltip:Hide()
-	end)
-	-- Reset / 重置
-	SlashCmdList["RESETQUEST"] = function() 
-		OTF:SetUserPlaced(false)
-		ReloadUI()
-	end
-	SLASH_RESETQUEST1 = "/resetobjective"
-	SLASH_RESETQUEST2 = "/ro"
 
 -- [[ Collapse Icon ]] --
 
@@ -92,6 +196,38 @@ local Minimize = OTF.HeaderMenu.MinimizeButton
 	Minimize.plus:SetShadowColor(0, 0, 0, 1)
 	Minimize.plus:Hide()
 
+-- Close Title / 收起後的標題
+local Title = OTF.HeaderMenu.Title
+	Title:SetFont(G.font, G.obfontSize, G.obfontFlag)
+	Title:SetTextColor(1, .75, 0)
+	Title:SetShadowOffset(0, 0)
+	Title:SetShadowColor(0, 0, 0, 1)
+	Title:ClearAllPoints()
+	Title:SetPoint("RIGHT", Minimize, "LEFT", 0, 0)
+
+--==================================================--
+-----------------    [[ Script ]]    -----------------
+--==================================================--
+
+	-- Alt+right click to drag frame
+	OTFMove:SetScript("OnDragStart", function(self, button)
+		if IsAltKeyDown() then
+			local frame = self:GetParent()
+			frame:StartMoving()
+		end
+	end)
+	OTFMove:SetScript("OnDragStop", function(self, button)
+		local frame = self:GetParent()
+		frame:StopMovingOrSizing()
+	end)
+	-- Show tooltip for drag
+	OTFMove:SetScript("OnEnter", function(self)
+		createOTFTooltip(self)
+	end)
+	OTFMove:SetScript("OnLeave", function(self)
+		GameTooltip:Hide()
+	end)
+
 	-- Let It Work / 使其工作
 	Minimize:HookScript("OnEnter", function()
 		Minimize.minus:SetTextColor(.7, .5, 0)
@@ -109,134 +245,25 @@ local Minimize = OTF.HeaderMenu.MinimizeButton
 		Minimize.plus:Hide()
 		Minimize.minus:Show()
 	end)
-
--- Close Title / 收起後的標題
-local Title = OTF.HeaderMenu.Title
-	Title:SetFont(G.font, G.obfontSize, G.obfontFlag)
-	Title:SetTextColor(1, .75, 0)
-	Title:SetShadowOffset(0, 0)
-	Title:SetShadowColor(0, 0, 0, 1)
-	Title:ClearAllPoints()
-	Title:SetPoint("RIGHT", Minimize, "LEFT", 0, 0)
 	
---================================================--
------------------    [[ Misc ]]    -----------------
---================================================--
+--=================================================--
+-----------------    [[ Load ]]    -----------------
+--=================================================--
 
--- [[ Quick Click: Alt to Share, Ctrl to Abandon / 快速按鍵：alt分享ctrl放棄 ]]--
-
-local function QuestHook(id)
-local questLogIndex = GetQuestLogIndexByID(id)
-	if IsControlKeyDown() and CanAbandonQuest(id) then
-		QuestMapQuestOptions_AbandonQuest(id)
-	elseif IsAltKeyDown() and GetQuestLogPushable(questLogIndex) then
-		QuestMapQuestOptions_ShareQuest(id)
-	end
+-- Reset / 重置
+SlashCmdList["RESETQUEST"] = function() 
+	OTF:SetUserPlaced(false)
+	updateOTFPos()
+	OTF:SetUserPlaced(true)
 end
-hooksecurefunc(QUEST_TRACKER_MODULE, "OnBlockHeaderClick", function(self, block)
-	QuestHook(block.id)
-end)
-hooksecurefunc("QuestMapLogTitleButton_OnClick", function(self)
-	QuestHook(self.questID)
-end)
+SLASH_RESETQUEST1 = "/resetobjective"
+SLASH_RESETQUEST2 = "/ro"
 
---================================================--
------------------    [[ Skin ]]    -----------------
---================================================--
-
--- [[ main title / 大標題 ]] --
-
-local function reskinHeader(header)
-	-- hide background
-	header.Background:SetAtlas(nil)
-	header.Background:Hide()
-	
-	-- set text style
-	header.Text:SetFont(G.font, G.obfontSize, G.obfontFlag)
-	header.Text:SetTextColor(1, .75, 0)
-	header.Text:SetShadowColor(0, 0, 0, 1)
-	header.Text:SetShadowOffset(0, 0)
-	header.Text:SetWordWrap(false)
-	
-	header.Text:ClearAllPoints()
-	header.Text:SetPoint("RIGHT", header, -5, 0)
-	header.Text:SetJustifyH("RIGHT")
+local function OnEvent()
+	setOTF()
+	styleQuestBlock()
 end
 
-local headers = {
-	ObjectiveTrackerBlocksFrame.QuestHeader,
-	ObjectiveTrackerBlocksFrame.AchievementHeader,
-	ObjectiveTrackerBlocksFrame.ScenarioHeader,
-	BONUS_OBJECTIVE_TRACKER_MODULE.Header,
-	WORLD_QUEST_TRACKER_MODULE.Header,
-}
-for _, header in pairs(headers) do
-	reskinHeader(header)
-end
-
--- [[ quest title / 任務標題 ]] --
-
-hooksecurefunc(QUEST_TRACKER_MODULE, "SetBlockHeader", function(_, block)
-	block.HeaderText:SetFont(G.font, G.obfontSize - 2, G.obfontFlag)
-	block.HeaderText:SetShadowColor(0, 0, 0, 1)
-	block.HeaderText:SetShadowOffset(0, 0)
-	block.HeaderText:SetWordWrap(false)
-	block.HeaderText:SetTextColor(G.Ccolors.r, G.Ccolors.g, G.Ccolors.b)
-	block.HeaderText:SetJustifyH("LEFT")
-end)
-
-local function hoverquest(_, block)
-	block.HeaderText:SetTextColor(G.Ccolors.r, G.Ccolors.g, G.Ccolors.b)
-end
-
-hooksecurefunc(QUEST_TRACKER_MODULE, "OnBlockHeaderLeave", hoverquest)
-
--- [[ achievement title / 成就標題 ]] --
-
-hooksecurefunc(ACHIEVEMENT_TRACKER_MODULE, "SetBlockHeader", function(_, block)
-	local trackedAchievements = {GetTrackedAchievements()}
-
-	for i = 1, #trackedAchievements do
-		local achieveID = trackedAchievements[i]
-		local _, achievementName, _, completed, _, _, _, description, _, icon, _, _, wasEarnedByMe = GetAchievementInfo(achieveID)
-
-		if not wasEarnedByMe then
-			block.HeaderText:SetFont(G.font, G.obfontSize - 2, G.obfontFlag)
-			block.HeaderText:SetShadowColor(0, 0, 0, 1)
-			block.HeaderText:SetShadowOffset(0, 0)
-			block.HeaderText:SetWordWrap(false)
-			block.HeaderText:SetTextColor(G.Ccolors.r, G.Ccolors.g, G.Ccolors.b)
-			block.HeaderText:SetJustifyH("LEFT")
-		end
-	end
-end)
-
-local function hoverachieve(_, block)
-	block.HeaderText:SetTextColor(G.Ccolors.r, G.Ccolors.g, G.Ccolors.b)
-end
-
-hooksecurefunc(ACHIEVEMENT_TRACKER_MODULE, "OnBlockHeaderLeave", hoverachieve)
-
--- [[ 細項與內文 ]] --
-
-hooksecurefunc(DEFAULT_OBJECTIVE_TRACKER_MODULE, "AddObjective", function(self, block, objectiveKey, _, lineType)
-	local line = self:GetLine(block, objectiveKey, lineType)
-	
-	line.Text:SetFont(G.font, G.obfontSize - 4, G.obfontFlag)
-	line.Text:SetShadowColor(0, 0, 0, 1)
-	line.Text:SetShadowOffset(0, 0)
-	line.Text:SetWidth(OTF:GetWidth() - 25)
-		
-	if line.Dash and line.Dash:IsShown() then
-		line.Dash:SetFont(G.font, G.obfontSize - 2, G.obfontFlag)
-		
-		if C.star then
-			line.Dash:SetText("★ ")
-		else
-			line.Dash:SetText("-")
-		end
-		
-		line.Dash:SetShadowColor(0, 0, 0, 1)
-		line.Dash:SetShadowOffset(0, 0)
-	end
-end)
+local frame = CreateFrame("FRAME")
+	frame:RegisterEvent("PLAYER_LOGIN")
+	frame:SetScript("OnEvent", OnEvent)
