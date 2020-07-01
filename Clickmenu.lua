@@ -1,11 +1,7 @@
 local C, G = unpack(select(2, ...))
-
 if not C.ClickMenu then return end
 
--- [[ Credit ]] --
-
--- NeavUI by Neal: https://www.wowinterface.com/downloads/info13981-NeavUI.html#info
--- ClickMenu by 10leej: https://www.wowinterface.com/downloads/info22660-ClickMenu.html
+local Minimap, InCombatLockdown = Minimap, InCombatLockdown
 
 --  [[ Click Menu ]] --
 
@@ -24,7 +20,11 @@ local menuList = {
 		text = CHARACTER_BUTTON,
 		icon = "Interface\\PaperDollInfoFrame\\UI-EquipmentManager-Toggle",
 		func = function()
-			securecall(ToggleCharacter, "PaperDollFrame") 
+			if InCombatLockdown() then
+				UIErrorsFrame:AddMessage("|cffff0000"..ERR_NOT_IN_COMBAT.."|r")
+				return
+			end
+			securecall(ToggleCharacter, "PaperDollFrame")
 		end,
 		notCheckable = true,
 	},
@@ -33,8 +33,11 @@ local menuList = {
 	{
 		text = SPELLBOOK_ABILITIES_BUTTON,
 		icon = "Interface\\MINIMAP\\TRACKING\\Class",
-		func = function() 
-			--securecall(ToggleSpellBook, SpellBookFrame)
+		func = function()
+			if InCombatLockdown() then
+				UIErrorsFrame:AddMessage("|cffff0000"..ERR_NOT_IN_COMBAT.."|r")
+				return
+			end
 			if not SpellBookFrame:IsShown() then
 				ShowUIPanel(SpellBookFrame)
 			else
@@ -49,21 +52,29 @@ local menuList = {
 		text = TALENTS_BUTTON,
 		icon = "Interface\\MINIMAP\\TRACKING\\Ammunition",
 		func = function() 
-			if (not PlayerTalentFrame) then
+			if InCombatLockdown() then
+				UIErrorsFrame:AddMessage("|cffff0000"..ERR_NOT_IN_COMBAT.."|r")
+				return
+			end
+			if not PlayerTalentFrame then
 				LoadAddOn("Blizzard_TalentUI")
 			end
-			if (not GlyphFrame) then
+			if not GlyphFrame then
 				LoadAddOn("Blizzard_GlyphUI")
 			end
 			securecall(ToggleFrame, PlayerTalentFrame)
 		end,
 		notCheckable = true,
 	},
-	{		-- 成就
+	{	-- 成就
 		text = ACHIEVEMENT_BUTTON,
 		icon = "Interface\\ACHIEVEMENTFRAME\\UI-Achievement-Shield",
 		func = function() 
-			securecall(ToggleAchievementFrame) 
+			if InCombatLockdown() then
+				UIErrorsFrame:AddMessage("|cffff0000"..ERR_NOT_IN_COMBAT.."|r")
+				return
+			end
+			securecall(ToggleAchievementFrame)
 		end,
 		notCheckable = true,
 	},
@@ -80,6 +91,10 @@ local menuList = {
 		icon = "Interface\\FriendsFrame\\UI-Toast-ChatInviteIcon",
 		arg1 = IsInGuild("player"),
 		func = function() 
+			if InCombatLockdown() then
+				UIErrorsFrame:AddMessage("|cffff0000"..ERR_NOT_IN_COMBAT.."|r")
+				return
+			end
 			ToggleCommunitiesFrame()
 		end,
 		notCheckable = true,
@@ -89,7 +104,11 @@ local menuList = {
 		icon = "Interface\\GossipFrame\\TabardGossipIcon",
 		arg1 = IsInGuild("player"),
 		func = function() 
-			if (not GuildFrame) then
+			if InCombatLockdown() then
+				UIErrorsFrame:AddMessage("|cffff0000"..ERR_NOT_IN_COMBAT.."|r")
+				return
+			end
+			if not GuildFrame then
 				LoadAddOn("Blizzard_GuildUI")
 			end
 			--GuildFrame_Toggle()
@@ -101,6 +120,10 @@ local menuList = {
 		text = SOCIAL_BUTTON,
 		icon = "Interface\\FriendsFrame\\PlusManz-BattleNet",
 		func = function() 
+			if InCombatLockdown() then
+				UIErrorsFrame:AddMessage("|cffff0000"..ERR_NOT_IN_COMBAT.."|r")
+				return
+			end
 			securecall(ToggleFriendsFrame, 1) 
 		end,
 		notCheckable = true,
@@ -109,6 +132,10 @@ local menuList = {
 		text = GROUP_FINDER,	-- DUNGEONS_BUTTON
 		icon = "Interface\\LFGFRAME\\BattleNetWorking0",
 		func = function() 
+			if InCombatLockdown() then
+				UIErrorsFrame:AddMessage("|cffff0000"..ERR_NOT_IN_COMBAT.."|r")
+				return
+			end
 			securecall(ToggleLFDParentFrame)	--OR securecall(PVEFrame_ToggleFrame, "GroupFinderFrame")
 		end,
 		notCheckable = true,
@@ -118,7 +145,8 @@ local menuList = {
 		icon = "Interface\\MINIMAP\\TRACKING\\Reagents",
 		func = function() 
 			if InCombatLockdown() then
-				print("|cffffff00"..ERR_NOT_IN_COMBAT.."|r") return
+				UIErrorsFrame:AddMessage("|cffffff00"..ERR_NOT_IN_COMBAT.."|r")
+				return
 			end
 			securecall(ToggleCollectionsJournal, 1)
 		end,
@@ -128,6 +156,10 @@ local menuList = {
 		text = ADVENTURE_JOURNAL,	-- OLD: ENCOUNTER_JOURNAL
 		icon = "Interface\\MINIMAP\\TRACKING\\Profession",
 		func = function() 
+			if InCombatLockdown() then
+				UIErrorsFrame:AddMessage("|cffff0000"..ERR_NOT_IN_COMBAT.."|r")
+				return
+			end
 			securecall(ToggleEncounterJournal)
 		end,
 		notCheckable = true,
@@ -136,7 +168,7 @@ local menuList = {
 		text = BLIZZARD_STORE,
 		icon = "Interface\\MINIMAP\\TRACKING\\Auctioneer",
 		func = function()
-			if (not StoreFrame) then
+			if not StoreFrame then
 				LoadAddOn("Blizzard_StoreUI")
 			end
 			securecall(ToggleStoreUI)
@@ -165,9 +197,11 @@ local menuList = {
 		text = GARRISON_LANDING_PAGE_TITLE,
 		icon = "Interface\\HELPFRAME\\OpenTicketIcon",
 		func = function()			
+			if InCombatLockdown() then
+				UIErrorsFrame:AddMessage("|cffff0000"..ERR_NOT_IN_COMBAT.."|r")
+				return
+			end
 			securecall(ShowGarrisonLandingPage, 2)
-			--HideUIPanel(GarrisonLandingPage)
-			--ShowGarrisonLandingPage(LE_GARRISON_TYPE_6_0)
 		end,
 		notCheckable = true,
 	},
@@ -175,9 +209,11 @@ local menuList = {
 		text = ORDER_HALL_LANDING_PAGE_TITLE,
 		icon = "Interface\\GossipFrame\\WorkOrderGossipIcon",
 		func = function()			
+			if InCombatLockdown() then
+				UIErrorsFrame:AddMessage("|cffff0000"..ERR_NOT_IN_COMBAT.."|r")
+				return
+			end
 			securecall(ShowGarrisonLandingPage, 3)
-			--HideUIPanel(GarrisonLandingPage)
-			--ShowGarrisonLandingPage(LE_GARRISON_TYPE_6_0)
 		end,
 		notCheckable = true,
 	},
@@ -185,6 +221,10 @@ local menuList = {
 		text = PLAYER_V_PLAYER,
 		icon = "Interface\\MINIMAP\\TRACKING\\BattleMaster",
 		func = function() 
+			if InCombatLockdown() then
+				UIErrorsFrame:AddMessage("|cffff0000"..ERR_NOT_IN_COMBAT.."|r")
+				return
+			end
 			securecall(TogglePVPUI, 1) 
 		end,
 		notCheckable = true,
@@ -193,6 +233,10 @@ local menuList = {
 		text = RAID,
 		icon = "Interface\\TARGETINGFRAME\\UI-TargetingFrame-Skull",
 		func = function() 
+			if InCombatLockdown() then
+				UIErrorsFrame:AddMessage("|cffff0000"..ERR_NOT_IN_COMBAT.."|r")
+				return
+			end
 			securecall(ToggleFriendsFrame, 3)
 		end,
 		notCheckable = true,
@@ -201,6 +245,10 @@ local menuList = {
 		text = GM_EMAIL_NAME,
 		icon = "Interface\\CHATFRAME\\UI-ChatIcon-Blizz",
 		func = function() 
+			if InCombatLockdown() then
+				UIErrorsFrame:AddMessage("|cffff0000"..ERR_NOT_IN_COMBAT.."|r")
+				return
+			end
 			securecall(ToggleHelpFrame) 
 		end,
 		notCheckable = true,
@@ -208,6 +256,10 @@ local menuList = {
 	{	-- 行事曆
 		text = SLASH_CALENDAR1:gsub("/(.*)","%1"),	-- 沒有合適的global strings，而且也無法通用全語系本地化，只能將就
 		func = function()
+			if InCombatLockdown() then
+				UIErrorsFrame:AddMessage("|cffff0000"..ERR_NOT_IN_COMBAT.."|r")
+				return
+			end
 			if not CalendarFrame then 
 				LoadAddOn("Blizzard_Calendar") 
 			end
@@ -268,10 +320,10 @@ Minimap:SetScript("OnMouseUp", function(self, button)
 	end
 end)
 
--- avoid taint / 避免taint
+-- avoid spellbook taint / 避免taint
 local initialize = CreateFrame("Frame")
-initialize:SetScript("OnEvent", function()
-	ShowUIPanel(SpellBookFrame)
-	HideUIPanel(SpellBookFrame)
-end)
-initialize:RegisterEvent("PLAYER_ENTERING_WORLD")
+	initialize:SetScript("OnEvent", function()
+		ShowUIPanel(SpellBookFrame)
+		HideUIPanel(SpellBookFrame)
+	end)
+	initialize:RegisterEvent("PLAYER_ENTERING_WORLD")
