@@ -1,13 +1,14 @@
-local C, G = unpack(select(2, ...))
-local Minimap = Minimap
-local myAnchor = string.sub(unpack(C.Point), -4)	-- get minimap anchor left or rignt
-local iconAnchor = not not (myAnchor == "LEFT")		-- hope±Ğ§Úªº»yªk¿}
+local addon, ns = ...
+local C, F, G, L = unpack(ns)
+local Minimap, unpack, sub = Minimap, unpack, string.sub
+local myAnchor = sub(unpack(C.Point), -4)		-- get minimap anchor left or rignt
+local iconAnchor = not not (myAnchor == "LEFT")	-- hopeæ•™æˆ‘çš„èªæ³•ç³–
 
 --====================================================--
 -----------------    [[ Function ]]    -----------------
 --====================================================--
 
--- Create font style / ¦r«¬
+-- Create font style / å­—å‹
 local function CreateFS(parent, justify)
 	local frame = parent:CreateFontString(nil, "OVERLAY")
 	
@@ -26,7 +27,7 @@ end
 -----------------    [[ Core ]]    -----------------
 --================================================--
 
--- [[ Make A Square for minimap icon / §Ë¦¨¤è«¬ ]] --
+-- [[ Make A Square for minimap icon / å¼„æˆæ–¹å‹ ]] --
 
 function GetMinimapShape()
 	return "SQUARE"
@@ -45,8 +46,8 @@ local function CreateShadow()
 		MinimapSD:SetPoint("BOTTOMRIGHT", Minimap, 5, -5)
 		MinimapSD:SetFrameLevel(Minimap:GetFrameLevel() == 0 and 0 or Minimap:GetFrameLevel()-1)
 		MinimapSD:SetBackdrop({
-			edgeFile = G.Glow,	-- ³±¼vÃä®Ø
-			edgeSize = 5,	-- Ãä®Ø¤j¤p
+			edgeFile = G.Glow,	-- é™°å½±é‚Šæ¡†
+			edgeSize = 5,	-- é‚Šæ¡†å¤§å°
 		})
 		MinimapSD:SetBackdropBorderColor(0, 0, 0, 1)
 		MinimapSD:Show()
@@ -64,6 +65,7 @@ end
 
 local function setMinimap()
 	updateMinimapPos()
+	Minimap:SetClampedToScreen(true)
 	Minimap:SetMovable(true)
 	Minimap:EnableMouse(true)
 	Minimap:RegisterForDrag("RightButton")
@@ -76,47 +78,49 @@ local function setMinimap()
 	Minimap:SetArchBlobRingScalar(0)
 	Minimap:SetQuestBlobRingScalar(0)
 	
-	-- Hide Blizzard / ÁôÂÃ¼É³·ªºÃø«×ºX¤l
+	-- Hide Blizzard / éš±è—æš´é›ªçš„é›£åº¦æ——å­
 	MiniMapInstanceDifficulty:Hide()
 	MiniMapInstanceDifficulty.Show = function() return end
 	GuildInstanceDifficulty:Hide()
 	GuildInstanceDifficulty.Show = function() return end
 
-	-- Hide all frames / ÁôÂÃ¦UºØ
+	-- Hide all frames / éš±è—å„ç¨®
+	local dummy = function() end
 	local hideAll = {
-		"MinimapBorder",			-- ¤j°é
+		"MinimapBorder",			-- å¤§åœˆ
 		"MinimapBorderTop",
-		"MinimapNorthTag",			-- «ü¥_°w
-		"MiniMapWorldMapButton",	-- ¥@¬É¦a¹Ï
-		"MinimapZoneTextButton",	-- °Ï°ì¦W¦r
-		"MinimapZoomIn",			-- ©ñ¤j
-		"MinimapZoomOut",			-- ÁY¤p
-		"GameTimeFrame",			-- ®É¶¡
+		"MinimapNorthTag",			-- æŒ‡åŒ—é‡
+		"MiniMapWorldMapButton",	-- ä¸–ç•Œåœ°åœ–
+		"MinimapZoneTextButton",	-- å€åŸŸåå­—
+		"MinimapZoomIn",			-- æ”¾å¤§
+		"MinimapZoomOut",			-- ç¸®å°
+		"GameTimeFrame",			-- æ™‚é–“
 		"MiniMapTracking",
 		"ZoneTextFrame",
 		"SubZoneTextFrame",
 		"MiniMapChallengeMode",
-		"DurabilityFrame",			-- ¸Ë³Æ­@¤[
+		"DurabilityFrame",			-- è£å‚™è€ä¹…
 		"VehicleSeatIndicator",
+		"GarrisonLandingPageMinimapButton",
 	}
 	
 	for i, v in pairs(hideAll) do
-		getglobal(v).Show = function() end
+		getglobal(v).Show = dummy
 		getglobal(v):Hide()
 	end
 	
-	-- Queue Button / ¦î¦C¹Ï¥Ü
+	-- Queue Button / ä½‡åˆ—åœ–ç¤º
 	QueueStatusMinimapButton:ClearAllPoints()
 	QueueStatusMinimapButton:SetParent(Minimap)
 	QueueStatusMinimapButton:SetPoint(iconAnchor and "TOPRIGHT" or "TOPLEFT", Minimap, 0, 0)
 	QueueStatusMinimapButtonBorder:Hide()
 	QueueStatusMinimapButton:SetFrameLevel(10)
 	
-	-- Queue Tooltip fix / ¦î¦C¹Ï¥Ü´£¥Ü
+	-- Queue Tooltip fix / ä½‡åˆ—åœ–ç¤ºæç¤º
 	QueueStatusFrame:ClearAllPoints()
 	QueueStatusFrame:SetPoint(iconAnchor and "TOPRIGHT"or "TOPLEFT", Minimap, iconAnchor and "TOPRIGHT" or "TOPLEFT", 282, -10)
 	
-	-- Mail Frame / «H¥ó´£¥Ü
+	-- Mail Frame / ä¿¡ä»¶æç¤º
 	MiniMapMailFrame:ClearAllPoints()
 	MiniMapMailFrame:SetParent(Minimap)
 	MiniMapMailFrame:SetPoint(iconAnchor and "BOTTOMLEFT" or "BOTTOMRIGHT", Minimap, 0, 0)
@@ -162,7 +166,7 @@ local function createGarrisonTooltip(self)
 	GameTooltip:SetOwner(self, "ANCHOR_BOTTOM", (Minimap:GetWidth() * .7), -3)
 	GameTooltip:AddLine(CHARACTER)
 	GameTooltip:AddLine(" ")
-	
+
 	-- Experience
 	if UnitLevel("player") < MAX_PLAYER_LEVEL and not IsXPUserDisabled() then
 		local cur, max = UnitXP("player"), UnitXPMax("player")
@@ -223,7 +227,7 @@ local Diff = CreateFrame("Frame", "EKMinimapDungeonIcon", Minimap)
 	Diff.Texture:SetVertexColor(G.Ccolors.r, G.Ccolors.g, G.Ccolors.b)
 
 local function styleDifficulty(self)
-	-- Difficulty Text / Ãø«×¤å¦r
+	-- Difficulty Text / é›£åº¦æ–‡å­—
 	local DiffText = CreateFS(Diff, "CENTER")
 	DiffText:SetPoint("CENTER")
 	
@@ -241,7 +245,7 @@ local function styleDifficulty(self)
 			DiffText:SetText("10N")
 		elseif difficulty == 4 then
 			DiffText:SetText("25N")
-		-- 5 ´¶³q¤Q¤H 153 ¤Q¤H®ü®q
+		-- 5 æ™®é€šåäºº 153 åäººæµ·å³¶
 		elseif difficulty == 5 then
 			DiffText:SetText("10H")
 		elseif difficulty == 6 then
@@ -254,13 +258,13 @@ local function styleDifficulty(self)
 			DiffText:SetText("M"..mplus)	
 		elseif difficulty == 9 then
 			DiffText:SetText("40R")
-		-- 11 MOP­^¶¯¨Æ¥ó 39 BFA­^¶¯®üÀ¬
+		-- 11 MOPè‹±é›„äº‹ä»¶ 39 BFAè‹±é›„æµ·å¶¼
 		elseif difficulty == 11	or difficulty == 39 then
 		DiffText:SetText("3H")
-		-- 12 MOP´¶³q¨Æ¥ó 38 BFA´¶³q®üÀ¬
+		-- 12 MOPæ™®é€šäº‹ä»¶ 38 BFAæ™®é€šæµ·å¶¼
 		elseif difficulty == 12 and difficulty == 38 then 
 			DiffText:SetText("3N")
-		-- 40 BFA¶Ç©_®üÀ¬
+		-- 40 BFAå‚³å¥‡æµ·å¶¼
 		elseif difficulty == 40 then 
 			DiffText:SetText("3M")
 		-- Flex normal raid
@@ -275,24 +279,24 @@ local function styleDifficulty(self)
 		-- LFR
 		elseif difficulty == 17	then
 			DiffText:SetText(num .. "L")
-		-- 18 Event 19 Event 20 Event Scenario(¼@±¡¨Æ¥ó) 30 Event 152 ¤Û¶H
+		-- 18 Event 19 Event 20 Event Scenario(åŠ‡æƒ…äº‹ä»¶) 30 Event 152 å¹»è±¡
 		elseif difficulty == 18 or difficulty == 19 or difficulty == 20 or difficulty == 30 then
 			DiffText:SetText("E")
 		elseif difficulty == 23	then
 			DiffText:SetText("5M")
-		-- 24 Timewalking(¦a«°®É¥ú) 33 Timewalking(¹Î¶¤®É¥ú) 151 ÀH¾÷¹Î¶¤®É¥ú
+		-- 24 Timewalking(åœ°åŸæ™‚å…‰) 33 Timewalking(åœ˜éšŠæ™‚å…‰) 151 éš¨æ©Ÿåœ˜éšŠæ™‚å…‰
 		elseif difficulty == 24 or difficulty == 33 then
 			DiffText:SetText("T")
 		-- 25 World PvP Scenario 32 World PvP Scenario 34 PVP 45 PVP
 		elseif difficulty == 25 or difficulty == 32 or difficulty == 34 or difficulty == 45 then
 			DiffText:SetText("PVP")
-		-- 29 pvevp¨Æ¥ó(³o¤°»òª±·N?)
+		-- 29 pvevpäº‹ä»¶(é€™ä»€éº¼ç©æ„?)
 		elseif difficulty == 29 then
 			DiffText:SetText("PvEvP")
-		-- 147 ´¶³q¾Ôª§«e½u
+		-- 147 æ™®é€šæˆ°çˆ­å‰ç·š
 		elseif difficulty == 147 then
 		DiffText:SetText("WF")
-		-- 147 ­^¶¯¾Ôª§«e½u
+		-- 147 è‹±é›„æˆ°çˆ­å‰ç·š
 		elseif difficulty == 149 then
 			DiffText:SetText("HWF")
 		end
@@ -386,7 +390,6 @@ end
 
 	Diff:RegisterEvent("PLAYER_ENTERING_WORLD")
 	Diff:RegisterEvent("PLAYER_DIFFICULTY_CHANGED")
-	Diff:RegisterEvent("GUILD_PARTY_STATE_UPDATED")
 	Diff:RegisterEvent("INSTANCE_GROUP_SIZE_CHANGED")
 	Diff:RegisterEvent("ZONE_CHANGED_NEW_AREA")
 	Diff:RegisterEvent("CHALLENGE_MODE_START")
@@ -398,14 +401,14 @@ end
 -----------------    [[ Load ]]    -----------------
 --=================================================--
 
--- Reset size / ­«¸m
-SlashCmdList["RESETMINIMAP"] = function()
+-- Reset size / é‡ç½®
+SlashCmdList["RESETSCALE"] = function()
 	updateMinimapSize()
 end
-SLASH_RESETMINIMAP1 = "/resetminimap"
-SLASH_RESETMINIMAP2 = "/rms"
+SLASH_RESETSCALE1 = "/resetscale"
+SLASH_RESETSCALE2 = "/rms"
 
--- Reset position / ­«¸m
+-- Reset position / é‡ç½®
 SlashCmdList["RESETMINIMAP"] = function()
 	updateMinimapPos()
 end
@@ -413,13 +416,15 @@ SLASH_RESETMINIMAP1 = "/resetminimap"
 SLASH_RESETMINIMAP2 = "/rm"
 
 local function OnEvent(self, event, addon)
-	-- Hide Clock / ÁôÂÃ®ÉÄÁ
+	-- Hide Clock / éš±è—æ™‚é˜
 	if event == "ADDON_LOADED" and addon == "Blizzard_TimeManager" then
 		TimeManagerClockButton:Hide()
 		TimeManagerClockButton:SetScript("OnShow", function(self)
 			TimeManagerClockButton:Hide()
 		end)
 		CreateShadow()
+		
+		self:UnregisterEvent("ADDON_LOADED")
 	else
 		whoPing()
 		setMinimap()

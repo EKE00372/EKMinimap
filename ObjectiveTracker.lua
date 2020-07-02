@@ -1,4 +1,5 @@
-local C, G = unpack(select(2, ...))
+local addon, ns = ...
+local C, F, G, L = unpack(ns)
 if not C.ObjectTracker then return end
 
 local OTF = ObjectiveTrackerFrame
@@ -23,7 +24,7 @@ local function setOTF()
 	OTF:SetClampedToScreen(true)
 	OTF:SetHeight(C.Height)
 	OTF:SetMovable(true)
-	OTF:EnableMouse(true)
+	--OTF:EnableMouse(true)
 	OTF:SetUserPlaced(true)
 end
 
@@ -116,7 +117,7 @@ local function styleQuestBlock()
 		if line.Dash and line.Dash:IsShown() then
 			line.Dash:SetFont(G.font, G.obfontSize - 2, G.obfontFlag)
 			
-			if C.star then
+			if C.Star then
 				line.Dash:SetText("★ ")
 			else
 				line.Dash:SetText("-")

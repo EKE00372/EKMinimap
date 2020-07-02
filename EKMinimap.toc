@@ -1,8 +1,9 @@
-## Interface: 80200
+## Interface: 80300
 ## Title: |cff00ffffEK|rMinimap
-## Version: R1.4
+## Version: R2
 ## Author: EK
 ## Notes: A square minimap.
+## SavedVariables: EKPlateDB
 ## X-Credits: Ooglogput, Chiril, ape47, sakaras, Siweia, Paopao
 
 Config.lua
