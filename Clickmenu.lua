@@ -1,4 +1,5 @@
-local C, G = unpack(select(2, ...))
+local addon, ns = ...
+local C, F, G, L = unpack(ns)
 if not C.ClickMenu then return end
 
 local Minimap, InCombatLockdown = Minimap, InCombatLockdown
