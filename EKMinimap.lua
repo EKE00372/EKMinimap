@@ -1,8 +1,6 @@
 local addon, ns = ...
 local C, F, G, L = unpack(ns)
 local Minimap, unpack, sub = Minimap, unpack, string.sub
-local myAnchor = sub(unpack(C.Point), -4)		-- get minimap anchor left or rignt
-local iconAnchor = not not (myAnchor == "LEFT")	-- hope教我的語法糖
 
 --====================================================--
 -----------------    [[ Function ]]    -----------------
@@ -33,7 +31,6 @@ function GetMinimapShape()
 	return "SQUARE"
 end
 
-
 --====================-==============================--
 -----------------    [[ Minimap ]]    -----------------
 --===================================================--
@@ -55,11 +52,12 @@ end
 
 local function updateMinimapPos()
 	Minimap:ClearAllPoints()
-	Minimap:SetPoint(unpack(C.Point))
+	--Minimap:SetPoint(unpack(C.Point))
+	Minimap:SetPoint(EKMinimapDB["MinimapAnchor"], UIParent, EKMinimapDB["MinimapX"], EKMinimapDB["MinimapY"])
 end
 
 local function updateMinimapSize()
-	Minimap:SetSize(C.Size, C.Size)
+	Minimap:SetSize(EKMinimapDB["MinimapSize"], EKMinimapDB["MinimapSize"])
 	Minimap:SetScale(1)
 end
 
@@ -108,6 +106,10 @@ local function setMinimap()
 		getglobal(v).Show = dummy
 		getglobal(v):Hide()
 	end
+	
+	local anchor = EKMinimapDB["MinimapAnchor"]
+	local myAnchor = sub(anchor, -4)				-- get minimap anchor left or rignt
+	local iconAnchor = not not (myAnchor == "LEFT")	-- hope教我的語法糖
 	
 	-- Queue Button / 佇列圖示
 	QueueStatusMinimapButton:ClearAllPoints()

@@ -1,7 +1,5 @@
 local addon, ns = ...
 local C, F, G, L = unpack(ns)
-if not C.ClickMenu then return end
-
 local Minimap, InCombatLockdown = Minimap, InCombatLockdown
 
 --  [[ Click Menu ]] --
@@ -310,17 +308,24 @@ local menuList = {
 	},
 }
 
--- Right Click for Game Menu, Left Click for Track Menu / 右鍵遊戲選單，中鍵追蹤選單
-Minimap:SetScript("OnMouseUp", function(self, button)
-	if button == "RightButton" then
-		EasyMenu(menuList, menuFrame, self, (Minimap:GetWidth() * .7), -3, "MENU", 2)
-	elseif button == "MiddleButton" then
-		ToggleDropDownMenu(1, nil, MiniMapTrackingDropDown, self, (Minimap:GetWidth() * .7), -3, nil, nil, 2)
-	else
-		Minimap_OnClick(self)
-	end
-end)
+local function OnEvent()
+	if not EKMinimapDB["ClickMenu"] then return end
+	-- Right Click for Game Menu, Left Click for Track Menu / 右鍵遊戲選單，中鍵追蹤選單
+	Minimap:SetScript("OnMouseUp", function(self, button)
+		if button == "RightButton" then
+			EasyMenu(menuList, menuFrame, self, (Minimap:GetWidth() * .7), -3, "MENU", 2)
+		elseif button == "MiddleButton" then
+			ToggleDropDownMenu(1, nil, MiniMapTrackingDropDown, self, (Minimap:GetWidth() * .7), -3, nil, nil, 2)
+		else
+			Minimap_OnClick(self)
+		end
+	end)
+end
 
+local frame = CreateFrame("FRAME")
+frame:RegisterEvent("PLAYER_LOGIN")
+frame:SetScript("OnEvent", OnEvent)
+	
 -- avoid spellbook taint / 避免taint
 local initialize = CreateFrame("Frame")
 	initialize:SetScript("OnEvent", function()
