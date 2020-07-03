@@ -4,7 +4,7 @@
 ## Author: EK
 ## Notes: A square minimap.
 ## SavedVariables: EKMinimapDB
-## X-Credits: Ooglogput, Chiril, ape47, sakaras, Siweia, Paopao
+## X-Credits: Ooglogput, Chiril, ape47, sakaras, Siweia, Paopao, HopeASD
 
 Config.lua
 EKMinimap.lua

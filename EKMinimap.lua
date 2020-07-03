@@ -132,7 +132,6 @@ local function setMinimap()
 end
 	
 local function OnMouseWheel(self, delta)
-
 	if IsAltKeyDown() then
 		local i = Minimap:GetScale()
 		 if delta > 0 and i < 4 then
@@ -161,10 +160,20 @@ local Stat = CreateFrame("Button", "EKMinimapTooltipButton", Minimap)
 	Stat:SetNormalTexture(G.Report)
 	Stat:SetPushedTexture(G.Report)
 	Stat:SetHighlightTexture(G.Report)
-	Stat:SetPoint(iconAnchor and "BOTTOMRIGHT" or "BOTTOMLEFT", Minimap, -3, 5)
+--	Stat:SetPoint(iconAnchor and "BOTTOMRIGHT" or "BOTTOMLEFT", Minimap, -3, 5)
 	Stat:SetAlpha(0)
 
+local function StatPos(self)
+	local anchor = EKMinimapDB["MinimapAnchor"]
+	local myAnchor = sub(anchor, -4)				-- get minimap anchor left or rignt
+	local iconAnchor = not not (myAnchor == "LEFT")
+	
+	self:SetPoint(iconAnchor and "BOTTOMRIGHT" or "BOTTOMLEFT", Minimap, -3, 5)
+end
+
 local function createGarrisonTooltip(self)
+	if not EKMinimapDB["CharacterIcon"] then return end
+	
 	GameTooltip:SetOwner(self, "ANCHOR_BOTTOM", (Minimap:GetWidth() * .7), -3)
 	GameTooltip:AddLine(CHARACTER)
 	GameTooltip:AddLine(" ")
@@ -372,6 +381,9 @@ end
 	end)
 	
 	-- [[ Icon ]] --
+	
+	Stat:RegisterEvent("PLAYER_ENTERING_WORLD")
+	Stat:SetScript("OnEvent", StatPos)
 	
 	Stat:SetScript("OnEnter", function(self)
 		createGarrisonTooltip(self)
