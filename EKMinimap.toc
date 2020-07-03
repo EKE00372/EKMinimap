@@ -3,7 +3,7 @@
 ## Version: R2
 ## Author: EK
 ## Notes: A square minimap.
-## SavedVariables: EKPlateDB
+## SavedVariables: EKMinimapDB
 ## X-Credits: Ooglogput, Chiril, ape47, sakaras, Siweia, Paopao
 
 Config.lua

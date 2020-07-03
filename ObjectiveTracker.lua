@@ -1,6 +1,5 @@
 local addon, ns = ...
 local C, F, G, L = unpack(ns)
-if not C.ObjectTracker then return end
 
 local OTF = ObjectiveTrackerFrame
 
@@ -16,16 +15,17 @@ end
 
 local function updateOTFPos()
 	OTF:ClearAllPoints()
-	OTF:SetPoint(unpack(C.OTF))
+	--OTF:SetPoint(unpack(C.OTF))
+	OTF:SetPoint(EKMinimapDB["ObjectiveAnchor"], UIParent, EKMinimapDB["ObjectiveX"], EKMinimapDB["ObjectiveY"])
 end
 
 local function setOTF()
-	updateOTFPos()
-	OTF:SetClampedToScreen(true)
-	OTF:SetHeight(C.Height)
 	OTF:SetMovable(true)
-	--OTF:EnableMouse(true)
 	OTF:SetUserPlaced(true)
+	OTF:SetClampedToScreen(true)
+	OTF:SetHeight(EKMinimapDB["ObjectiveHeight"])
+	updateOTFPos()
+	--OTF:EnableMouse(true)
 end
 
 --================================================--
@@ -117,7 +117,7 @@ local function styleQuestBlock()
 		if line.Dash and line.Dash:IsShown() then
 			line.Dash:SetFont(G.font, G.obfontSize - 2, G.obfontFlag)
 			
-			if C.Star then
+			if EKMinimapDB["ObjectiveStar"] then
 				line.Dash:SetText("★ ")
 			else
 				line.Dash:SetText("-")
@@ -261,6 +261,7 @@ SLASH_RESETQUEST1 = "/resetobjective"
 SLASH_RESETQUEST2 = "/ro"
 
 local function OnEvent()
+	if not EKMinimapDB["Objective"] then return end
 	setOTF()
 	styleQuestBlock()
 end
