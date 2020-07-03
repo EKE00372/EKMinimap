@@ -89,6 +89,7 @@ if GetLocale() == "zhTW" then
 	L.ObjectiveStarOpt = "使用 ★ 星星標記追蹤項目"
 	L.ObjectTrackerOpt = "啟用追蹤框美化"
 	L.ObjectHeightOpt = "追蹤框高度"
+	L.ObjectPosOpt = "追蹤框座標"
 elseif GetLocale() == "zhTW" then
 	L.ClickMenuOpt = "启用小地图点击菜单"
 	L.MinimapSizeOpt = "小地图尺寸"
@@ -98,6 +99,7 @@ elseif GetLocale() == "zhTW" then
 	L.ObjectiveStarOpt = "使用 ★ 星星标记追踪项目"
 	L.ObjectTrackerOpt = "启用追踪框美化"
 	L.ObjectHeightOpt = "追踪框高度"
+	L.ObjectPosOpt = "追踪框座标"
 else
 	L.ClickMenuOpt = "Enable minimap click menu"
 	L.MinimapSizeOpt = "Minimap size"
@@ -107,6 +109,7 @@ else
 	L.ObjectiveStarOpt = "Mark tracking objective as ★ star"
 	L.ObjectTrackerOpt = "Enable objective track style"
 	L.ObjectHeightOpt = "Objective tracker height"
+	L.ObjectPosOpt = "Objective tracker Position"
 end
 
 local optList = {
@@ -338,7 +341,6 @@ end
 
 local function CreateBar(self, name, width, height, min, max, step)
 	local s = CreateFrame("Slider", name.."Bar", self, "OptionsSliderTemplate")
-	s:SetPoint("TOPRIGHT", MainFrame, -30, -70)
 	s:SetSize(width, height)
 	_G[s:GetName().."Low"]:SetText(min)
 	_G[s:GetName().."High"]:SetText(max)
@@ -374,9 +376,10 @@ local function CreateOptions()
 	MainFrame:SetScript("OnDragStop", function() MainFrame:StopMovingOrSizing() end)
 	
 	local Title = CreateFS(MainFrame, "|cff00ffffEK|rMinimap", "TOP", 0, -10)
+	local Option = CreateFS(MainFrame, OPTIONS, "LEFT", 30, -40)
 	
 	local ClickMenuBox = CreateCheckBox(MainFrame)
-	ClickMenuBox:SetPoint("TOPLEFT", MainFrame, 30, -40)
+	ClickMenuBox:SetPoint("TOPLEFT", Option, 0, -30)
 	ClickMenuBox:SetChecked(EKMinimapDB["ClickMenu"] == true or false)
 	ClickMenuBox:SetScript("OnClick", function(self)
 		EKMinimapDB["ClickMenu"] = (self:GetChecked())
@@ -404,85 +407,16 @@ local function CreateOptions()
 	
 	local StarText = CreateFS(StarBox, L.ObjectiveStarOpt)
 	StarText:SetPoint("LEFT", StarBox, "RIGHT", 4, 0)
-	--[[
-	local EditOTFBox = CreateEditBox(MainFrame, 40, 20)
-	EditOTFBox:SetPoint("BOTTOM", StarBox, 2, -30)
-	EditOTFBox:SetAutoFocus(false)
-	EditOTFBox:SetText(EKMinimapDB["ObjectiveHeight"])
-	EditOTFBox:SetScript("OnEnterPressed", function(self)
-		local n = tonumber(self:GetText())
-		if n then
-			EKMinimapDB["ObjectiveHeight"] = n
-		end
-		self:ClearFocus()
-	end)
-    EditOTFBox:SetScript("OnEscapePressed", function(self)
-		self:SetText(EKMinimapDB["ObjectiveHeight"])
-	end)
-	
-	local EditOTFText = CreateFS(EditOTFBox, L.ObjectHeightOpt)
-	EditOTFText:SetPoint("LEFT", EditOTFBox, "RIGHT", 4, 0)]]--
-	--[[
-	local s = CreateFrame("Slider", nil, MainFrame, "OptionsSliderTemplate")
-	s:SetWidth(140)
-	s:SetMinMaxValues(100, 300)
-	s:SetPoint("TOP", EditOTFBox, "BOTTOM", s:GetWidth()/2, -30)
-	s:SetValue(EKMinimapDB["EKMinimapSize"])]]--
-	
-	--[[local s = CreateFrame("Slider", "SB", MainFrame, "OptionsSliderTemplate")
-	s:SetPoint("TOPRIGHT", MainFrame, -30, -70)
-	s:SetSize(160, 20)
-	_G[s:GetName().."Low"]:SetText("100")
-	_G[s:GetName().."High"]:SetText("300")
-	_G[s:GetName().."Text"]:ClearAllPoints()
-	
-	_G[s:GetName().."Text"]:SetPoint("BOTTOM", s, "TOP", 0, 5)
-	s:SetMinMaxValues(120, 300)
-	s:SetValue(EKMinimapDB["MinimapSize"])
-	s:SetObeyStepOnDrag(true)
-	s:SetValueStep(10)
-	s:SetOrientation("HORIZONTAL")
-	_G[s:GetName().."Text"]:SetText(L.MinimapSizeOpt.." "..EKMinimapDB["MinimapSize"])
-	s:SetScript("OnValueChanged", function(self)
-		local n = tonumber(self:GetValue())
-		if n then
-			EKMinimapDB["MinimapSize"] = n
-		end
-		_G[s:GetName().."Text"]:SetText(L.MinimapSizeOpt.." "..EKMinimapDB["MinimapSize"])
-	end)
-	]]--
-	local mapSizeBar = CreateBar(MainFrame, "Size", 160, 20, 120, 300, 10)
-	mapSizeBar:SetPoint("TOPRIGHT", MainFrame, -30, -70)
-	mapSizeBar:SetValue(EKMinimapDB["MinimapSize"])
-	
-	local mapSizeText = CreateFS(mapSizeBar, L.MinimapSizeOpt.." "..EKMinimapDB["MinimapSize"])
-	mapSizeText:SetPoint("BOTTOM", mapSizeBar, "TOP", 0, 5)
-	
-	mapSizeBar:SetScript("OnValueChanged", function(self)
-		local n = tonumber(self:GetValue())
-		if n then
-			EKMinimapDB["MinimapSize"] = n
-		end
-		mapSizeText:SetText(L.MinimapSizeOpt.." "..EKMinimapDB["MinimapSize"])
-	end)
-	
-	local otfHeightBar = CreateBar(MainFrame, "Height", 160, 20, 200, 1200, 100)
-	otfHeightBar:SetPoint("TOP", mapSizeBar, "BOTTOM", 0, -70)
-	otfHeightBar:SetValue(EKMinimapDB["ObjectiveHeight"])
-	
-	local otfHeightText = CreateFS(mapSizeBar, L.ObjectHeightOpt.." "..EKMinimapDB["ObjectiveHeight"])
-	otfHeightText:SetPoint("BOTTOM", otfHeightBar, "TOP", 0, 5)
-	
-	otfHeightBar:SetScript("OnValueChanged", function(self)
-		local n = tonumber(self:GetValue())
-		if n then
-			EKMinimapDB["ObjectiveHeight"] = n
-		end
-		otfHeightText:SetText(L.MinimapSizeOpt.." "..EKMinimapDB["ObjectiveHeight"])
-	end)
+		
+	-- minimap position
 	
 	local mapPosText = CreateFS(MainFrame, L.MinimapPosOpt)
-	mapPosText:SetPoint("LEFT", MainFrame, 30, 0)
+	mapPosText:SetPoint("TOPLEFT", MainFrame, 30, -40)
+	
+	local mapAnchor = CreateDropDown(MainFrame, 120, 20, optList)
+	mapAnchor:SetPoint("LEFT", mapPosText, 30, -30)
+	mapAnchor.Text = CreateFS(mapAnchor, EKMinimapDB["MinimapAnchor"])
+	mapAnchor.Text:SetPoint("CENTER", mapAnchor, 0, 0)
 	
 	local mapXText = CreateFS(MainFrame, L.XOpt)
 	mapXText:SetPoint("LEFT", mapPosText, 30, -60)
@@ -520,128 +454,87 @@ local function CreateOptions()
 		self:SetText(EKMinimapDB["MinimapY"])
 	end)
 	
-	--local mapAnchor = CreateDropDown(MainFrame, 120, 20, optList)
-	local mapAnchor = CreateDropDown(MainFrame, 120, 20, optList)
-	mapAnchor:SetPoint("LEFT", mapPosText, 30, -30)
-	mapAnchor.Text = CreateFS(mapAnchor, EKMinimapDB["MinimapAnchor"])
-	mapAnchor.Text:SetPoint("CENTER", mapAnchor, 0, 0)
-	--local mapAnchorText = CreateFS(mapAnchor, EKMinimapDB["MinimapAnchor"])
-	--mapAnchorText:SetPoint("CENTER", mapAnchor, 0, 0)
-	--mapAnchor:SetText()
-	--mapSizeBar:GetName()
-	--mapSizeBar:SetValue(EKMinimapDB["EKMinimapSize"])
-	--_G[mapSizeBar:GetName().."Text"]:SetText(L.MinimapSizeOpt.." "..EKMinimapDB["MinimapSize"])
-	--[[mapSizeBar:SetScript("OnValueChanged", function(self)
-		local n = tonumber(mapSizeBar:GetName():GetValue())
+	local mapSizeBar = CreateBar(MainFrame, "Size", 160, 20, 120, 300, 10)
+	mapSizeBar:SetPoint("TOP", mapYText, "BOTTOM", 50, -40)
+	mapSizeBar:SetValue(EKMinimapDB["MinimapSize"])
+	
+	local mapSizeText = CreateFS(mapSizeBar, L.MinimapSizeOpt.." "..EKMinimapDB["MinimapSize"])
+	mapSizeText:SetPoint("BOTTOM", mapSizeBar, "TOP", 0, 5)
+	
+	mapSizeBar:SetScript("OnValueChanged", function(self)
+		local n = tonumber(self:GetValue())
 		if n then
 			EKMinimapDB["MinimapSize"] = n
 		end
-		_G[mapSizeBar:GetName().."Text"]:SetText(L.MinimapSizeOpt.." "..EKMinimapDB["MinimapSize"])
-	end)]]--
-	--[[s:SetValue(EKMinimapDB["EKMinimapSize"])
-	s.SetDisplayValue = s.SetValue
-	s:SetWidth(16)]]--
-	--[[s:SetScript("OnValueChanged", function (self, value)
-		self:GetParent():SetVerticalScroll(value)
-	end)]]--
-	--[[s.bg = s:CreateTexture(nil, "BACKGROUND")
-	s.bg:SetAllPoints(s)
-	s.bg:SetTexture(0, 0, 0, 0.4)]]--
-	--local mapSize = CreateBar(MainFrame, 120, 320)
-	--mapSize:SetPoint("BOTTOM", EditOTFBox, 2, -30)
-	--mapSize:SetPoint(EKMinimapDB["MinimapSize"])
-	--mapSize:SetValue(160)
+		mapSizeText:SetText(L.MinimapSizeOpt.." "..EKMinimapDB["MinimapSize"])
+	end)
 	
-	--[[mapSize:SetScript("OnValueChanged", function(self)
-		local current = tonumber(self:GetValue)
-		EKMinimapDB["ObjectiveHeight"] = current
-	end)]]--
---[[
-	local EditMSBox = CreateEditBox(MainFrame, 40, 20)
-    EditMSBox:SetPoint("BOTTOM", EditOTFBox, 0, -30)
-    --EditMSBox:SetAutoFocus(false)
-    EditMSBox:SetText(C.Cfg.MinimapSize)
-    EditMSBox:SetScript("OnEnterPressed", function(self)
+	-- objctive tracker position
+
+	local otfPosText = CreateFS(MainFrame, L.ObjectPosOpt)
+	otfPosText:SetPoint("TOPLEFT", MainFrame, 280, -40)
+	
+	local otfAnchor = CreateDropDown(MainFrame, 120, 20, optList)
+	otfAnchor:SetPoint("LEFT", otfPosText, 30, -30)
+	otfAnchor.Text = CreateFS(otfAnchor, EKMinimapDB["ObjectiveAnchor"])
+	otfAnchor.Text:SetPoint("CENTER", otfAnchor, 0, 0)
+	
+	local otfXText = CreateFS(MainFrame, L.XOpt)
+	otfXText:SetPoint("LEFT", otfPosText, 30, -60)
+	
+	local otfXBox = CreateEditBox(MainFrame, 100, 20)
+	otfXBox:SetPoint("LEFT", otfXText, "RIGHT", 4, 0)
+	otfXBox:SetAutoFocus(false)
+	otfXBox:SetText(EKMinimapDB["ObjectiveX"])
+	otfXBox:SetScript("OnEnterPressed", function(self)
 		local n = tonumber(self:GetText())
 		if n then
-			C.Cfg.MinimapSize = n
+			EKMinmapfDB["ObjectiveX"] = n
 		end
 		self:ClearFocus()
 	end)
-    EditMSBox:SetScript("OnEscapePressed", function(self)
-		self:SetText(C.Cfg.MinimapSize)
+    otfXBox:SetScript("OnEscapePressed", function(self)
+		self:SetText(EKMinimapDB["ObjectiveX"])
 	end)
 	
-	TextMS = CreateFS(EditMSBox, L.MinimapSizeOpt)
-	TextMS:SetPoint("LEFT", EditMSBox, "RIGHT", 4, 0)]]--
-	--[[ButtonCM = CreateFrame("CheckButton", "EKMButtonCM", MainFrame, "UICheckButtonTemplate")
-	ButtonCM:SetPoint("TOPLEFT", MainFrame, 30, -40)
-	_G[ButtonCM:GetName() .. "Text"]:SetText("Click Menu")
-	_G[ButtonCM:GetName() .. "Text"]:SetFontObject("GameFontHighlight")
-	ButtonCM:SetChecked(C.ClickMenu == true)
-	ButtonCM:SetScript("OnClick", function(self)
-		C.ClickMenu = (self:GetChecked() or false)
-	end)
+	local otfYText = CreateFS(MainFrame, L.YOpt)
+	otfYText:SetPoint("LEFT", otfXText, 0, -30)
 	
-	ButtonOTF = CreateFrame("CheckButton", "EKMButtonOTF", MainFrame, "UICheckButtonTemplate")
-	ButtonOTF:SetPoint("BOTTOM", ButtonCM, 0, -30)
-	_G[ButtonOTF:GetName() .. "Text"]:SetText("Objectiv Tracker")
-	_G[ButtonOTF:GetName() .. "Text"]:SetFontObject("GameFontHighlight")
-	ButtonOTF:SetChecked(C.ObjectTracker == true)
-	ButtonOTF:SetScript("OnClick", function(self)
-		C.ObjectTracker = (self:GetChecked() or false)
-	end)
-	
-	ButtonStar = CreateFrame("CheckButton", "EKMButtonStar", MainFrame, "UICheckButtonTemplate")
-	ButtonStar:SetPoint("BOTTOM", ButtonOTF, 0, -30)
-	_G[ButtonStar:GetName() .. "Text"]:SetText("Objective Star")
-	_G[ButtonStar:GetName() .. "Text"]:SetFontObject("GameFontHighlight")
-	ButtonStar:SetChecked(C.Star == true)
-	ButtonStar:SetScript("OnClick", function(self)
-		C.Star = (self:GetChecked() or false)
-	end)
-
-	EditBoxOTF = CreateFrame("EditBox", "OTFEditBox", MainFrame, "InputBoxTemplate")
-    EditBoxOTF:SetPoint("BOTTOM", ButtonStar, 12, -34)
-    EditBoxOTF:SetSize(40, 40)
-    EditBoxOTF:SetAutoFocus(false)
-    EditBoxOTF:SetText(C.Height)
-    EditBoxOTF:SetScript("OnEnterPressed", function(self)
+	local otfYBox = CreateEditBox(MainFrame, 100, 20)
+	otfYBox:SetPoint("LEFT", otfYText, "RIGHT", 4, 0)
+	otfYBox:SetAutoFocus(false)
+	otfYBox:SetText(EKMinimapDB["ObjectiveY"])
+	otfYBox:SetScript("OnEnterPressed", function(self)
 		local n = tonumber(self:GetText())
 		if n then
-			C.Height = n
+			EKMinimapDB["ObjectiveY"] = n
 		end
+		self:ClearFocus()
 	end)
-    EditBoxOTF:SetScript("OnEscapePressed", function(self)
-		self:SetText(C.Height)
+    otfYBox:SetScript("OnEscapePressed", function(self)
+		self:SetText(EKMinimapDB["ObjectiveY"])
 	end)
 	
-	TextOTF = CreateFS(EditBoxOTF, "Objective Height")
-	TextOTF:SetPoint("LEFT", EditBoxOTF, "RIGHT", 2, 0)
+	local otfHeightBar = CreateBar(MainFrame, "Height", 160, 20, 200, 1200, 100)
+	otfHeightBar:SetPoint("TOP", otfYText, "BOTTOM", 50, -40)
+	otfHeightBar:SetValue(EKMinimapDB["ObjectiveHeight"])
 	
-	EditBoxMS = CreateFrame("EditBox", "SizeEditBox", MainFrame, "InputBoxTemplate")
-    EditBoxMS:SetPoint("BOTTOM", EditBoxOTF, 0, -30)
-    EditBoxMS:SetSize(40, 40)
-    EditBoxMS:SetAutoFocus(false)
-    EditBoxMS:SetText(C.Size)
-    EditBoxMS:SetScript("OnEnterPressed", function(self)
-		local n = tonumber(self:GetText())
+	local otfHeightText = CreateFS(otfHeightBar, L.ObjectHeightOpt.." "..EKMinimapDB["ObjectiveHeight"])
+	otfHeightText:SetPoint("BOTTOM", otfHeightBar, "TOP", 0, 5)
+	
+	otfHeightBar:SetScript("OnValueChanged", function(self)
+		local n = tonumber(self:GetValue())
 		if n then
-			C.Size = n
+			EKMinimapDB["ObjectiveHeight"] = n
 		end
-	end)
-    EditBoxMS:SetScript("OnEscapePressed", function(self)
-		self:SetText(C.Size)
+		otfHeightText:SetText(L.MinimapSizeOpt.." "..EKMinimapDB["ObjectiveHeight"])
 	end)
 	
-	TextMS = CreateFS(EditBoxMS, "Minimap Size")
-	TextMS:SetPoint("LEFT", EditBoxMS, "RIGHT", 2, 0)]]--
-
 	local closeButton = CreateButton(MainFrame, 22, 22, "X")
 	closeButton:SetPoint("TOPRIGHT", MainFrame, -8, -8)
 	closeButton:SetScript("OnClick", function() MainFrame:Hide() end)
 	
-	local reloadButton = CreateButton(MainFrame, 80, 30, RELOADUI)
+	local reloadButton = CreateButton(MainFrame, 80, 30, APPLY)
 	reloadButton:SetPoint("BOTTOMRIGHT", MainFrame, -20, 20)
 	reloadButton:SetScript("OnClick", function() ReloadUI() end)
 	
@@ -663,27 +556,6 @@ local function CreateOptions()
 		}
 		ReloadUI()
 	end)
-	--[[
-	ButtonRL = CreateFrame("Button", "EKMinimapReloadButton", MainFrame, "UIPanelButtonTemplate")
-	ButtonRL:SetSize(80, 30)
-	ButtonRL:SetNormalFontObject("GameFontNormalSmall")
-	ButtonRL:SetText(RELOADUI)
-	ButtonRL:SetPoint("BOTTOMRIGHT", MainFrame, -20, 20)
-	ButtonRL:SetScript("OnClick", function()
-		ReloadUI()
-	end)
-
-	-- reset settings
-	ButtonRS = CreateFrame("Button", "EKMinimapResetButton", MainFrame, "UIPanelButtonTemplate")
-	ButtonRS:SetSize(80, 30)
-	ButtonRS:SetNormalFontObject("GameFontNormalSmall")
-	ButtonRS:SetText(RESET)
-	ButtonRS:SetPoint("RIGHT", ButtonRL, "LEFT", -10, 0)
-	ButtonRS:SetScript("OnClick", function()
-		EKPlateDB = {}
-		ReloadUI()
-	end)
-	]]--
 end
 
 SlashCmdList["EKMINIMAP"] = function()
