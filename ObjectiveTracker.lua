@@ -9,17 +9,17 @@ local OTF = ObjectiveTrackerFrame
 
 -- [[ Load Blizzard ]] --
 
-if not IsAddOnLoaded("Blizzard_ObjectiveTracker") then
-	LoadAddOn("Blizzard_ObjectiveTracker")
-end
-
 local function updateOTFPos()
+	if not EKMinimapDB["ObjectiveStyle"] then return end
+	
 	OTF:ClearAllPoints()
 	--OTF:SetPoint(unpack(C.OTF))
 	OTF:SetPoint(EKMinimapDB["ObjectiveAnchor"], UIParent, EKMinimapDB["ObjectiveX"], EKMinimapDB["ObjectiveY"])
 end
 
 local function setOTF()
+	if not EKMinimapDB["ObjectiveStyle"] then return end
+	
 	OTF:SetMovable(true)
 	OTF:SetUserPlaced(true)
 	OTF:SetClampedToScreen(true)
@@ -28,11 +28,13 @@ local function setOTF()
 	--OTF:EnableMouse(true)
 end
 
---================================================--
+--=================================================--
 -----------------    [[ Block ]]    -----------------
---================================================--
+--=================================================--
 
 local function styleQuestBlock()
+	if not EKMinimapDB["ObjectiveStyle"] then return end
+	
 	-- [[ main title / 大標題 ]] --
 
 	local function reskinHeader(header)
@@ -127,89 +129,50 @@ local function styleQuestBlock()
 			line.Dash:SetShadowOffset(0, 0)
 		end
 	end)
-end
-
---================================================--
------------------    [[ Misc ]]    -----------------
---================================================--
-
--- [[ Quick Click: Alt to Share, Ctrl to Abandon / 快速按鍵：alt分享ctrl放棄 ]]--
-
-local function QuestHook(id)
-	local questLogIndex = GetQuestLogIndexByID(id)
 	
-	if IsControlKeyDown() and CanAbandonQuest(id) then
-		QuestMapQuestOptions_AbandonQuest(id)
-	elseif IsAltKeyDown() and GetQuestLogPushable(questLogIndex) then
-		QuestMapQuestOptions_ShareQuest(id)
-	end
-end
+	-- [[ Quick Click: Alt to Share, Ctrl to Abandon / 快速按鍵：alt分享ctrl放棄 ]]--
 
-hooksecurefunc(QUEST_TRACKER_MODULE, "OnBlockHeaderClick", function(self, block)
-	QuestHook(block.id)
-end)
-hooksecurefunc("QuestMapLogTitleButton_OnClick", function(self)
-	QuestHook(self.questID)
-end)
+	local function QuestHook(id)
+		local questLogIndex = GetQuestLogIndexByID(id)
+		
+		if IsControlKeyDown() and CanAbandonQuest(id) then
+			QuestMapQuestOptions_AbandonQuest(id)
+		elseif IsAltKeyDown() and GetQuestLogPushable(questLogIndex) then
+			QuestMapQuestOptions_ShareQuest(id)
+		end
+	end
+
+	hooksecurefunc(QUEST_TRACKER_MODULE, "OnBlockHeaderClick", function(self, block)
+		QuestHook(block.id)
+	end)
+	hooksecurefunc("QuestMapLogTitleButton_OnClick", function(self)
+		QuestHook(self.questID)
+	end)
+end
 
 --===================================================--
 -----------------    [[ Movable ]]    -----------------
 --===================================================--
 
-local function createOTFTooltip(self)
-	GameTooltip:SetOwner(self, "ANCHOR_TOP")
-	GameTooltip:AddDoubleLine(DRAG_MODEL, "Alt + |TInterface\\TUTORIALFRAME\\UI-TUTORIAL-FRAME:13:11:0:-1:512:512:12:66:333:411|t", 0, 1, 0.5, 1, 1, 1)
-	GameTooltip:Show()
-end
+local function moveOTF()
+	if not EKMinimapDB["ObjectiveStyle"] then return end
+	
+	local function createOTFTooltip(self)
+		GameTooltip:SetOwner(self, "ANCHOR_TOP")
+		GameTooltip:AddDoubleLine(DRAG_MODEL, "Alt + |TInterface\\TUTORIALFRAME\\UI-TUTORIAL-FRAME:13:11:0:-1:512:512:12:66:333:411|t", 0, 1, 0.5, 1, 1, 1)
+		GameTooltip:Show()
+	end
 
--- Make a Frame for Drag / 創建一個供移動的框架
-local OTFMove = CreateFrame("FRAME", "OTFdrag", OTF)
-	OTFMove:SetHeight(G.obfontSize + 2)
-	OTFMove:SetPoint("TOPLEFT", OTF)
-	OTFMove:SetPoint("TOPRIGHT", OTF)
-	OTFMove:SetFrameLevel(OTF:GetFrameLevel()+2)
-	OTFMove:EnableMouse(true)
-	OTFMove:RegisterForDrag("RightButton")
-	OTFMove:SetHitRectInsets(-5, -5, -5, -5)
-
--- [[ Collapse Icon ]] --
-
--- creat icon  / 創建按鈕
-local Minimize = OTF.HeaderMenu.MinimizeButton
-	Minimize:SetSize(16, 20)
-	Minimize:SetNormalTexture("")
-	Minimize:SetPushedTexture("")
-	-- Close  / 關閉按鈕
-	Minimize.minus = Minimize:CreateFontString(nil, "OVERLAY")
-	Minimize.minus:SetFont(G.font, G.obfontSize, G.obfontFlag)
-	Minimize.minus:SetText(">")
-	Minimize.minus:SetPoint("CENTER")
-	Minimize.minus:SetTextColor(1, 1, 1)
-	Minimize.minus:SetShadowOffset(0, 0)
-	Minimize.minus:SetShadowColor(0, 0, 0, 1)
-	-- Open / 開啟按鈕
-	Minimize.plus = Minimize:CreateFontString(nil, "OVERLAY")
-	Minimize.plus:SetFont(G.font, G.obfontSize, G.obfontFlag)
-	Minimize.plus:SetText("<")
-	Minimize.plus:SetPoint("CENTER")
-	Minimize.plus:SetTextColor(1, 1, 1)
-	Minimize.plus:SetShadowOffset(0, 0)
-	Minimize.plus:SetShadowColor(0, 0, 0, 1)
-	Minimize.plus:Hide()
-
--- Close Title / 收起後的標題
-local Title = OTF.HeaderMenu.Title
-	Title:SetFont(G.font, G.obfontSize, G.obfontFlag)
-	Title:SetTextColor(1, .75, 0)
-	Title:SetShadowOffset(0, 0)
-	Title:SetShadowColor(0, 0, 0, 1)
-	Title:ClearAllPoints()
-	Title:SetPoint("RIGHT", Minimize, "LEFT", 0, 0)
-
---==================================================--
------------------    [[ Script ]]    -----------------
---==================================================--
-
+	-- Make a Frame for Drag / 創建一個供移動的框架
+	local OTFMove = CreateFrame("FRAME", "OTFdrag", OTF)
+		OTFMove:SetHeight(G.obfontSize + 2)
+		OTFMove:SetPoint("TOPLEFT", OTF)
+		OTFMove:SetPoint("TOPRIGHT", OTF)
+		OTFMove:SetFrameLevel(OTF:GetFrameLevel()+2)
+		OTFMove:EnableMouse(true)
+		OTFMove:RegisterForDrag("RightButton")
+		OTFMove:SetHitRectInsets(-5, -5, -5, -5)
+		
 	-- Alt+right click to drag frame
 	OTFMove:SetScript("OnDragStart", function(self, button)
 		if IsAltKeyDown() then
@@ -228,42 +191,84 @@ local Title = OTF.HeaderMenu.Title
 	OTFMove:SetScript("OnLeave", function(self)
 		GameTooltip:Hide()
 	end)
+end
 
-	-- Let It Work / 使其工作
-	Minimize:HookScript("OnEnter", function()
-		Minimize.minus:SetTextColor(.7, .5, 0)
-		Minimize.plus:SetTextColor(.7, .5, 0)
-	end)
-	Minimize:HookScript("OnLeave", function()
-		Minimize.minus:SetTextColor(1, 1, 1)
-		Minimize.plus:SetTextColor(1, 1, 1)
-	end)
-	hooksecurefunc("ObjectiveTracker_Collapse", function()
-		Minimize.plus:Show()
-		Minimize.minus:Hide()
-	end)
-	hooksecurefunc("ObjectiveTracker_Expand",  function()
-		Minimize.plus:Hide()
-		Minimize.minus:Show()
-	end)
+--====================================================--
+-----------------    [[ Collapse ]]    -----------------
+--====================================================--
+
+local function miniIcon()
+	if not EKMinimapDB["ObjectiveStyle"] then return end
 	
---=================================================--
+	-- creat icon  / 創建按鈕
+	local Minimize = OTF.HeaderMenu.MinimizeButton
+		Minimize:SetSize(16, 20)
+		Minimize:SetNormalTexture("")
+		Minimize:SetPushedTexture("")
+		-- Close  / 關閉按鈕
+		Minimize.minus = Minimize:CreateFontString(nil, "OVERLAY")
+		Minimize.minus:SetFont(G.font, G.obfontSize, G.obfontFlag)
+		Minimize.minus:SetText(">")
+		Minimize.minus:SetPoint("CENTER")
+		Minimize.minus:SetTextColor(1, 1, 1)
+		Minimize.minus:SetShadowOffset(0, 0)
+		Minimize.minus:SetShadowColor(0, 0, 0, 1)
+		-- Open / 開啟按鈕
+		Minimize.plus = Minimize:CreateFontString(nil, "OVERLAY")
+		Minimize.plus:SetFont(G.font, G.obfontSize, G.obfontFlag)
+		Minimize.plus:SetText("<")
+		Minimize.plus:SetPoint("CENTER")
+		Minimize.plus:SetTextColor(1, 1, 1)
+		Minimize.plus:SetShadowOffset(0, 0)
+		Minimize.plus:SetShadowColor(0, 0, 0, 1)
+		Minimize.plus:Hide()
+
+	-- Close Title / 收起後的標題
+	local Title = OTF.HeaderMenu.Title
+		Title:SetFont(G.font, G.obfontSize, G.obfontFlag)
+		Title:SetTextColor(1, .75, 0)
+		Title:SetShadowOffset(0, 0)
+		Title:SetShadowColor(0, 0, 0, 1)
+		Title:ClearAllPoints()
+		Title:SetPoint("RIGHT", Minimize, "LEFT", 0, 0)	
+
+		-- Let It Work / 使其工作
+		Minimize:HookScript("OnEnter", function()
+			Minimize.minus:SetTextColor(.7, .5, 0)
+			Minimize.plus:SetTextColor(.7, .5, 0)
+		end)
+		Minimize:HookScript("OnLeave", function()
+			Minimize.minus:SetTextColor(1, 1, 1)
+			Minimize.plus:SetTextColor(1, 1, 1)
+		end)
+		hooksecurefunc("ObjectiveTracker_Collapse", function()
+			Minimize.plus:Show()
+			Minimize.minus:Hide()
+		end)
+		hooksecurefunc("ObjectiveTracker_Expand",  function()
+			Minimize.plus:Hide()
+			Minimize.minus:Show()
+		end)
+end
+
+--================================================--
 -----------------    [[ Load ]]    -----------------
---=================================================--
+--================================================--
 
 -- Reset / 重置
-SlashCmdList["RESETQUEST"] = function() 
-	OTF:SetUserPlaced(false)
+F.ResetO = function()
 	updateOTFPos()
-	OTF:SetUserPlaced(true)
 end
-SLASH_RESETQUEST1 = "/resetobjective"
-SLASH_RESETQUEST2 = "/ro"
 
 local function OnEvent()
-	if not EKMinimapDB["Objective"] then return end
+	if not IsAddOnLoaded("Blizzard_ObjectiveTracker") then
+		LoadAddOn("Blizzard_ObjectiveTracker")
+	end
+	
 	setOTF()
 	styleQuestBlock()
+	moveOTF()
+	miniIcon()
 end
 
 local frame = CreateFrame("FRAME")

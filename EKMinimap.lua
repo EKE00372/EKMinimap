@@ -1,25 +1,10 @@
 local addon, ns = ...
 local C, F, G, L = unpack(ns)
-local Minimap, unpack, sub = Minimap, unpack, string.sub
+local Minimap, sub = Minimap, string.sub
 
 --====================================================--
 -----------------    [[ Function ]]    -----------------
 --====================================================--
-
--- Create font style / 字型
-local function CreateFS(parent, justify)
-	local frame = parent:CreateFontString(nil, "OVERLAY")
-	
-	frame:SetFont(G.font, G.fontSize, G.fontFlag)
-	frame:SetShadowColor(0, 0, 0, 0)
-	frame:SetShadowOffset(0, 0)
-	
-	if justify then
-		frame:SetJustifyH(justify)
-	end
-	
-	return frame
-end
 
 --================================================--
 -----------------    [[ Core ]]    -----------------
@@ -35,33 +20,24 @@ end
 -----------------    [[ Minimap ]]    -----------------
 --===================================================--
 
-local function CreateShadow()
-	local MinimapSD = CreateFrame("Frame", nil, Minimap)
-		MinimapSD:Hide()
-		MinimapSD:ClearAllPoints()
-		MinimapSD:SetPoint("TOPLEFT", Minimap, -5, 5)
-		MinimapSD:SetPoint("BOTTOMRIGHT", Minimap, 5, -5)
-		MinimapSD:SetFrameLevel(Minimap:GetFrameLevel() == 0 and 0 or Minimap:GetFrameLevel()-1)
-		MinimapSD:SetBackdrop({
-			edgeFile = G.Glow,	-- 陰影邊框
-			edgeSize = 5,	-- 邊框大小
-		})
-		MinimapSD:SetBackdropBorderColor(0, 0, 0, 1)
-		MinimapSD:Show()
-end
-
 local function updateMinimapPos()
 	Minimap:ClearAllPoints()
-	--Minimap:SetPoint(unpack(C.Point))
 	Minimap:SetPoint(EKMinimapDB["MinimapAnchor"], UIParent, EKMinimapDB["MinimapX"], EKMinimapDB["MinimapY"])
 end
 
 local function updateMinimapSize()
-	Minimap:SetSize(EKMinimapDB["MinimapSize"], EKMinimapDB["MinimapSize"])
-	Minimap:SetScale(1)
+	--Minimap:SetSize(EKMinimapDB["MinimapSize"], EKMinimapDB["MinimapSize"])
+	Minimap:SetSize(160, 160)
+	--Minimap:SetScale(1)
+	Minimap:SetScale(EKMinimapDB["MinimapScale"])
+	--MinimapCluster:SetSize(EKMinimapDB["MinimapSize"], EKMinimapDB["MinimapSize"])
 end
 
 local function setMinimap()
+	local anchor = EKMinimapDB["MinimapAnchor"]
+	local myAnchor = sub(anchor, -4)				-- get minimap anchor left or rignt
+	local iconAnchor = not not (myAnchor == "LEFT")	-- hope教我的語法糖
+	
 	updateMinimapPos()
 	Minimap:SetClampedToScreen(true)
 	Minimap:SetMovable(true)
@@ -72,7 +48,32 @@ local function setMinimap()
 	Minimap:SetMaskTexture(G.Tex)
 	Minimap:SetFrameStrata("LOW")
 	Minimap:SetFrameLevel(3)
-	--CreateShadow()
+	
+	MinimapCluster:ClearAllPoints()
+	MinimapCluster:SetAllPoints(Minimap)
+	
+	Minimap.bg = F.CreateBG(Minimap, 5, 5, 1)
+	
+	--[[
+	hooksecurefunc(VehicleSeatIndicator, "SetPoint", function(self, _, parent)
+		if parent == "MinimapCluster" or parent == MinimapCluster then
+			self:ClearAllPoints()
+			if iconAnchor then
+				self:SetPoint("TOPLEFT", Minimap, "BOTTOMRIGHT", 0, -20)
+			else
+				self:SetPoint("TOPRIGHT", Minimap, "BOTTOMLEFT", 0, -20)
+			end
+		end
+	end)
+	]]--
+	hooksecurefunc(UIWidgetBelowMinimapContainerFrame, "SetPoint", function(self, _, parent)
+		if parent == "MinimapCluster" or parent == MinimapCluster then
+			self:ClearAllPoints()
+			self:SetClampedToScreen(true)
+			self:SetPoint("TOP", Minimap, "BOTTOM", 0, -20)
+		end
+	end)
+	
 	Minimap:SetArchBlobRingScalar(0)
 	Minimap:SetQuestBlobRingScalar(0)
 	
@@ -98,7 +99,7 @@ local function setMinimap()
 		"SubZoneTextFrame",
 		"MiniMapChallengeMode",
 		"DurabilityFrame",			-- 裝備耐久
-		"VehicleSeatIndicator",
+		"VehicleSeatIndicator",		-- Vehicle / 載具
 		"GarrisonLandingPageMinimapButton",
 	}
 	
@@ -106,10 +107,6 @@ local function setMinimap()
 		getglobal(v).Show = dummy
 		getglobal(v):Hide()
 	end
-	
-	local anchor = EKMinimapDB["MinimapAnchor"]
-	local myAnchor = sub(anchor, -4)				-- get minimap anchor left or rignt
-	local iconAnchor = not not (myAnchor == "LEFT")	-- hope教我的語法糖
 	
 	-- Queue Button / 佇列圖示
 	QueueStatusMinimapButton:ClearAllPoints()
@@ -130,7 +127,7 @@ local function setMinimap()
 	MiniMapMailIcon:SetTexture(G.Mail)
 	MiniMapMailIcon:SetTexture("Interface\\MINIMAP\\TRACKING\\Mailbox.blp")
 end
-	
+
 local function OnMouseWheel(self, delta)
 	if IsAltKeyDown() then
 		local i = Minimap:GetScale()
@@ -175,7 +172,7 @@ local function createGarrisonTooltip(self)
 	if not EKMinimapDB["CharacterIcon"] then return end
 	
 	GameTooltip:SetOwner(self, "ANCHOR_BOTTOM", (Minimap:GetWidth() * .7), -3)
-	GameTooltip:AddLine(CHARACTER)
+	GameTooltip:AddLine(CHARACTER_BUTTON, .6,.8, 1)
 	GameTooltip:AddLine(" ")
 
 	-- Experience
@@ -184,8 +181,11 @@ local function createGarrisonTooltip(self)
 		local lvl = UnitLevel("player")
 		local rested = GetXPExhaustion()
 		
-		GameTooltip:AddDoubleLine(XP, LEVEL.." "..lvl, 0, 1, .5, 0, 1, .5)
-		GameTooltip:AddDoubleLine(cur.."/"..max, (max-cur).."("..rested..")", 1, 1, 1, 1, 1, 1)
+		GameTooltip:AddDoubleLine(CHARACTER, LEVEL.. " "..lvl, 0, 1, .5, 0, 1, .5)
+		GameTooltip:AddDoubleLine(XP..HEADER_COLON, cur.." / "..max.." ("..floor(cur/max*100).."%)", 1,1,1,1,1,1)
+		if rested then
+			GameTooltip:AddDoubleLine(TUTORIAL_TITLE26..HEADER_COLON, rested.." ("..floor(rested/max*100).."%)", 1,1,1,1,1,1)
+		end
 	end
 	
 	-- Honor
@@ -193,8 +193,10 @@ local function createGarrisonTooltip(self)
 		local cur, max = UnitHonor("player"), UnitHonorMax("player")
 		local lvl = UnitHonorLevel("player")
 		
+		GameTooltip:AddLine(" ")
 		GameTooltip:AddDoubleLine(HONOR, LEVEL.." "..lvl, 0, 1, .5, 0, 1, .5)
-		GameTooltip:AddDoubleLine(cur.."/"..max, (max-cur), 1, 1, 1, 1, 1, 1)
+		GameTooltip:AddDoubleLine(REFORGE_CURRENT..HEADER_COLON, cur.."/"..max.." ("..floor(cur/max*100).."%)", 1, 1, 1, 1, 1, 1)
+		GameTooltip:AddDoubleLine(NEXT_RANK_COLON, (max-cur), 1, 1, 1, 1, 1, 1)
 	end
 		
 	-- Reputation
@@ -202,8 +204,15 @@ local function createGarrisonTooltip(self)
 		local name, standing, min, max, cur = GetWatchedFactionInfo()
 		
 		if name then
+			GameTooltip:AddLine(" ")
 			GameTooltip:AddDoubleLine(name, _G["FACTION_STANDING_LABEL"..standing], 0, 1, 0.5, 0, 1, 0.5)
-			GameTooltip:AddDoubleLine(cur.."/"..max, (max-cur), 1, 1, 1, 1, 1, 1)
+			--cur - min.." / "..max - min.." ("..floor((cur - min)/(max - min)*100).."%)"
+			if standing ~= 8 then
+				GameTooltip:AddDoubleLine(REFORGE_CURRENT..HEADER_COLON, cur - min.." / "..max - min.." ("..floor((cur - min)/(max - min)*100).."%)", 1, 1, 1, 1, 1, 1)
+				GameTooltip:AddDoubleLine(NEXT_RANK_COLON, (max-cur), 1, 1, 1, 1, 1, 1)
+			else
+				GameTooltip:AddDoubleLine(REFORGE_CURRENT..HEADER_COLON, cur, 1, 1, 1, 1, 1, 1)
+			end
 		end
 	end
 		
@@ -214,9 +223,11 @@ local function createGarrisonTooltip(self)
 		if azeriteItem then
 			local cur, max = C_AzeriteItem.GetAzeriteItemXPInfo(azeriteItem)
 			local lvl = C_AzeriteItem.GetPowerLevel(azeriteItem)
-
+			
+			GameTooltip:AddLine(" ")
 			GameTooltip:AddDoubleLine(ARTIFACT_POWER, LEVEL.." "..lvl, 0, 1, .5, 0, 1, .5)
-			GameTooltip:AddDoubleLine(cur.."/"..max, (max-cur), 1, 1, 1, 1, 1, 1)
+			GameTooltip:AddDoubleLine(REFORGE_CURRENT..HEADER_COLON, cur.."/"..max.." ("..floor(cur/max*100).."%)", 1, 1, 1, 1, 1, 1)
+			GameTooltip:AddDoubleLine(NEXT_RANK_COLON, (max-cur), 1, 1, 1, 1, 1, 1)
 		end
 	end
 	
@@ -227,7 +238,8 @@ end
 -----------------    [[ Difficulty ]]    -----------------
 --======================================================--
 
-local Diff = CreateFrame("Frame", "EKMinimapDungeonIcon", Minimap)
+local function styleDifficulty(self)
+	local Diff = CreateFrame("Frame", "EKMinimapDungeonIcon", Minimap)
 	Diff:SetSize(40, 40)
 	Diff:ClearAllPoints()
 	Diff:SetFrameLevel(Minimap:GetFrameLevel()+2)
@@ -236,10 +248,9 @@ local Diff = CreateFrame("Frame", "EKMinimapDungeonIcon", Minimap)
 	Diff.Texture:SetAllPoints(Diff)
 	Diff.Texture:SetTexture(G.Diff)
 	Diff.Texture:SetVertexColor(G.Ccolors.r, G.Ccolors.g, G.Ccolors.b)
-
-local function styleDifficulty(self)
+	
 	-- Difficulty Text / 難度文字
-	local DiffText = CreateFS(Diff, "CENTER")
+	local DiffText = F.CreateFS(Diff, "", "CENTER")
 	DiffText:SetPoint("CENTER")
 	
 	local inInstance, instanceType = IsInInstance()
@@ -326,6 +337,14 @@ local function styleDifficulty(self)
 		Diff:SetAlpha(1)
 	end
 	
+	Diff:RegisterEvent("PLAYER_ENTERING_WORLD")
+	Diff:RegisterEvent("PLAYER_DIFFICULTY_CHANGED")
+	Diff:RegisterEvent("INSTANCE_GROUP_SIZE_CHANGED")
+	Diff:RegisterEvent("ZONE_CHANGED_NEW_AREA")
+	Diff:RegisterEvent("CHALLENGE_MODE_START")
+	Diff:RegisterEvent("CHALLENGE_MODE_COMPLETED")
+	Diff:RegisterEvent("CHALLENGE_MODE_RESET")
+	Diff:SetScript("OnEvent", styleDifficulty)
 end
 
 --================================================--
@@ -338,7 +357,7 @@ local function whoPing()
 	ping:SetPoint("BOTTOM", Minimap, 0, 2)
 	ping:RegisterEvent("MINIMAP_PING")
 
-	ping.text = CreateFS(ping, "CENTER")
+	ping.text = F.CreateFS(ping, "", "CENTER")
 	ping.text:SetPoint("CENTER")
 
 	local anim = ping:CreateAnimationGroup()
@@ -402,32 +421,28 @@ end
 		GarrisonLandingPageMinimapButton:Click()
 	end)
 
-	Diff:RegisterEvent("PLAYER_ENTERING_WORLD")
-	Diff:RegisterEvent("PLAYER_DIFFICULTY_CHANGED")
-	Diff:RegisterEvent("INSTANCE_GROUP_SIZE_CHANGED")
-	Diff:RegisterEvent("ZONE_CHANGED_NEW_AREA")
-	Diff:RegisterEvent("CHALLENGE_MODE_START")
-	Diff:RegisterEvent("CHALLENGE_MODE_COMPLETED")
-	Diff:RegisterEvent("CHALLENGE_MODE_RESET")
-	Diff:SetScript("OnEvent", styleDifficulty)
-
 --=================================================--
 -----------------    [[ Load ]]    -----------------
 --=================================================--
 
+
+SlashCmdList["EJCET1"] = function()
+	EjectPassengerFromSeat(1)
+end
+SLASH_EJCET11 = "/ej1"
+SLASH_EJCET12 = "/eject1"
+
 -- Reset size / 重置
-SlashCmdList["RESETSCALE"] = function()
+SlashCmdList["EJCET2"] = function()
+	EjectPassengerFromSeat(2)
+end
+SLASH_EJCET21 = "/ej2"
+SLASH_EJCET22 = "/ejct2"
+
+F.ResetM = function()
+	updateMinimapPos()
 	updateMinimapSize()
 end
-SLASH_RESETSCALE1 = "/resetscale"
-SLASH_RESETSCALE2 = "/rms"
-
--- Reset position / 重置
-SlashCmdList["RESETMINIMAP"] = function()
-	updateMinimapPos()
-end
-SLASH_RESETMINIMAP1 = "/resetminimap"
-SLASH_RESETMINIMAP2 = "/rm"
 
 local function OnEvent(self, event, addon)
 	-- Hide Clock / 隱藏時鐘
@@ -436,12 +451,12 @@ local function OnEvent(self, event, addon)
 		TimeManagerClockButton:SetScript("OnShow", function(self)
 			TimeManagerClockButton:Hide()
 		end)
-		CreateShadow()
-		
 		self:UnregisterEvent("ADDON_LOADED")
-	else
+	elseif event == "PLAYER_LOGIN" then
 		whoPing()
 		setMinimap()
+	else
+		return
 	end
 end
 
@@ -449,3 +464,18 @@ local frame = CreateFrame("FRAME")
 	frame:RegisterEvent("PLAYER_LOGIN")
 	frame:RegisterEvent("ADDON_LOADED")
 	frame:SetScript("OnEvent", OnEvent)
+
+local HideOH = CreateFrame("Frame")
+	HideOH:SetScript("OnUpdate", function(self,...)
+		local OrderHallCommandBar = OrderHallCommandBar
+		local dummy = function() end
+		
+		if OrderHallCommandBar then
+			OrderHallCommandBar:Hide()
+			OrderHallCommandBar:UnregisterAllEvents()
+			OrderHallCommandBar.Show = dummy
+		end
+		
+		OrderHall_CheckCommandBar = dummy
+		self:SetScript("OnUpdate", nil)
+	end)
