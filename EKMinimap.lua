@@ -27,7 +27,7 @@ end
 
 local function updateMinimapSize()
 	--Minimap:SetSize(EKMinimapDB["MinimapSize"], EKMinimapDB["MinimapSize"])
-	Minimap:SetSize(160, 160)
+	Minimap:SetSize(140, 140)
 	--Minimap:SetScale(1)
 	Minimap:SetScale(EKMinimapDB["MinimapScale"])
 	--MinimapCluster:SetSize(EKMinimapDB["MinimapSize"], EKMinimapDB["MinimapSize"])
@@ -79,12 +79,11 @@ local function setMinimap()
 	
 	-- Hide Blizzard / 隱藏暴雪的難度旗子
 	MiniMapInstanceDifficulty:Hide()
-	MiniMapInstanceDifficulty.Show = function() return end
+	MiniMapInstanceDifficulty.Show = F.Dummy
 	GuildInstanceDifficulty:Hide()
-	GuildInstanceDifficulty.Show = function() return end
+	GuildInstanceDifficulty.Show = F.Dummy
 
 	-- Hide all frames / 隱藏各種
-	local dummy = function() end
 	local hideAll = {
 		"MinimapBorder",			-- 大圈
 		"MinimapBorderTop",
@@ -104,7 +103,7 @@ local function setMinimap()
 	}
 	
 	for i, v in pairs(hideAll) do
-		getglobal(v).Show = dummy
+		getglobal(v).Show = F.Dummy
 		getglobal(v):Hide()
 	end
 	
@@ -356,9 +355,7 @@ local function whoPing()
 	ping:SetSize(100, 20)
 	ping:SetPoint("BOTTOM", Minimap, 0, 2)
 	ping:RegisterEvent("MINIMAP_PING")
-
 	ping.text = F.CreateFS(ping, "", "CENTER")
-	ping.text:SetPoint("CENTER")
 
 	local anim = ping:CreateAnimationGroup()
 	anim:SetScript("OnPlay", function() ping:SetAlpha(1) end)
@@ -468,14 +465,13 @@ local frame = CreateFrame("FRAME")
 local HideOH = CreateFrame("Frame")
 	HideOH:SetScript("OnUpdate", function(self,...)
 		local OrderHallCommandBar = OrderHallCommandBar
-		local dummy = function() end
 		
 		if OrderHallCommandBar then
 			OrderHallCommandBar:Hide()
 			OrderHallCommandBar:UnregisterAllEvents()
-			OrderHallCommandBar.Show = dummy
+			OrderHallCommandBar.Show = F.Dummy
 		end
 		
-		OrderHall_CheckCommandBar = dummy
+		OrderHall_CheckCommandBar = F.Dummy
 		self:SetScript("OnUpdate", nil)
 	end)

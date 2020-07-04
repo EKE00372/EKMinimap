@@ -46,7 +46,7 @@ local default = CreateFrame("Frame")
 			if EKMinimapDB["ObjectiveY"] == nil then EKMinimapDB["ObjectiveY"] = -170 end
 			if EKMinimapDB["ObjectiveHeight"] == nil then EKMinimapDB["ObjectiveHeight"] = 6 end
 			if EKMinimapDB["ObjectiveStar"] == nil then EKMinimapDB["ObjectiveStar"] = true end
-			if EKMinimapDB["MinimapScale"] == nil then EKMinimapDB["MinimapScale"] = 1 end
+			if EKMinimapDB["MinimapScale"] == nil then EKMinimapDB["MinimapScale"] = 1.2 end
 			if EKMinimapDB["MinimapAnchor"] == nil then EKMinimapDB["MinimapAnchor"] = "TOPLEFT" end
 			if EKMinimapDB["MinimapX"] == nil then EKMinimapDB["MinimapX"] = 10 end
 			if EKMinimapDB["MinimapY"] == nil then EKMinimapDB["MinimapY"] = -10 end
@@ -114,10 +114,9 @@ if GetLocale() == "zhTW" then
 	L.Apply = "更改後點擊「"..APPLY.."」立即重載生效。"
 	L.posApply = APPLY..L.SizeOpt.."座標"
 	
-	
 	L.tempTip1 = "Alt 功能是臨時性功能，提供給需要追蹤某些特定目標的偶發情況，所以它們的變動不會被儲存。"
-	L.tempTip2 = "所有 Alt 功能造成的更改會在重載介面或點擊「套用位置」後復原。"
-	L.tempTip3 = "設定時不更改選項，單純更改尺寸和座標可以點擊「"..L.posApply.."」來直接套用而不需重載。"
+	L.tempTip2 = "所有 Alt 功能造成的更改會在重載介面或點擊「"..L.posApply.."」後復原。"
+	L.tempTip3 = "設定時，單純更改尺寸和座標而不更改選項，可以點擊「"..L.posApply.."」來直接套用而不需重載。"
 	L.cmdInfo = "/ej1 /ej2 彈出載具乘客"
 	L.dragInfo = "Alt+右鍵：臨時性拖動框體"
 	L.scrollInfo = "Alt+滾輪：臨時縮放小地圖"
@@ -138,15 +137,15 @@ elseif GetLocale() == "zhCN" then
 	L.posApply = APPLY..L.SizeOpt.."座标"
 	
 	L.tempTip1 = "Alt 功能是临时性功能，提供给需要追踪某些特定目标的偶发情况，所以它们的变动不会被保存。"
-	L.tempTip2 = "所有 Alt 功能造成的更改会在重载界面或点击＂套用位置＂后复原。"
-	L.tempTip3 = "设置时不更改选项，单纯更改尺寸和座标可以点击＂"..L.posApply.."＂来直接套用而不需重载。"
+	L.tempTip2 = "所有 Alt 功能造成的更改会在重载界面或点击＂"..L.posApply"＂后复原。"
+	L.tempTip3 = "设置时，单纯更改尺寸和座标而不更改选项，可以点击＂"..L.posApply.."＂来直接套用而不需重载。"
 	L.cmdInfo = "/ej1 /ej2 弹出载具乘客"
 	L.dragInfo = "Alt+右键临时性拖动框体"
 	L.scrollInfo = "Alt+滚轮临时性缩放小地图"
 else
 	L.ClickMenuOpt = "Enable click menu"
 	L.MinimapOpt = "Minimap"
-	L.SizeOpt = "size"
+	L.SizeOpt = "Scale"
 	L.AnchorOpt = "Anchor"
 	L.XOpt = "X"
 	L.YOpt = "Y"
@@ -159,9 +158,9 @@ else
 	L.Apply = "Click "..APPLY.." to active changes."
 	L.posApply = APPLY.." Size and Pos"
 	
-	L.tempTip1 = "Alt function is a temporary function, for people wanna track something recently, they wont be saved to settgins."
-	L.tempTip2 = 'Any size and position change cause by alt function will reset after you reload or click "apply position" button.'
-	L.tempTip3 = 'If wanna config position and size only (did not change check box), you can directly click"'..L.posApply..'" to apply instead full apply with reload.'
+	L.tempTip1 = "Alt-function is a temporary function, for people wanna track something recently, they will not be saved to settgins."
+	L.tempTip2 = 'Any scale and position change caused by alt-function will reset after you reload or click "'..L.posApply..'" button.'
+	L.tempTip3 = 'If wanna config position and scale only (did not change check box), you can directly click"'..L.posApply..'" to apply them	without reload.'
 	L.cmdInfo = "/ej1 /ej2 Eject Passenger"
 	L.dragInfo = "Alt-right click drag frame"
 	L.scrollInfo = "Alt-scroll scale minimap"
@@ -251,6 +250,8 @@ F.CreateBG = function(parent, size, offset, a)
 	
 	return bg
 end
+
+F.Dummy = function() end
 
 -- click buttons
 local function CreateButton(self, width, height, text)
@@ -626,12 +627,9 @@ local function CreateOptions()
 		GameTooltip:AddLine(L.tempTip1, 1, 1, 1, true)
 		GameTooltip:AddLine(" ")
 		GameTooltip:AddLine(L.tempTip2, 1, 1, 1, true)
-		GameTooltip:AddLine("------")
-		GameTooltip:AddLine("PS. "..L.tempTip3, 1, 1, 1, true)
 		GameTooltip:Show()
 	end)
 	q:SetScript("OnLeave", function() GameTooltip:Hide() end)
-	
 	
 	local infoCmd = F.CreateFS(MainFrame, L.cmdInfo, "LEFT")
 	infoCmd:SetPoint("TOPLEFT",q, "TOPRIGHT", 4, 8)
@@ -654,6 +652,22 @@ local function CreateOptions()
 	local reposButton = CreateButton(MainFrame, 170, 30, L.posApply)
 	reposButton:SetPoint("BOTTOMRIGHT", MainFrame, -20, 60)
 	reposButton:SetScript("OnClick", function() F.ResetM() F.ResetO() end)
+	
+	local i = CreateFrame("Button", nil, MainFrame)
+	i:SetPoint("TOPRIGHT", reposButton, 8, 8)
+	i:SetSize(G.fontSize+2, G.fontSize+2)
+	i.Icon = i:CreateTexture(nil, "ARTWORK")
+	i.Icon:SetAllPoints()
+	i.Icon:SetTexture("Interface\\FriendsFrame\\InformationIcon")
+	i:SetHighlightTexture("Interface\\FriendsFrame\\InformationIcon")
+	i:SetScript("OnEnter", function(self)
+		GameTooltip:ClearLines()
+		GameTooltip:SetOwner(self, "ANCHOR_RIGHT", 0, 0)
+		GameTooltip:AddLine(INFO)
+		GameTooltip:AddLine(L.tempTip3, 1, 1, 1, true)
+		GameTooltip:Show()
+	end)
+	i:SetScript("OnLeave", function() GameTooltip:Hide() end)
 	
 	local resetButton = CreateButton(MainFrame, 80, 30, RESET)
 	resetButton:SetPoint("RIGHT", reloadButton, "LEFT", -10, 0)
