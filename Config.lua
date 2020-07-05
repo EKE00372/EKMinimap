@@ -30,7 +30,7 @@ local default = CreateFrame("Frame")
 					["ObjectiveAnchor"] = "TOPRIGHT",
 					["ObjectiveX"] = -100,
 					["ObjectiveY"] = -170,
-					["MinimapSize"] = 160,
+					["MinimapScale"] = 1.2,
 					["MinimapAnchor"] = "TOPLEFT",
 					["MinimapY"] = -10,
 					["MinimapX"] = 10,
@@ -94,9 +94,9 @@ local default = CreateFrame("Frame")
 	G.obfontSize = 18
 	G.obfontFlag = "OUTLINE"
 
-------------
--- Locale --
-------------
+--===================================================--
+-----------------    [[ Locales ]]    -----------------
+--===================================================--
 
 if GetLocale() == "zhTW" then
 	L.ClickMenuOpt = "啟用點擊選單"
@@ -137,7 +137,7 @@ elseif GetLocale() == "zhCN" then
 	L.posApply = APPLY..L.SizeOpt.."座标"
 	
 	L.tempTip1 = "Alt 功能是临时性功能，提供给需要追踪某些特定目标的偶发情况，所以它们的变动不会被保存。"
-	L.tempTip2 = "所有 Alt 功能造成的更改会在重载界面或点击＂"..L.posApply"＂后复原。"
+	L.tempTip2 = "所有 Alt 功能造成的更改会在重载界面或点击＂"..L.posApply.."＂后复原。"
 	L.tempTip3 = "设置时，单纯更改尺寸和座标而不更改选项，可以点击＂"..L.posApply.."＂来直接套用而不需重载。"
 	L.cmdInfo = "/ej1 /ej2 弹出载具乘客"
 	L.dragInfo = "Alt+右键临时性拖动框体"
@@ -178,38 +178,10 @@ local optList = {
 	[9] = "RIGHT",
 	}
 
-local function optOnClick(self)
-	--PlaySound(SOUNDKIT.GS_TITLE_OPTION_OK)
-	local opt = self.__owner.options
-	for i = 1, #opt do
-		if self == opt[i] then
-			opt[i]:SetBackdropColor(0, 1, 1, .25)
-			opt[i].selected = true
-		else
-			opt[i]:SetBackdropColor(0, 0, 0)
-			opt[i].selected = false
-		end
-	end
-	self.__owner.Text:SetText(self.text)
-	EKMinimapDB["MinimapAnchor"] = self.text
-	self:GetParent():Hide()
-end
+--====================================================--
+-----------------    [[ Function ]]    -----------------
+--====================================================--
 
-local function optOnEnter(self)
-	if self.selected then return end
-	self:SetBackdropColor(0, 1, 1, .25)
-end
-
-local function optOnLeave(self)
-	if self.selected then return end
-	self:SetBackdropColor(0, 0, 0)
-end
-
-------------
--- Config --
-------------
-
---local function F.CreateFS(parent, text, justify, anchor, x, y)
 F.CreateFS = function(parent, text, justify, anchor, x, y)
 	local fs = parent:CreateFontString(nil, "OVERLAY")
 	fs:SetFont(G.font, G.fontSize, G.fontFlag)
@@ -225,7 +197,6 @@ F.CreateFS = function(parent, text, justify, anchor, x, y)
 	return fs
 end
 
---local function CreateBG(parent, offset)
 F.CreateBG = function(parent, size, offset, a)
 	local frame = parent
 	if parent:GetObjectType() == "Texture" then
@@ -252,6 +223,32 @@ F.CreateBG = function(parent, size, offset, a)
 end
 
 F.Dummy = function() end
+
+local function GLOBEVARIABLE(value, newValue)
+		if newValue ~= nil then
+			EKMinimapDB[value] = newValue
+		else
+			return EKMinimapDB[value]
+		end
+end
+
+--[[
+local function optOnClick(self)
+	--PlaySound(SOUNDKIT.GS_TITLE_OPTION_OK)
+	local opt = self.__owner.options
+	for i = 1, #opt do
+		if self == opt[i] then
+			opt[i].selected = true
+		else
+			opt[i].selected = false
+		end
+	end
+	self.__owner.Text:SetText(self.text)
+	--EKMinimapDB["MinimapAnchor"] = self.text
+	value = self.text
+	self:GetParent():Hide()
+end
+]]--
 
 -- click buttons
 local function CreateButton(self, width, height, text)
@@ -343,17 +340,9 @@ local function CreateGear(name)
 end
 
 -- custom drop down menu
-local function CreateDropDown(self, width, height, data)
+local function CreateDropDown(self, width, height, data, value)
 	local dd = CreateFrame("Frame", nil, self)
 	dd:SetSize(width, height)
-	--[[
-	dd:SetBackdrop({
-		bgFile = "Interface\\ChatFrame\\ChatFrameBackground",
-		edgeFile = "Interface\\ChatFrame\\ChatFrameBackground",
-		edgeSize = 1,
-	})
-	dd:SetBackdropColor(0, 0, 0, .5)
-	dd:SetBackdropBorderColor(0, 0, 0)]]--
 	dd.bg = F.CreateBG(dd, 3, 3, .5)
 	dd.options = {}
 	
@@ -362,20 +351,11 @@ local function CreateDropDown(self, width, height, data)
 	
 	local list = CreateFrame("Frame", nil, dd)
 	list:SetPoint("TOP", dd, "BOTTOM", 0, -2)
-	--[[list:SetBackdrop({
-		bgFile = "Interface\\ChatFrame\\ChatFrameBackground",
-		edgeFile = "Interface\\ChatFrame\\ChatFrameBackground",
-		edgeSize = 1,
-	})
-	list:SetBackdropColor(0, 0, 0, .8)
-	list:SetBackdropBorderColor(0, 0, 0)]]--
-	list.bg = F.CreateBG(list, 0, 3, 0)
-	list.bg:SetFrameLevel(list:GetFrameLevel()+1)
+	list.bg = F.CreateBG(list, 0, 3, .2)
 	list:Hide()
 	
 	bu:SetScript("OnShow", function() list:Hide() end)
 	bu:SetScript("OnClick", function()
-		--PlaySound(SOUNDKIT.GS_TITLE_OPTION_OK)
 		ToggleFrame(list)
 	end)
 	dd.button = bu
@@ -383,21 +363,37 @@ local function CreateDropDown(self, width, height, data)
 	local opt, index = {}, 0
 	for i, j in pairs(data) do
 		opt[i] = CreateFrame("Button", nil, list)
-		opt[i]:SetPoint("TOPLEFT", 4, -4 - (i-1)*(height+2))
-		opt[i]:SetSize(width - 8, height)
+		opt[i]:SetPoint("TOPLEFT", 3, -4 - (i-1)*(height+2))
+		opt[i]:SetSize(width - 6, height)
 		opt[i].bg = F.CreateBG(opt[i], 1, 1, .7)
 		
-		--[[opt[i]:SetBackdropColor(0, 0, 0, .8)
-		opt[i]:SetBackdropBorderColor(0, 0, 0)]]--
 		local text = F.CreateFS(opt[i], j, "CENTER", "LEFT", 5, 0)
 		text:SetPoint("RIGHT", -5, 0)
 		opt[i].text = j
 		opt[i].__owner = dd
-		opt[i]:SetScript("OnClick", optOnClick)
-		--opt[i]:SetScript("OnEnter", optOnEnter)
+		--opt[i]:SetScript("OnClick", optOnClick)
+		opt[i]:SetScript("OnClick", function(self)
+			local opt = self.__owner.options
+				for i = 1, #opt do
+					if self == opt[i] then
+						opt[i].selected = true
+					else
+						opt[i].selected = false
+					end
+				end
+			self.__owner.Text:SetText(self.text)
+			--value = self.__owner.Text:GetText()
+			self:GetParent():Hide()
+			end)
+		opt[i]:HookScript("OnClick", function(self)
+				--value = self.text
+				--GLOBEVARIABLE(value, i)
+				--value = self.__owner.Text:GetText()
+				--EKMinimapDB[value] = self.__owner.Text:GetText()
+				GLOBEVARIABLE(value, self.__owner.Text:GetText())
+			end)
 		opt[i]:SetScript("OnEnter", function() opt[i].bg:SetBackdropColor(0, 1, 1, .7) end)
 		opt[i]:SetScript("OnLeave", function() opt[i].bg:SetBackdropColor(0, 0, 0, .7) end)
-		--opt[i]:SetScript("OnLeave", optOnLeave)
 
 		dd.options[i] = opt[i]
 		index = index + 1
@@ -423,6 +419,10 @@ local function CreateBar(self, name, width, height, min, max, step)
 	return s
 end
 
+--===============================================--
+-----------------    [[ GUI ]]    -----------------
+--===============================================--
+
 local function CreateOptions()
 	if MainFrame ~= nil then
 		MainFrame:Show()
@@ -438,9 +438,6 @@ local function CreateOptions()
 	MainFrame:SetMovable(true)
 	MainFrame:EnableMouse(true)
 	MainFrame:RegisterForDrag("LeftButton")
-	--MainFrame:SetBackdrop({ bgFile = "Interface\\ChatFrame\\ChatFrameBackground", edgeFile = "Interface\\ChatFrame\\ChatFrameBackground", edgeSize = 3, })
-	--MainFrame:SetBackdropColor(0, 0, 0, .5)
-	--MainFrame:SetBackdropBorderColor(0, 0, 0)
 	MainFrame.bg = F.CreateBG(MainFrame, 5, 5, .5)
 	MainFrame:SetClampedToScreen(true)
 	MainFrame:SetScript("OnDragStart", function() MainFrame:StartMoving() end)
@@ -474,7 +471,7 @@ local function CreateOptions()
 	local mapPosText = F.CreateFS(MainFrame, L.AnchorOpt, "LEFT")
 	mapPosText:SetPoint("TOPLEFT", IconBox, "BOTTOMLEFT", 10, -10)
 	
-	local mapAnchor = CreateDropDown(MainFrame, 120, 20, optList)
+	local mapAnchor = CreateDropDown(MainFrame, 120, 20, optList, "MinimapAnchor")
 	mapAnchor:SetPoint("LEFT", mapPosText, "RIGHT", 4, 0)
 	mapAnchor.Text = F.CreateFS(mapAnchor, EKMinimapDB["MinimapAnchor"], "CENTER")
 	mapAnchor.Text:SetPoint("CENTER", mapAnchor, 0, 0)
@@ -555,7 +552,7 @@ local function CreateOptions()
 	local otfPosText = F.CreateFS(MainFrame, L.AnchorOpt, "LEFT")
 	otfPosText:SetPoint("TOPLEFT", StarBox, "BOTTOMLEFT", 10, -10)
 	
-	local otfAnchor = CreateDropDown(MainFrame, 120, 20, optList)
+	local otfAnchor = CreateDropDown(MainFrame, 120, 20, optList, "ObjectiveAnchor")
 	otfAnchor:SetPoint("LEFT", otfPosText, "RIGHT", 4, 0)
 	otfAnchor.Text = F.CreateFS(otfAnchor, EKMinimapDB["ObjectiveAnchor"], "LEFT")
 	otfAnchor.Text:SetPoint("CENTER", otfAnchor, 0, 0)
@@ -701,7 +698,7 @@ SLASH_EKMINIMAP2 = "/ekminimap"
 -- Credits --
 -------------
 
-	-- Felix S., sakaras, ape47, iMinimap by Chiril, ooMinimap by Ooglogput, intMinimap by Int0xMonkey
+	-- HopeASD, Felix S., sakaras, ape47, iMinimap by Chiril, ooMinimap by Ooglogput, intMinimap by Int0xMonkey
 	-- DifficultyID list
 	-- https://wow.gamepedia.com/DifficultyID
 	-- rStatusButton by zork

@@ -1,6 +1,6 @@
 local addon, ns = ...
 local C, F, G, L = unpack(ns)
-local Minimap, sub = Minimap, string.sub
+local Minimap, sub, floor, CreateFrame = Minimap, string.sub, math.floor, CreateFrame
 
 --====================================================--
 -----------------    [[ Function ]]    -----------------
@@ -26,11 +26,8 @@ local function updateMinimapPos()
 end
 
 local function updateMinimapSize()
-	--Minimap:SetSize(EKMinimapDB["MinimapSize"], EKMinimapDB["MinimapSize"])
 	Minimap:SetSize(140, 140)
-	--Minimap:SetScale(1)
 	Minimap:SetScale(EKMinimapDB["MinimapScale"])
-	--MinimapCluster:SetSize(EKMinimapDB["MinimapSize"], EKMinimapDB["MinimapSize"])
 end
 
 local function setMinimap()
@@ -54,18 +51,6 @@ local function setMinimap()
 	
 	Minimap.bg = F.CreateBG(Minimap, 5, 5, 1)
 	
-	--[[
-	hooksecurefunc(VehicleSeatIndicator, "SetPoint", function(self, _, parent)
-		if parent == "MinimapCluster" or parent == MinimapCluster then
-			self:ClearAllPoints()
-			if iconAnchor then
-				self:SetPoint("TOPLEFT", Minimap, "BOTTOMRIGHT", 0, -20)
-			else
-				self:SetPoint("TOPRIGHT", Minimap, "BOTTOMLEFT", 0, -20)
-			end
-		end
-	end)
-	]]--
 	hooksecurefunc(UIWidgetBelowMinimapContainerFrame, "SetPoint", function(self, _, parent)
 		if parent == "MinimapCluster" or parent == MinimapCluster then
 			self:ClearAllPoints()
@@ -205,13 +190,17 @@ local function createGarrisonTooltip(self)
 		if name then
 			GameTooltip:AddLine(" ")
 			GameTooltip:AddDoubleLine(name, _G["FACTION_STANDING_LABEL"..standing], 0, 1, 0.5, 0, 1, 0.5)
-			--cur - min.." / "..max - min.." ("..floor((cur - min)/(max - min)*100).."%)"
-			if standing ~= 8 then
-				GameTooltip:AddDoubleLine(REFORGE_CURRENT..HEADER_COLON, cur - min.." / "..max - min.." ("..floor((cur - min)/(max - min)*100).."%)", 1, 1, 1, 1, 1, 1)
-				GameTooltip:AddDoubleLine(NEXT_RANK_COLON, (max-cur), 1, 1, 1, 1, 1, 1)
-			else
-				GameTooltip:AddDoubleLine(REFORGE_CURRENT..HEADER_COLON, cur, 1, 1, 1, 1, 1, 1)
+			if standing == MAX_REPUTATION_REACTION then
+				max = min + 1e3
+				cur = max - 1
 			end
+			GameTooltip:AddDoubleLine(REFORGE_CURRENT..HEADER_COLON, cur - min.." / "..max - min.." ("..floor((cur - min)/(max - min)*100).."%)", 1, 1, 1, 1, 1, 1)
+			if standing ~= 8 then
+				GameTooltip:AddDoubleLine(NEXT_RANK_COLON, (max-cur), 1, 1, 1, 1, 1, 1)
+			end
+			--else
+				--GameTooltip:AddDoubleLine(REFORGE_CURRENT..HEADER_COLON, cur, 1, 1, 1, 1, 1, 1)
+			--end
 		end
 	end
 		
@@ -467,9 +456,9 @@ local HideOH = CreateFrame("Frame")
 		local OrderHallCommandBar = OrderHallCommandBar
 		
 		if OrderHallCommandBar then
+			OrderHallCommandBar.Show = F.Dummy
 			OrderHallCommandBar:Hide()
 			OrderHallCommandBar:UnregisterAllEvents()
-			OrderHallCommandBar.Show = F.Dummy
 		end
 		
 		OrderHall_CheckCommandBar = F.Dummy
