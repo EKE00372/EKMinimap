@@ -7,6 +7,7 @@
 ## X-Credits: Ooglogput, Chiril, ape47, sakaras, Siweia, Paopao, HopeASD
 
 Config.lua
+#Locale.lua
 EKMinimap.lua
 Clickmenu.lua
 ObjectiveTracker.lua
