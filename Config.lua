@@ -8,12 +8,10 @@ local addon, ns = ...
 	ns[3] = {} -- G, globals (Optionnal)
 	ns[4] = {} -- L, localization
 	
-	--if EKMinimapDB == nil then EKMinimapDB = {} end
-	
 local C, F, G, L = unpack(ns)
 local MediaFolder = "Interface\\AddOns\\EKMinimap\\Media\\"
 local v = GetAddOnMetadata("EKMinimap", "Version")
-local tonumber = tonumber
+local CreateFrame, tonumber, pairs = CreateFrame, tonumber, pairs
 
 --===================================================--
 -----------------    [[ Initial	]]    -----------------
@@ -96,7 +94,7 @@ elseif GetLocale() == "zhCN" then
 	L.ObjectiveStarOpt = "使用 ★ 标记追踪项目"
 	L.ObjectiveStyleOpt = "启用追踪框美化"
 	L.HeightOpt = "高度"
-	L.IconOpt = "角色资讯提示"
+	L.IconOpt = "角色信息提示"
 	
 	L.Calendar = "行事历"
 	L.Left = "左"
@@ -223,11 +221,11 @@ local optList = {
 
 -- variable check: check if value update, or simply get value for show
 local function GLOBEVARIABLE(value, newValue)
-		if newValue ~= nil then
-			EKMinimapDB[value] = newValue
-		else
-			return EKMinimapDB[value]
-		end
+	if newValue ~= nil then
+		EKMinimapDB[value] = newValue
+	else
+		return EKMinimapDB[value]
+	end
 end
 
 -- click buttons
@@ -279,7 +277,6 @@ local function CreateCheckBox(self, text, value)
 	
 	cb.text = F.CreateFS(cb, text, "LEFT")
 	cb.text:SetPoint("LEFT", cb, "RIGHT", 4, 0)
-	--cb.Type = "CheckBox"
 	
 	return cb
 end
@@ -374,8 +371,6 @@ local function CreateDropDown(self, width, height, data, value)
 	end
 	list:SetSize(width, index*(height+2) + 6)
 
-	--dd.Type = "DropDown"
-	
 	return dd
 end
 
@@ -405,6 +400,7 @@ local function CreateOptions()
 	
 	MainFrame = CreateFrame("Frame", "EKMinimapOptions", UIParent)
 	tinsert(UISpecialFrames, "EKMinimapOptions")
+	
 	MainFrame:SetFrameStrata("DIALOG")
 	MainFrame:SetWidth(500)
 	MainFrame:SetHeight(420)
@@ -423,28 +419,10 @@ local function CreateOptions()
 	-- minimap / 小地圖
 	
 	local mapTitle = F.CreateFS(MainFrame, L.MinimapOpt, "LEFT", "TOPLEFT", 30, -30)
-	--[[
-	local ClickMenuBox = CreateCheckBox(MainFrame)
-	ClickMenuBox:SetPoint("TOPLEFT", MainFrame, 30, -60)
-	ClickMenuBox:SetChecked(EKMinimapDB["ClickMenu"] == true or false)
-	ClickMenuBox:SetScript("OnClick", function(self)
-		EKMinimapDB["ClickMenu"] = (self:GetChecked())
-	end)
-	local ClickMenuText = F.CreateFS(ClickMenuBox, L.ClickMenuOpt, "LEFT")
-	ClickMenuText:SetPoint("LEFT", ClickMenuBox, "RIGHT", 4, 0)
-	]]--
+
 	local ClickMenuBox = CreateCheckBox(MainFrame, L.ClickMenuOpt, "ClickMenu")
 	ClickMenuBox:SetPoint("TOPLEFT", MainFrame, 30, -60)
-	--[[
-	local IconBox = CreateCheckBox(MainFrame)
-	IconBox:SetPoint("BOTTOM", ClickMenuBox, 0, -30)
-	IconBox:SetChecked(EKMinimapDB["CharacterIcon"] == true or false)
-	IconBox:SetScript("OnClick", function(self)
-		EKMinimapDB["CharacterIcon"] = (self:GetChecked())
-	end)
-	local IconText = F.CreateFS(IconBox, L.IconOpt, "LEFT")
-	IconText:SetPoint("LEFT", IconBox, "RIGHT", 4, 0)
-	]]--
+	
 	local IconBox = CreateCheckBox(MainFrame, L.IconOpt, "CharacterIcon")
 	IconBox:SetPoint("BOTTOM", ClickMenuBox, 0, -30)
 	
@@ -453,8 +431,6 @@ local function CreateOptions()
 	
 	local mapAnchor = CreateDropDown(MainFrame, 120, 20, optList, "MinimapAnchor")
 	mapAnchor:SetPoint("LEFT", mapPosText, "RIGHT", 4, 0)
-	--mapAnchor.Text = F.CreateFS(mapAnchor, EKMinimapDB["MinimapAnchor"], "CENTER")
-	--mapAnchor.Text:SetPoint("CENTER", mapAnchor, 0, 0)
 	
 	local mapXText = F.CreateFS(MainFrame, L.XOpt, "LEFT")
 	mapXText:SetPoint("LEFT", mapPosText, 0, -30)
@@ -462,42 +438,12 @@ local function CreateOptions()
 	local mapXBox = CreateEditBox(MainFrame, 100, 20, "MinimapX")
 	mapXBox:SetPoint("LEFT", mapXText, "RIGHT", 4, 0)
 	
-	--[[
-	local mapXBox = CreateEditBox(MainFrame, 100, 20)
-	mapXBox:SetPoint("LEFT", mapXText, "RIGHT", 4, 0)
-	mapXBox:SetText(EKMinimapDB["MinimapX"])
-	mapXBox:SetScript("OnEnterPressed", function(self)
-		local n = tonumber(self:GetText())
-		if n then
-			EKMinimapDB["MinimapX"] = n
-		end
-		self:ClearFocus()
-	end)
-    mapXBox:SetScript("OnEscapePressed", function(self)
-		self:SetText(EKMinimapDB["MinimapX"])
-	end)
-	]]--
 	local mapYText = F.CreateFS(MainFrame, L.YOpt, "LEFT")
 	mapYText:SetPoint("LEFT", mapXText, 0, -30)
 	
 	local mapYBox = CreateEditBox(MainFrame, 100, 20, "MinimapY")
 	mapYBox:SetPoint("LEFT", mapYText, "RIGHT", 4, 0)
-	--[[
-	local mapYBox = CreateEditBox(MainFrame, 100, 20)
-	mapYBox:SetPoint("LEFT", mapYText, "RIGHT", 4, 0)
-	mapYBox:SetText(EKMinimapDB["MinimapY"])
-	mapYBox:SetScript("OnEnterPressed", function(self)
-		local n = tonumber(self:GetText())
-		if n then
-			EKMinimapDB["MinimapY"] = n
-		end
-		self:ClearFocus()
-	end)
-    mapYBox:SetScript("OnEscapePressed", function(self)
-		self:SetText(EKMinimapDB["MinimapY"])
-		self:ClearFocus()
-	end)
-	]]--
+
 	local mapSizeBar = CreateBar(MainFrame, "Size", 160, 20, 10, 20, 1)
 	mapSizeBar:SetPoint("TOP", mapYText, "BOTTOM", 80, -34)
 	mapSizeBar:SetValue(EKMinimapDB["MinimapScale"]*10)
@@ -510,7 +456,8 @@ local function CreateOptions()
 	mapSizeBar:SetScript("OnValueChanged", function(self)
 		local n = tonumber(self:GetValue())
 		if n then
-			EKMinimapDB["MinimapScale"] = n/10
+			GLOBEVARIABLE("MinimapScale", n/10)
+			--EKMinimapDB["MinimapScale"] = n/10
 		end
 		mapSizeText:SetText(L.SizeOpt.." "..EKMinimapDB["MinimapScale"], "LEFT")
 	end)
@@ -521,38 +468,15 @@ local function CreateOptions()
 	
 	local OTFBox = CreateCheckBox(MainFrame, L.ObjectiveStyleOpt, "ObjectiveStyle")
 	OTFBox:SetPoint("TOP", MainFrame, 20, -60)
-	--[[
-	local OTFBox = CreateCheckBox(MainFrame)
-	OTFBox:SetPoint("TOP", MainFrame, 20, -60)
-	OTFBox:SetChecked(EKMinimapDB["ObjectiveStyle"] == true)
-	OTFBox:SetScript("OnClick", function(self)
-		EKMinimapDB["ObjectiveStyle"] = (self:GetChecked() or false)
-	end)
-	local OTFText = F.CreateFS(OTFBox, L.ObjectiveStyleOpt, "LEFT")
-	OTFText:SetPoint("LEFT", OTFBox, "RIGHT", 4, 0)
-	]]--
 	
 	local StarBox = CreateCheckBox(MainFrame, L.ObjectiveStarOpt, "ObjectiveStar")
 	StarBox:SetPoint("BOTTOM", OTFBox, 0, -30)
-	
-	--[[
-	local StarBox = CreateCheckBox(MainFrame)
-	StarBox:SetPoint("BOTTOM", OTFBox, 0, -30)
-	StarBox:SetChecked(EKMinimapDB["ObjectiveStar"] == true)
-	StarBox:SetScript("OnClick", function(self)
-		EKMinimapDB["ObjectiveStar"] = (self:GetChecked() or false)
-	end)
-	local StarText = F.CreateFS(StarBox, L.ObjectiveStarOpt, "LEFT")
-	StarText:SetPoint("LEFT", StarBox, "RIGHT", 4, 0)
-	]]--
 	
 	local otfPosText = F.CreateFS(MainFrame, L.AnchorOpt, "LEFT")
 	otfPosText:SetPoint("TOPLEFT", StarBox, "BOTTOMLEFT", 10, -10)
 	
 	local otfAnchor = CreateDropDown(MainFrame, 120, 20, optList, "ObjectiveAnchor")
 	otfAnchor:SetPoint("LEFT", otfPosText, "RIGHT", 4, 0)
-	--otfAnchor.Text = F.CreateFS(otfAnchor, EKMinimapDB["ObjectiveAnchor"], "LEFT")
-	--otfAnchor.Text:SetPoint("CENTER", otfAnchor, 0, 0)
 	
 	local otfXText = F.CreateFS(MainFrame, L.XOpt, "LEFT")
 	otfXText:SetPoint("LEFT", otfPosText, 0, -30)
@@ -565,38 +489,7 @@ local function CreateOptions()
 	
 	local otfYBox = CreateEditBox(MainFrame, 100, 20, "ObjectiveY")
 	otfYBox:SetPoint("LEFT", otfYText, "RIGHT", 4, 0)
-	--[[
-	local otfXBox = CreateEditBox(MainFrame, 100, 20)
-	otfXBox:SetPoint("LEFT", otfXText, "RIGHT", 4, 0)
-	otfXBox:SetText(EKMinimapDB["ObjectiveX"])
-	otfXBox:SetScript("OnEnterPressed", function(self)
-		local n = tonumber(self:GetText())
-		if n then
-			EKMinimapDB["ObjectiveX"] = n
-		end
-		self:ClearFocus()
-	end)
-    otfXBox:SetScript("OnEscapePressed", function(self)
-		self:SetText(EKMinimapDB["ObjectiveX"])
-	end)
-	
-	local otfYText = F.CreateFS(MainFrame, L.YOpt, "LEFT")
-	otfYText:SetPoint("LEFT", otfXText, 0, -30)
-	
-	local otfYBox = CreateEditBox(MainFrame, 100, 20)
-	otfYBox:SetPoint("LEFT", otfYText, "RIGHT", 4, 0)
-	otfYBox:SetText(EKMinimapDB["ObjectiveY"])
-	otfYBox:SetScript("OnEnterPressed", function(self)
-		local n = tonumber(self:GetText())
-		if n then
-			EKMinimapDB["ObjectiveY"] = n
-		end
-		self:ClearFocus()
-	end)
-    otfYBox:SetScript("OnEscapePressed", function(self)
-		self:SetText(EKMinimapDB["ObjectiveY"])
-	end)
-	]]--
+
 	local otfHeightBar = CreateBar(MainFrame, "Height", 160, 20, 200, 1200, 100)
 	otfHeightBar:SetPoint("TOP", otfYText, "BOTTOM", 80, -34)
 	otfHeightBar:SetValue(EKMinimapDB["ObjectiveHeight"])
@@ -607,7 +500,8 @@ local function CreateOptions()
 	otfHeightBar:SetScript("OnValueChanged", function(self)
 		local n = tonumber(self:GetValue())
 		if n then
-			EKMinimapDB["ObjectiveHeight"] = n
+			GLOBEVARIABLE("ObjectiveHeight", n)
+			--EKMinimapDB["ObjectiveHeight"] = n
 		end
 		otfHeightText:SetText(L.HeightOpt.." "..EKMinimapDB["ObjectiveHeight"])
 	end)
@@ -635,13 +529,16 @@ local function CreateOptions()
 	q:SetScript("OnLeave", function() GameTooltip:Hide() end)
 	
 	local infoCmd = F.CreateFS(MainFrame, L.cmdInfo, "LEFT")
-	infoCmd:SetPoint("TOPLEFT",q, "TOPRIGHT", 4, 8)
+	infoCmd:SetPoint("TOPLEFT", q, "TOPRIGHT", 4, 8)
+	
 	local infoDrag = F.CreateFS(MainFrame, L.dragInfo, "LEFT")
 	infoDrag:SetPoint("LEFT", q, "RIGHT", 4, 2)
+	
 	local infoScroll = F.CreateFS(MainFrame, L.scrollInfo, "LEFT")
 	infoScroll:SetPoint("BOTTOMLEFT", q, "BOTTOMRIGHT", 4, -4)
 	
 	local infoApply = F.CreateFS(MainFrame, L.Apply, "LEFT", "BOTTOMLEFT", 30, 30)
+	
 	-- buttons
 	
 	local closeButton = CreateButton(MainFrame, 22, 22, "X")
@@ -675,20 +572,6 @@ local function CreateOptions()
 	local resetButton = CreateButton(MainFrame, 80, 30, RESET)
 	resetButton:SetPoint("RIGHT", reloadButton, "LEFT", -10, 0)
 	resetButton:SetScript("OnClick", function()
-		--[[EKMinimapDB = {
-			["ObjectiveStar"] = true,
-			["ObjectiveX"] = -100,
-			["ObjectiveAnchor"] = "TOPRIGHT",
-			["Objective"] = true,
-			["ObjectiveY"] = -170,
-			["MinimapSize"] = 160,
-			["MinimapX"] = 10,
-			["ClickMenu"] = true,
-			["MinimapY"] = -10,
-			["ObjectiveHeight"] = 600,
-			["MinimapAnchor"] = "TOPLEFT",
-			["CharacterIcon"] = true,
-		}]]--
 		EKMinimapDB = C.defaultSettings
 		ReloadUI()
 	end)
@@ -700,12 +583,12 @@ end
 SLASH_EKMINIMAP1 = "/ekm"
 SLASH_EKMINIMAP2 = "/ekminimap"
 
-
 -------------
 -- Credits --
 -------------
 
-	-- HopeASD, Felix S., sakaras, ape47, iMinimap by Chiril, ooMinimap by Ooglogput, intMinimap by Int0xMonkey
+	-- HopeASD, Felix S., sakaras, ape47, 
+	-- iMinimap by Chiril, ooMinimap by Ooglogput, intMinimap by Int0xMonkey
 	-- DifficultyID list
 	-- https://wow.gamepedia.com/DifficultyID
 	-- rStatusButton by zork
