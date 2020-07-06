@@ -88,7 +88,7 @@ local function OnEvent()
 			notCheckable = true,
 		},
 		{	-- 社群
-			text = COMMUNITIES,		-- OLD: COMMUNITIES_FRAME_TITLE
+			text = COMMUNITIES_FRAME_TITLE,		-- OLD: COMMUNITIES
 			icon = "Interface\\FriendsFrame\\UI-Toast-ChatInviteIcon",
 			arg1 = IsInGuild("player"),
 			func = function() 
@@ -97,23 +97,6 @@ local function OnEvent()
 					return
 				end
 				ToggleCommunitiesFrame()
-			end,
-			notCheckable = true,
-		},
-		{	-- 公會
-			text = GUILD,
-			icon = "Interface\\GossipFrame\\TabardGossipIcon",
-			arg1 = IsInGuild("player"),
-			func = function() 
-				if InCombatLockdown() then
-					UIErrorsFrame:AddMessage("|cffff0000"..ERR_NOT_IN_COMBAT.."|r")
-					return
-				end
-				if not GuildFrame then
-					LoadAddOn("Blizzard_GuildUI")
-				end
-				--GuildFrame_Toggle()
-				securecall(ToggleFrame, GuildFrame)
 			end,
 			notCheckable = true,
 		},
@@ -250,19 +233,19 @@ local function OnEvent()
 					UIErrorsFrame:AddMessage("|cffff0000"..ERR_NOT_IN_COMBAT.."|r")
 					return
 				end
-				securecall(ToggleHelpFrame) 
+				securecall(ToggleHelpFrame)
 			end,
 			notCheckable = true,
 		},
 		{	-- 行事曆
-			text = SLASH_CALENDAR1:gsub("/(.*)","%1"),	-- 沒有合適的global strings，而且也無法通用全語系本地化，只能將就
+			text = L.Calendar,
 			func = function()
 				if InCombatLockdown() then
 					UIErrorsFrame:AddMessage("|cffff0000"..ERR_NOT_IN_COMBAT.."|r")
 					return
 				end
 				if not CalendarFrame then 
-					LoadAddOn("Blizzard_Calendar") 
+					LoadAddOn("Blizzard_Calendar")
 				end
 				Calendar_Toggle()
 			end,
@@ -273,12 +256,38 @@ local function OnEvent()
 			colorCode = "|cff999999",
 			func = function()
 				if not BattlefieldMapFrame then 
-					LoadAddOn("Blizzard_BattlefieldMap") 
+					LoadAddOn("Blizzard_BattlefieldMap")
 				end
 				BattlefieldMapFrame:Toggle()
 			end,
 			notCheckable = true,
 		},
+		--[[
+		{	-- 空行
+			text = "",
+			isTitle = true,
+			notCheckable = true,
+		},
+		{	-- 彈出乘客
+			text = EJECT_PASSENGER,
+			isTitle = true,
+			notCheckable = true,
+		},
+		{	-- 彈出乘客1
+			text = L.Left,
+			func = function()
+				EjectPassengerFromSeat(1)
+			end,
+			notCheckable = true,
+		},
+		{	-- 彈出乘客2
+			text = L.Right,
+			func = function()
+				EjectPassengerFromSeat(2)
+			end,
+			notCheckable = true,
+		},
+		]]--
 		{	-- 空行
 			text = "",
 			isTitle = true,

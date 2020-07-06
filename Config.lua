@@ -13,66 +13,13 @@ local addon, ns = ...
 local C, F, G, L = unpack(ns)
 local MediaFolder = "Interface\\AddOns\\EKMinimap\\Media\\"
 local v = GetAddOnMetadata("EKMinimap", "Version")
+local tonumber = tonumber
 
---------------
--- Settings --
---------------
-
-local default = CreateFrame("Frame")
-	default:RegisterEvent("ADDON_LOADED")
-	default:SetScript("OnEvent", function(self, _, addonName)
-		if addonName == addon then
-			if not EKMinimapDB then
-				EKMinimapDB = {
-					["Objective"] = true,
-					["ObjectiveStar"] = true,
-					["ObjectiveHeight"] = 600,
-					["ObjectiveAnchor"] = "TOPRIGHT",
-					["ObjectiveX"] = -100,
-					["ObjectiveY"] = -170,
-					["MinimapScale"] = 1.2,
-					["MinimapAnchor"] = "TOPLEFT",
-					["MinimapY"] = -10,
-					["MinimapX"] = 10,
-					["ClickMenu"] = true,
-					["CharacterIcon"] = true,
-				}
-			end
-			
-			if EKMinimapDB["ClickMenu"] == nil then EKMinimapDB["ClickMenu"] = true end
-			if EKMinimapDB["ObjectiveStyle"] == nil then EKMinimapDB["ObjectiveStyle"] = true end
-			if EKMinimapDB["ObjectiveAnchor"] == nil then EKMinimapDB["ObjectiveAnchor"] = "TOPRIGHT" end
-			if EKMinimapDB["ObjectiveX"] == nil then EKMinimapDB["ObjectiveX"] = -100 end
-			if EKMinimapDB["ObjectiveY"] == nil then EKMinimapDB["ObjectiveY"] = -170 end
-			if EKMinimapDB["ObjectiveHeight"] == nil then EKMinimapDB["ObjectiveHeight"] = 6 end
-			if EKMinimapDB["ObjectiveStar"] == nil then EKMinimapDB["ObjectiveStar"] = true end
-			if EKMinimapDB["MinimapScale"] == nil then EKMinimapDB["MinimapScale"] = 1.2 end
-			if EKMinimapDB["MinimapAnchor"] == nil then EKMinimapDB["MinimapAnchor"] = "TOPLEFT" end
-			if EKMinimapDB["MinimapX"] == nil then EKMinimapDB["MinimapX"] = 10 end
-			if EKMinimapDB["MinimapY"] == nil then EKMinimapDB["MinimapY"] = -10 end
-			if EKMinimapDB["CharacterIcon"] == nil then EKMinimapDB["CharacterIcon"] = true end
-		end
-	end)
-
-------------
--- Golbal --
-------------
+--===================================================--
+-----------------    [[ Initial	]]    -----------------
+--===================================================--
 
 	G.Ccolors = (CUSTOM_CLASS_COLORS or RAID_CLASS_COLORS)[select(2, UnitClass("player"))]
-
-	-- slash cmd / 指令
-	-- /rm 重置小地圖位置 / reset minimap frame position
-	-- /ro 重置任務列表位置 / reset object frame position
-	
-	-- 小地圖中鍵追蹤選單，右鍵微型選單 / middle button click: tracking menu; right click: micro menu
-	-- 滾輪縮放區域，alt+滾輪縮放大小 / scroll to scale zone, alt+scroll to scale minimap frame
-	-- alt+右鍵按住移動 / alt+right click to drag
-	-- alt分享ctrl放棄 / alt click title share quest, ctrl click abandon quest
-	
--------------
--- Texture --
--------------
-
 	G.Mask = MediaFolder.."mask.blp"
 	--G.Tex = "Interface\\Buttons\\WHITE8x8"
 	G.Tex = "Interface\\ChatFrame\\ChatFrameBackground"
@@ -80,11 +27,6 @@ local default = CreateFrame("Frame")
 	G.Mail = "Interface\\MINIMAP\\TRACKING\\Mailbox.blp"  -- "Interface\\HELPFRAME\\ReportLagIcon-Mail.blp"
 	G.Diff = MediaFolder.."difficulty.tga"
 	G.Report = "Interface\\HelpFrame\\HelpIcon-ReportLag.blp"
-
------------
--- Fonts --
------------
-	
 	-- 字體 / font
 	G.font = STANDARD_TEXT_FONT
 	-- minimap / 小地圖字型
@@ -93,6 +35,25 @@ local default = CreateFrame("Frame")
 	-- objectframe / 追蹤字型
 	G.obfontSize = 18
 	G.obfontFlag = "OUTLINE"
+
+--====================================================--
+-----------------    [[ Settings ]]    -----------------
+--====================================================--
+
+	C.defaultSettings = {
+		["ObjectiveStyle"] = true,
+		["ObjectiveStar"] = true,
+		["ObjectiveHeight"] = 600,
+		["ObjectiveAnchor"] = "TOPRIGHT",
+		["ObjectiveX"] = -100,
+		["ObjectiveY"] = -170,
+		["MinimapScale"] = 1.2,
+		["MinimapAnchor"] = "TOPLEFT",
+		["MinimapY"] = -10,
+		["MinimapX"] = 10,
+		["ClickMenu"] = true,
+		["CharacterIcon"] = true,
+	}
 
 --===================================================--
 -----------------    [[ Locales ]]    -----------------
@@ -110,6 +71,10 @@ if GetLocale() == "zhTW" then
 	L.ObjectiveStyleOpt = "啟用追蹤框美化"
 	L.HeightOpt = "高度"
 	L.IconOpt = "角色資訊提示"
+	
+	L.Calendar = SLASH_CALENDAR2:gsub("/(.*)","%1")
+	L.Left = "左"
+	L.Right = "右"
 	
 	L.Apply = "更改後點擊「"..APPLY.."」立即重載生效。"
 	L.posApply = APPLY..L.SizeOpt.."座標"
@@ -133,6 +98,10 @@ elseif GetLocale() == "zhCN" then
 	L.HeightOpt = "高度"
 	L.IconOpt = "角色资讯提示"
 	
+	L.Calendar = "行事历"
+	L.Left = "左"
+	L.Right = "右"
+	
 	L.Apply = "更改后点击＂"..APPLY.."＂立即重载生效。"
 	L.posApply = APPLY..L.SizeOpt.."座标"
 	
@@ -155,6 +124,10 @@ else
 	L.HeightOpt = "Height"
 	L.IconOpt = "Character icon tooltip"
 	
+	L.Calendar = SLASH_CALENDAR1:gsub("/(.*)","%1")
+	L.Left = "Left"
+	L.Right = "Right"
+	
 	L.Apply = "Click "..APPLY.." to active changes."
 	L.posApply = APPLY.." Size and Pos"
 	
@@ -166,21 +139,33 @@ else
 	L.scrollInfo = "Alt-scroll scale minimap"
 end
 
-local optList = {
-	[1] = "TOP",
-	[2] = "TOPLEFT",
-	[3] = "TOPRIGHT",
-	[4] = "CENTER",
-	[5] = "LEFT",
-	[6] = "BOTTOM",
-	[7] = "BOTTOMLEFT",
-	[8] = "BOTTOMRIGHT",
-	[9] = "RIGHT",
-	}
+--===================================================--
+-----------------    [[ Initial ]]    -----------------
+--===================================================--
 
---====================================================--
------------------    [[ Function ]]    -----------------
---====================================================--
+local default = CreateFrame("Frame")
+	default:RegisterEvent("ADDON_LOADED")
+	default:SetScript("OnEvent", function(self, _, addonName)
+		if addonName == addon then
+			if not EKMinimapDB then EKMinimapDB = {} end
+			-- 載入存在於表中，但不存在於設定的数据
+			for key, value in pairs(C.defaultSettings) do
+				if EKMinimapDB[key] == nil then
+					EKMinimapDB[key] = value
+				end
+			end
+			-- 删除不存在於表中，但存在於設定的数据
+			for key in pairs(EKMinimapDB) do
+				if C.defaultSettings[key] == nil then
+					EKMinimapDB[key] = nil
+				end
+			end
+		end
+	end)
+
+--=====================================================--
+-----------------    [[ Functions ]]    -----------------
+--=====================================================--
 
 F.CreateFS = function(parent, text, justify, anchor, x, y)
 	local fs = parent:CreateFontString(nil, "OVERLAY")
@@ -224,6 +209,19 @@ end
 
 F.Dummy = function() end
 
+local optList = {
+	[1] = "TOP",
+	[2] = "TOPLEFT",
+	[3] = "TOPRIGHT",
+	[4] = "CENTER",
+	[5] = "LEFT",
+	[6] = "BOTTOM",
+	[7] = "BOTTOMLEFT",
+	[8] = "BOTTOMRIGHT",
+	[9] = "RIGHT",
+	}
+
+-- variable check: check if value update, or simply get value for show
 local function GLOBEVARIABLE(value, newValue)
 		if newValue ~= nil then
 			EKMinimapDB[value] = newValue
@@ -232,36 +230,12 @@ local function GLOBEVARIABLE(value, newValue)
 		end
 end
 
---[[
-local function optOnClick(self)
-	--PlaySound(SOUNDKIT.GS_TITLE_OPTION_OK)
-	local opt = self.__owner.options
-	for i = 1, #opt do
-		if self == opt[i] then
-			opt[i].selected = true
-		else
-			opt[i].selected = false
-		end
-	end
-	self.__owner.Text:SetText(self.text)
-	--EKMinimapDB["MinimapAnchor"] = self.text
-	value = self.text
-	self:GetParent():Hide()
-end
-]]--
-
 -- click buttons
 local function CreateButton(self, width, height, text)
 	local bu = CreateFrame("Button", nil, self)
 	bu:SetSize(width, height)
-	--[[bu:SetBackdrop({
-		bgFile = "Interface\\ChatFrame\\ChatFrameBackground",
-		edgeFile = "Interface\\ChatFrame\\ChatFrameBackground",
-		edgeSize = 1,
-	})
-	bu:SetBackdropColor(0, 0, 0, .3)
-	bu:SetBackdropBorderColor(0, 0, 0)]]--
 	bu.bg = F.CreateBG(bu, 1, 1, .5)
+	
 	bu:SetNormalTexture("")
 	bu:SetHighlightTexture("")
 	bu:SetPushedTexture("")
@@ -282,7 +256,7 @@ local function CreateButton(self, width, height, text)
 end
 
 -- check box
-local function CreateCheckBox(self)
+local function CreateCheckBox(self, text, value)
 	local cb = CreateFrame("CheckButton", nil, self, "InterfaceOptionsCheckButtonTemplate")
 	cb:SetHighlightTexture("Interface\\ChatFrame\\ChatFrameBackground")
 	cb:SetHitRectInsets(-5, -5, -5, -5)
@@ -293,34 +267,45 @@ local function CreateCheckBox(self)
 	hl:SetVertexColor(0, 1, 1, .25)
 
 	local bd = F.CreateBG(cb, -4, 1, .5)
-	--bd:SetBackdropColor(0, 0, 0, .5)
-	--bd:SetBackdropBorderColor(0, 0, 0)
 
 	local ch = cb:GetCheckedTexture()
 	ch:SetDesaturated(true)
 	ch:SetVertexColor(0, 1, 1)
 
+	cb:SetChecked(GLOBEVARIABLE(value) == true)
+	cb:SetScript("OnClick", function(self)
+		GLOBEVARIABLE(value, self:GetChecked())
+	end)
+	
+	cb.text = F.CreateFS(cb, text, "LEFT")
+	cb.text:SetPoint("LEFT", cb, "RIGHT", 4, 0)
 	--cb.Type = "CheckBox"
 	
 	return cb
 end
 
 -- edit box
-local function CreateEditBox(self, width, height)
+local function CreateEditBox(self, width, height, value)
 	local eb = CreateFrame("EditBox", nil, self)
 	eb:SetSize(width, height)
-	--[[eb:SetBackdrop({
-		bgFile = "Interface\\ChatFrame\\ChatFrameBackground",
-		edgeFile = "Interface\\ChatFrame\\ChatFrameBackground",
-		edgeSize = 1,
-	})
-	eb:SetBackdropColor(0, 0, 0, .3)
-	eb:SetBackdropBorderColor(0, 0, 0)]]--
 	eb.bg = F.CreateBG(eb, 3, 3, .5)
 	eb:SetAutoFocus(false)
+	
 	eb:SetTextInsets(5, 5, 0, 0)
 	eb:SetMaxLetters(500)
 	eb:SetFont(G.font, G.fontSize, G.fontFlag)
+	eb:SetText(GLOBEVARIABLE(value))
+	
+	eb:HookScript("OnEnterPressed", function(self)
+		local n = tonumber(self:GetText())
+		if n then
+			GLOBEVARIABLE(value, n)
+		end
+		self:ClearFocus()
+	end)
+	eb:HookScript("OnEscapePressed", function(self)
+		self:SetText(GLOBEVARIABLE(value))
+	end)
 	eb:SetScript("OnEnter", function() eb.bg:SetBackdropColor(0, 1, 1, .5) end)
 	eb:SetScript("OnLeave", function() eb.bg:SetBackdropColor(0, 0, 0, .5) end)
 	
@@ -345,6 +330,9 @@ local function CreateDropDown(self, width, height, data, value)
 	dd:SetSize(width, height)
 	dd.bg = F.CreateBG(dd, 3, 3, .5)
 	dd.options = {}
+	
+	dd.Text = F.CreateFS(dd, "", "CENTER", 0, 0)
+	dd.Text:SetText(GLOBEVARIABLE(value))
 	
 	local bu = CreateGear(dd)
 	bu:SetPoint("LEFT", dd, "RIGHT", -2, 0)
@@ -371,27 +359,13 @@ local function CreateDropDown(self, width, height, data, value)
 		text:SetPoint("RIGHT", -5, 0)
 		opt[i].text = j
 		opt[i].__owner = dd
-		--opt[i]:SetScript("OnClick", optOnClick)
 		opt[i]:SetScript("OnClick", function(self)
-			local opt = self.__owner.options
-				for i = 1, #opt do
-					if self == opt[i] then
-						opt[i].selected = true
-					else
-						opt[i].selected = false
-					end
-				end
 			self.__owner.Text:SetText(self.text)
-			--value = self.__owner.Text:GetText()
 			self:GetParent():Hide()
-			end)
+		end)
 		opt[i]:HookScript("OnClick", function(self)
-				--value = self.text
-				--GLOBEVARIABLE(value, i)
-				--value = self.__owner.Text:GetText()
-				--EKMinimapDB[value] = self.__owner.Text:GetText()
-				GLOBEVARIABLE(value, self.__owner.Text:GetText())
-			end)
+			GLOBEVARIABLE(value, self.__owner.Text:GetText())
+		end)
 		opt[i]:SetScript("OnEnter", function() opt[i].bg:SetBackdropColor(0, 1, 1, .7) end)
 		opt[i]:SetScript("OnLeave", function() opt[i].bg:SetBackdropColor(0, 0, 0, .7) end)
 
@@ -438,7 +412,7 @@ local function CreateOptions()
 	MainFrame:SetMovable(true)
 	MainFrame:EnableMouse(true)
 	MainFrame:RegisterForDrag("LeftButton")
-	MainFrame.bg = F.CreateBG(MainFrame, 5, 5, .5)
+	MainFrame.bg = F.CreateBG(MainFrame, 5, 5, .4)
 	MainFrame:SetClampedToScreen(true)
 	MainFrame:SetScript("OnDragStart", function() MainFrame:StartMoving() end)
 	MainFrame:SetScript("OnDragStop", function() MainFrame:StopMovingOrSizing() end)
@@ -449,7 +423,7 @@ local function CreateOptions()
 	-- minimap / 小地圖
 	
 	local mapTitle = F.CreateFS(MainFrame, L.MinimapOpt, "LEFT", "TOPLEFT", 30, -30)
-	
+	--[[
 	local ClickMenuBox = CreateCheckBox(MainFrame)
 	ClickMenuBox:SetPoint("TOPLEFT", MainFrame, 30, -60)
 	ClickMenuBox:SetChecked(EKMinimapDB["ClickMenu"] == true or false)
@@ -458,7 +432,10 @@ local function CreateOptions()
 	end)
 	local ClickMenuText = F.CreateFS(ClickMenuBox, L.ClickMenuOpt, "LEFT")
 	ClickMenuText:SetPoint("LEFT", ClickMenuBox, "RIGHT", 4, 0)
-	
+	]]--
+	local ClickMenuBox = CreateCheckBox(MainFrame, L.ClickMenuOpt, "ClickMenu")
+	ClickMenuBox:SetPoint("TOPLEFT", MainFrame, 30, -60)
+	--[[
 	local IconBox = CreateCheckBox(MainFrame)
 	IconBox:SetPoint("BOTTOM", ClickMenuBox, 0, -30)
 	IconBox:SetChecked(EKMinimapDB["CharacterIcon"] == true or false)
@@ -467,18 +444,25 @@ local function CreateOptions()
 	end)
 	local IconText = F.CreateFS(IconBox, L.IconOpt, "LEFT")
 	IconText:SetPoint("LEFT", IconBox, "RIGHT", 4, 0)
+	]]--
+	local IconBox = CreateCheckBox(MainFrame, L.IconOpt, "CharacterIcon")
+	IconBox:SetPoint("BOTTOM", ClickMenuBox, 0, -30)
 	
 	local mapPosText = F.CreateFS(MainFrame, L.AnchorOpt, "LEFT")
 	mapPosText:SetPoint("TOPLEFT", IconBox, "BOTTOMLEFT", 10, -10)
 	
 	local mapAnchor = CreateDropDown(MainFrame, 120, 20, optList, "MinimapAnchor")
 	mapAnchor:SetPoint("LEFT", mapPosText, "RIGHT", 4, 0)
-	mapAnchor.Text = F.CreateFS(mapAnchor, EKMinimapDB["MinimapAnchor"], "CENTER")
-	mapAnchor.Text:SetPoint("CENTER", mapAnchor, 0, 0)
+	--mapAnchor.Text = F.CreateFS(mapAnchor, EKMinimapDB["MinimapAnchor"], "CENTER")
+	--mapAnchor.Text:SetPoint("CENTER", mapAnchor, 0, 0)
 	
 	local mapXText = F.CreateFS(MainFrame, L.XOpt, "LEFT")
 	mapXText:SetPoint("LEFT", mapPosText, 0, -30)
 	
+	local mapXBox = CreateEditBox(MainFrame, 100, 20, "MinimapX")
+	mapXBox:SetPoint("LEFT", mapXText, "RIGHT", 4, 0)
+	
+	--[[
 	local mapXBox = CreateEditBox(MainFrame, 100, 20)
 	mapXBox:SetPoint("LEFT", mapXText, "RIGHT", 4, 0)
 	mapXBox:SetText(EKMinimapDB["MinimapX"])
@@ -492,10 +476,13 @@ local function CreateOptions()
     mapXBox:SetScript("OnEscapePressed", function(self)
 		self:SetText(EKMinimapDB["MinimapX"])
 	end)
-	
+	]]--
 	local mapYText = F.CreateFS(MainFrame, L.YOpt, "LEFT")
 	mapYText:SetPoint("LEFT", mapXText, 0, -30)
 	
+	local mapYBox = CreateEditBox(MainFrame, 100, 20, "MinimapY")
+	mapYBox:SetPoint("LEFT", mapYText, "RIGHT", 4, 0)
+	--[[
 	local mapYBox = CreateEditBox(MainFrame, 100, 20)
 	mapYBox:SetPoint("LEFT", mapYText, "RIGHT", 4, 0)
 	mapYBox:SetText(EKMinimapDB["MinimapY"])
@@ -508,10 +495,11 @@ local function CreateOptions()
 	end)
     mapYBox:SetScript("OnEscapePressed", function(self)
 		self:SetText(EKMinimapDB["MinimapY"])
+		self:ClearFocus()
 	end)
-	
+	]]--
 	local mapSizeBar = CreateBar(MainFrame, "Size", 160, 20, 10, 20, 1)
-	mapSizeBar:SetPoint("TOP", mapYText, "BOTTOM", 70, -34)
+	mapSizeBar:SetPoint("TOP", mapYText, "BOTTOM", 80, -34)
 	mapSizeBar:SetValue(EKMinimapDB["MinimapScale"]*10)
 	_G[mapSizeBar:GetName().."Low"]:SetText(1)
 	_G[mapSizeBar:GetName().."High"]:SetText(2)
@@ -531,6 +519,9 @@ local function CreateOptions()
 	
 	local otfTitle = F.CreateFS(MainFrame, L.ObjectiveOpt, "LEFT", "TOPLEFT", 260, -30)
 	
+	local OTFBox = CreateCheckBox(MainFrame, L.ObjectiveStyleOpt, "ObjectiveStyle")
+	OTFBox:SetPoint("TOP", MainFrame, 20, -60)
+	--[[
 	local OTFBox = CreateCheckBox(MainFrame)
 	OTFBox:SetPoint("TOP", MainFrame, 20, -60)
 	OTFBox:SetChecked(EKMinimapDB["ObjectiveStyle"] == true)
@@ -539,7 +530,12 @@ local function CreateOptions()
 	end)
 	local OTFText = F.CreateFS(OTFBox, L.ObjectiveStyleOpt, "LEFT")
 	OTFText:SetPoint("LEFT", OTFBox, "RIGHT", 4, 0)
+	]]--
 	
+	local StarBox = CreateCheckBox(MainFrame, L.ObjectiveStarOpt, "ObjectiveStar")
+	StarBox:SetPoint("BOTTOM", OTFBox, 0, -30)
+	
+	--[[
 	local StarBox = CreateCheckBox(MainFrame)
 	StarBox:SetPoint("BOTTOM", OTFBox, 0, -30)
 	StarBox:SetChecked(EKMinimapDB["ObjectiveStar"] == true)
@@ -548,18 +544,28 @@ local function CreateOptions()
 	end)
 	local StarText = F.CreateFS(StarBox, L.ObjectiveStarOpt, "LEFT")
 	StarText:SetPoint("LEFT", StarBox, "RIGHT", 4, 0)
+	]]--
 	
 	local otfPosText = F.CreateFS(MainFrame, L.AnchorOpt, "LEFT")
 	otfPosText:SetPoint("TOPLEFT", StarBox, "BOTTOMLEFT", 10, -10)
 	
 	local otfAnchor = CreateDropDown(MainFrame, 120, 20, optList, "ObjectiveAnchor")
 	otfAnchor:SetPoint("LEFT", otfPosText, "RIGHT", 4, 0)
-	otfAnchor.Text = F.CreateFS(otfAnchor, EKMinimapDB["ObjectiveAnchor"], "LEFT")
-	otfAnchor.Text:SetPoint("CENTER", otfAnchor, 0, 0)
+	--otfAnchor.Text = F.CreateFS(otfAnchor, EKMinimapDB["ObjectiveAnchor"], "LEFT")
+	--otfAnchor.Text:SetPoint("CENTER", otfAnchor, 0, 0)
 	
 	local otfXText = F.CreateFS(MainFrame, L.XOpt, "LEFT")
 	otfXText:SetPoint("LEFT", otfPosText, 0, -30)
 	
+	local otfXBox = CreateEditBox(MainFrame, 100, 20, "ObjectiveX")
+	otfXBox:SetPoint("LEFT", otfXText, "RIGHT", 4, 0)
+	
+	local otfYText = F.CreateFS(MainFrame, L.YOpt, "LEFT")
+	otfYText:SetPoint("LEFT", otfXText, 0, -30)
+	
+	local otfYBox = CreateEditBox(MainFrame, 100, 20, "ObjectiveY")
+	otfYBox:SetPoint("LEFT", otfYText, "RIGHT", 4, 0)
+	--[[
 	local otfXBox = CreateEditBox(MainFrame, 100, 20)
 	otfXBox:SetPoint("LEFT", otfXText, "RIGHT", 4, 0)
 	otfXBox:SetText(EKMinimapDB["ObjectiveX"])
@@ -590,9 +596,9 @@ local function CreateOptions()
     otfYBox:SetScript("OnEscapePressed", function(self)
 		self:SetText(EKMinimapDB["ObjectiveY"])
 	end)
-	
+	]]--
 	local otfHeightBar = CreateBar(MainFrame, "Height", 160, 20, 200, 1200, 100)
-	otfHeightBar:SetPoint("TOP", otfYText, "BOTTOM", 70, -34)
+	otfHeightBar:SetPoint("TOP", otfYText, "BOTTOM", 80, -34)
 	otfHeightBar:SetValue(EKMinimapDB["ObjectiveHeight"])
 	
 	local otfHeightText = F.CreateFS(otfHeightBar, L.HeightOpt.." "..EKMinimapDB["ObjectiveHeight"], "LEFT")
@@ -669,7 +675,7 @@ local function CreateOptions()
 	local resetButton = CreateButton(MainFrame, 80, 30, RESET)
 	resetButton:SetPoint("RIGHT", reloadButton, "LEFT", -10, 0)
 	resetButton:SetScript("OnClick", function()
-		EKMinimapDB = {
+		--[[EKMinimapDB = {
 			["ObjectiveStar"] = true,
 			["ObjectiveX"] = -100,
 			["ObjectiveAnchor"] = "TOPRIGHT",
@@ -682,7 +688,8 @@ local function CreateOptions()
 			["ObjectiveHeight"] = 600,
 			["MinimapAnchor"] = "TOPLEFT",
 			["CharacterIcon"] = true,
-		}
+		}]]--
+		EKMinimapDB = C.defaultSettings
 		ReloadUI()
 	end)
 end
