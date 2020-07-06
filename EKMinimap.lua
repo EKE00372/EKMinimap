@@ -16,6 +16,15 @@ function GetMinimapShape()
 	return "SQUARE"
 end
 
+local function findAnchor(value)
+	--local anchor = EKMinimapDB["MinimapAnchor"]
+	local anchor = EKMinimapDB[value]
+	local myAnchor = sub(anchor, -4)				-- get minimap anchor left or rignt
+	local iconAnchor = not not (myAnchor == "LEFT")	-- hope教我的語法糖
+	
+	return iconAnchor
+end
+
 --====================-==============================--
 -----------------    [[ Minimap ]]    -----------------
 --===================================================--
@@ -26,15 +35,16 @@ local function updateMinimapPos()
 end
 
 local function updateMinimapSize()
+	-- default size is ≈ 140
+	-- We use SetScale() instead SetSize() because there's an issue happened on load order and addon icons.
+	-- addon minimap icon may put themself to strange place because this addon load after then icons been created.
+	-- 如果使用 SetScale() 而非 SetSize()，會導致小地圖圖示跑到奇怪的地方
+	-- 因為插件的載入順序不同，本插件的小地圖尺寸更改晚於別的插件生成圖示，是於無法獲取正確的座標
 	Minimap:SetSize(140, 140)
 	Minimap:SetScale(EKMinimapDB["MinimapScale"])
 end
 
 local function setMinimap()
-	local anchor = EKMinimapDB["MinimapAnchor"]
-	local myAnchor = sub(anchor, -4)				-- get minimap anchor left or rignt
-	local iconAnchor = not not (myAnchor == "LEFT")	-- hope教我的語法糖
-	
 	updateMinimapPos()
 	Minimap:SetClampedToScreen(true)
 	Minimap:SetMovable(true)
@@ -46,8 +56,9 @@ local function setMinimap()
 	Minimap:SetFrameStrata("LOW")
 	Minimap:SetFrameLevel(3)
 	
-	MinimapCluster:ClearAllPoints()
-	MinimapCluster:SetAllPoints(Minimap)
+	--MinimapCluster:ClearAllPoints()
+	--MinimapCluster:SetAllPoints(Minimap)
+	MinimapCluster:EnableMouse(false)
 	
 	Minimap.bg = F.CreateBG(Minimap, 5, 5, 1)
 	
@@ -93,23 +104,11 @@ local function setMinimap()
 	end
 	
 	-- Queue Button / 佇列圖示
-	QueueStatusMinimapButton:ClearAllPoints()
-	QueueStatusMinimapButton:SetParent(Minimap)
-	QueueStatusMinimapButton:SetPoint(iconAnchor and "TOPRIGHT" or "TOPLEFT", Minimap, 0, 0)
 	QueueStatusMinimapButtonBorder:Hide()
 	QueueStatusMinimapButton:SetFrameLevel(10)
-	
-	-- Queue Tooltip fix / 佇列圖示提示
-	QueueStatusFrame:ClearAllPoints()
-	QueueStatusFrame:SetPoint(iconAnchor and "TOPRIGHT"or "TOPLEFT", Minimap, iconAnchor and "TOPRIGHT" or "TOPLEFT", 282, -10)
-	
 	-- Mail Frame / 信件提示
-	MiniMapMailFrame:ClearAllPoints()
-	MiniMapMailFrame:SetParent(Minimap)
-	MiniMapMailFrame:SetPoint(iconAnchor and "BOTTOMLEFT" or "BOTTOMRIGHT", Minimap, 0, 0)
 	MiniMapMailBorder:Hide()
 	MiniMapMailIcon:SetTexture(G.Mail)
-	MiniMapMailIcon:SetTexture("Interface\\MINIMAP\\TRACKING\\Mailbox.blp")
 end
 
 local function OnMouseWheel(self, delta)
@@ -141,23 +140,14 @@ local Stat = CreateFrame("Button", "EKMinimapTooltipButton", Minimap)
 	Stat:SetNormalTexture(G.Report)
 	Stat:SetPushedTexture(G.Report)
 	Stat:SetHighlightTexture(G.Report)
---	Stat:SetPoint(iconAnchor and "BOTTOMRIGHT" or "BOTTOMLEFT", Minimap, -3, 5)
 	Stat:SetAlpha(0)
-
-local function StatPos(self)
-	local anchor = EKMinimapDB["MinimapAnchor"]
-	local myAnchor = sub(anchor, -4)				-- get minimap anchor left or rignt
-	local iconAnchor = not not (myAnchor == "LEFT")
-	
-	self:SetPoint(iconAnchor and "BOTTOMRIGHT" or "BOTTOMLEFT", Minimap, -3, 5)
-end
+	Stat:SetScale(1)
 
 local function createGarrisonTooltip(self)
 	if not EKMinimapDB["CharacterIcon"] then return end
 	
-	GameTooltip:SetOwner(self, "ANCHOR_BOTTOM", (Minimap:GetWidth() * .7), -3)
+	GameTooltip:SetOwner(self, "ANCHOR_BOTTOM", findAnchor("MinimapAnchor") and (Minimap:GetWidth()*.7) or -(Minimap:GetWidth()*.7), -10)
 	GameTooltip:AddLine(CHARACTER_BUTTON, .6,.8, 1)
-	GameTooltip:AddLine(" ")
 
 	-- Experience
 	if UnitLevel("player") < MAX_PLAYER_LEVEL and not IsXPUserDisabled() then
@@ -165,6 +155,7 @@ local function createGarrisonTooltip(self)
 		local lvl = UnitLevel("player")
 		local rested = GetXPExhaustion()
 		
+		GameTooltip:AddLine(" ")
 		GameTooltip:AddDoubleLine(CHARACTER, LEVEL.. " "..lvl, 0, 1, .5, 0, 1, .5)
 		GameTooltip:AddDoubleLine(XP..HEADER_COLON, cur.." / "..max.." ("..floor(cur/max*100).."%)", 1,1,1,1,1,1)
 		if rested then
@@ -198,12 +189,9 @@ local function createGarrisonTooltip(self)
 			if standing ~= 8 then
 				GameTooltip:AddDoubleLine(NEXT_RANK_COLON, (max-cur), 1, 1, 1, 1, 1, 1)
 			end
-			--else
-				--GameTooltip:AddDoubleLine(REFORGE_CURRENT..HEADER_COLON, cur, 1, 1, 1, 1, 1, 1)
-			--end
 		end
 	end
-		
+	
 	-- azerite
 	do
 		local azeriteItem = C_AzeriteItem.FindActiveAzeriteItem()
@@ -226,19 +214,17 @@ end
 -----------------    [[ Difficulty ]]    -----------------
 --======================================================--
 
-local function styleDifficulty(self)
-	local Diff = CreateFrame("Frame", "EKMinimapDungeonIcon", Minimap)
+local Diff = CreateFrame("Frame", "EKMinimapDungeonIcon", Minimap)
 	Diff:SetSize(40, 40)
-	Diff:ClearAllPoints()
 	Diff:SetFrameLevel(Minimap:GetFrameLevel()+2)
-	Diff:SetPoint(iconAnchor and "TOPLEFT" or "TOPRIGHT", Minimap,  -5, 5)
 	Diff.Texture = Diff:CreateTexture(nil, "OVERLAY")
 	Diff.Texture:SetAllPoints(Diff)
 	Diff.Texture:SetTexture(G.Diff)
 	Diff.Texture:SetVertexColor(G.Ccolors.r, G.Ccolors.g, G.Ccolors.b)
-	
+
+local function styleDifficulty(self)
 	-- Difficulty Text / 難度文字
-	local DiffText = F.CreateFS(Diff, "", "CENTER")
+	local DiffText = F.CreateFS(self, "", "CENTER")
 	DiffText:SetPoint("CENTER")
 	
 	local inInstance, instanceType = IsInInstance()
@@ -318,21 +304,10 @@ local function styleDifficulty(self)
 	end
 
 	if not inInstance then
-		--Diff:Hide()
 		Diff:SetAlpha(0)
 	else
-		--Diff:Show()
 		Diff:SetAlpha(1)
 	end
-	
-	Diff:RegisterEvent("PLAYER_ENTERING_WORLD")
-	Diff:RegisterEvent("PLAYER_DIFFICULTY_CHANGED")
-	Diff:RegisterEvent("INSTANCE_GROUP_SIZE_CHANGED")
-	Diff:RegisterEvent("ZONE_CHANGED_NEW_AREA")
-	Diff:RegisterEvent("CHALLENGE_MODE_START")
-	Diff:RegisterEvent("CHALLENGE_MODE_COMPLETED")
-	Diff:RegisterEvent("CHALLENGE_MODE_RESET")
-	Diff:SetScript("OnEvent", styleDifficulty)
 end
 
 --================================================--
@@ -387,8 +362,8 @@ end
 	
 	-- [[ Icon ]] --
 	
-	Stat:RegisterEvent("PLAYER_ENTERING_WORLD")
-	Stat:SetScript("OnEvent", StatPos)
+	--Stat:RegisterEvent("PLAYER_ENTERING_WORLD")
+	--Stat:SetScript("OnEvent", StatPos)
 	
 	Stat:SetScript("OnEnter", function(self)
 		createGarrisonTooltip(self)
@@ -406,11 +381,44 @@ end
 		end
 		GarrisonLandingPageMinimapButton:Click()
 	end)
+	
+	Diff:RegisterEvent("PLAYER_ENTERING_WORLD")
+	Diff:RegisterEvent("PLAYER_DIFFICULTY_CHANGED")
+	Diff:RegisterEvent("INSTANCE_GROUP_SIZE_CHANGED")
+	Diff:RegisterEvent("ZONE_CHANGED_NEW_AREA")
+	Diff:RegisterEvent("CHALLENGE_MODE_START")
+	Diff:RegisterEvent("CHALLENGE_MODE_COMPLETED")
+	Diff:RegisterEvent("CHALLENGE_MODE_RESET")
+	Diff:SetScript("OnEvent", styleDifficulty)
 
 --=================================================--
 -----------------    [[ Load ]]    -----------------
 --=================================================--
 
+local function updateIconPos()
+	QueueStatusMinimapButton:ClearAllPoints()
+	QueueStatusFrame:ClearAllPoints()	-- Queue Tooltip fix / 佇列圖示提示
+	MiniMapMailFrame:ClearAllPoints()
+	
+	Stat:ClearAllPoints()
+	Diff:ClearAllPoints()
+
+	if findAnchor("MinimapAnchor") then
+		QueueStatusMinimapButton:SetPoint("TOPRIGHT", Minimap, 0, 0)
+		QueueStatusFrame:SetPoint("TOPLEFT", Minimap, "TOPRIGHT", 10, -2)
+		MiniMapMailFrame:SetPoint("BOTTOMLEFT", Minimap, 0, 0)
+		
+		Stat:SetPoint("BOTTOMRIGHT", Minimap, -1, 2)
+		Diff:SetPoint("TOPLEFT", Minimap,  -5, 5)
+	else
+		QueueStatusMinimapButton:SetPoint("TOPLEFT", Minimap, 0, 0)
+		QueueStatusFrame:SetPoint("TOPRIGHT", Minimap, "TOPLEFT", -10, -2)
+		MiniMapMailFrame:SetPoint("BOTTOMRIGHT", Minimap, 0, 0)
+		
+		Stat:SetPoint("BOTTOMLEFT", Minimap, -1, 2)
+		Diff:SetPoint("TOPRIGHT", Minimap,  5, 5)
+	end
+end
 
 SlashCmdList["EJCET1"] = function()
 	EjectPassengerFromSeat(1)
@@ -428,6 +436,8 @@ SLASH_EJCET22 = "/ejct2"
 F.ResetM = function()
 	updateMinimapPos()
 	updateMinimapSize()
+	updateIconPos()
+	
 end
 
 local function OnEvent(self, event, addon)
@@ -441,6 +451,7 @@ local function OnEvent(self, event, addon)
 	elseif event == "PLAYER_LOGIN" then
 		whoPing()
 		setMinimap()
+		updateIconPos()
 	else
 		return
 	end

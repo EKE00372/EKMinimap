@@ -13,7 +13,6 @@ local function updateOTFPos()
 	if not EKMinimapDB["ObjectiveStyle"] then return end
 	
 	OTF:ClearAllPoints()
-	--OTF:SetPoint(unpack(C.OTF))
 	OTF:SetPoint(EKMinimapDB["ObjectiveAnchor"], UIParent, EKMinimapDB["ObjectiveX"], EKMinimapDB["ObjectiveY"])
 end
 
