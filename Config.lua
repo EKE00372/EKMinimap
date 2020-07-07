@@ -40,8 +40,7 @@ local CreateFrame, tonumber, pairs = CreateFrame, tonumber, pairs
 		["QuestWatchStyle"] = true,
 		["QuestWatchStar"] = true,
 		--["QuestWatchHeight"] = 600,
-		["QuestWatchTargetAnchor"] = "TOPRIGHT",
-		["QuestWatchRelativeAnchor"] = "TOPRIGHT",
+		["QuestWatchAnchor"] = "TOPRIGHT",
 		["QuestWatchX"] = -160,
 		["QuestWatchY"] = -200,
 		
@@ -52,7 +51,8 @@ local CreateFrame, tonumber, pairs = CreateFrame, tonumber, pairs
 		["ClickMenu"] = true,
 		["CharacterIcon"] = true,
 		
-		["WorldMapStyle"] = 0.6,
+		["WorldMapStyle"] = true,
+		["WorldMapScale"] = 0.6,
 		["WorldMapFade"] = true,
 		["WorldMapAlpha"] = 0.6,
 	}
@@ -65,9 +65,8 @@ if GetLocale() == "enUS" then
 	L.ClickMenuOpt = "啟用點擊選單"
 	L.MinimapOpt = "小地圖"
 	L.SizeOpt = "縮放"
+	L.AlphaOpt = "淡出透明度"
 	L.AnchorOpt = "錨點"
-	L.TargetAnchorOpt = "目標錨點"
-	L.RelativeAnchorOpt = "依附錨點"
 	L.XOpt = "X 座標"
 	L.YOpt = "Y 座標"
 	L.QuestWatchOpt = "追蹤框"
@@ -95,9 +94,8 @@ elseif GetLocale() == "zhCN" then
 	L.ClickMenuOpt = "启用点击菜单"
 	L.MinimapOpt = "小地图"
 	L.SizeOpt = "缩放"
+	L.AlphaOpt = "淡出透明度"
 	L.AnchorOpt = "锚点"
-	L.TargetAnchorOpt = "目標錨點"
-	L.RelativeAnchorOpt = "依附錨點"
 	L.XOpt = "X 座标"
 	L.YOpt = "Y 座标"
 	L.QuestWatchOpt = "追踪框"
@@ -125,9 +123,8 @@ else
 	L.ClickMenuOpt = "Enable click menu"
 	L.MinimapOpt = "Minimap"
 	L.SizeOpt = "Scale"
+	L.AlphaOpt = "Fade out alpha"
 	L.AnchorOpt = "Anchor"
-	L.TargetAnchorOpt = "Point to"
-	L.RelativeAnchorOpt = "Relative to"
 	L.XOpt = "X"
 	L.YOpt = "Y"
 	L.QuestWatchOpt = "QuestWatch"
@@ -142,6 +139,10 @@ else
 	L.Left = "Left"
 	L.Right = "Right"
 	
+	L.WorldMapOpt = "WorldMap"
+	L.WorldMapStyleOpt = "Enable World Map style"
+	L.fadeOpt = "Fade out when moving"
+
 	L.Apply = "Click "..APPLY.." to active changes."
 	L.posApply = APPLY.." Size and Pos"
 	
@@ -436,7 +437,7 @@ local function CreateOptions()
 	
 	-- minimap / 小地圖
 	
-	local mapTitle = F.CreateFS(MainFrame, L.MinimapOpt, "LEFT", "TOPLEFT", 30, -30)
+	local mmapTitle = F.CreateFS(MainFrame, L.MinimapOpt, "LEFT", "TOPLEFT", 30, -30)
 
 	local ClickMenuBox = CreateCheckBox(MainFrame, L.ClickMenuOpt, "ClickMenu")
 	ClickMenuBox:SetPoint("TOPLEFT", MainFrame, 30, -60)
@@ -490,20 +491,14 @@ local function CreateOptions()
 	local StarBox = CreateCheckBox(MainFrame, L.QuestWatchStarOpt, "QuestWatchStar")
 	StarBox:SetPoint("BOTTOM", QWFBox, 0, -30)
 	
-	local QWFPosText1 = F.CreateFS(MainFrame, L.TargetAnchorOpt, "LEFT")
-	QWFPosText1:SetPoint("TOPLEFT", StarBox, "BOTTOMLEFT", 10, -10)
+	local QWFPosText = F.CreateFS(MainFrame, L.AnchorOpt, "LEFT")
+	QWFPosText:SetPoint("TOPLEFT", StarBox, "BOTTOMLEFT", 10, -10)
 	
-	local QWFAnchor1 = CreateDropDown(MainFrame, 120, 20, optList, "QuestWatchTargetAnchor")
-	QWFAnchor1:SetPoint("LEFT", QWFPosText1, "RIGHT", 4, 0)
-	
-	local QWFPosText2 = F.CreateFS(MainFrame, L.RelativeAnchorOpt, "LEFT")
-	QWFPosText2:SetPoint("TOPLEFT", StarBox, "BOTTOMLEFT", 10, -40)
-	
-	local QWFAnchor2 = CreateDropDown(MainFrame, 120, 20, optList, "QuestWatchRelativeAnchor")
-	QWFAnchor2:SetPoint("LEFT", QWFPosText2, "RIGHT", 4, 0)
+	local QWFAnchor = CreateDropDown(MainFrame, 120, 20, optList, "QuestWatchAnchor")
+	QWFAnchor:SetPoint("LEFT", QWFPosText, "RIGHT", 4, 0)
 	
 	local QWFXText = F.CreateFS(MainFrame, L.XOpt, "LEFT")
-	QWFXText:SetPoint("LEFT", QWFPosText2, 0, -30)
+	QWFXText:SetPoint("LEFT", QWFPosText, 0, -30)
 	
 	local QWFXBox = CreateEditBox(MainFrame, 68, 20, "QuestWatchX")
 	QWFXBox:SetPoint("LEFT", QWFXText, "RIGHT", 4, 0)
@@ -529,9 +524,54 @@ local function CreateOptions()
 		end
 		QWFHeightText:SetText(L.HeightOpt.." "..EKMinimapDB["QuestWatchHeight"])
 	end)
-]]--	
-	-- infos
+	]]--
+
+	local WMFTitle = F.CreateFS(MainFrame, L.WorldMapOpt, "LEFT", "LEFT", 30, -50)
 	
+	local WMFBox = CreateCheckBox(MainFrame, L.WorldMapStyleOpt, "WorldMapStyle")
+	WMFBox:SetPoint("LEFT", MainFrame, 30, -80)
+	
+	local fadeBox = CreateCheckBox(MainFrame, L.fadeOpt, "WorldMapFade")
+	fadeBox:SetPoint("BOTTOM", WMFBox, 0, -30)
+	
+	local WMFScaleBar = CreateBar(MainFrame, "WMFScale", 160, 20, 0, 10, 1)
+	WMFScaleBar:SetPoint("TOPLEFT", fadeBox, "BOTTOMRIGHT", 0, -30)
+	WMFScaleBar:SetValue(EKMinimapDB["WorldMapScale"]*10)
+	_G[WMFScaleBar:GetName().."Low"]:SetText(0)
+	_G[WMFScaleBar:GetName().."High"]:SetText(1)
+	
+	local WMFScaleText = F.CreateFS(WMFScaleBar, L.SizeOpt.." "..EKMinimapDB["WorldMapScale"], "LEFT")
+	WMFScaleText:SetPoint("BOTTOM", WMFScaleBar, "TOP", 0, 5)
+	
+	WMFScaleBar:SetScript("OnValueChanged", function(self)
+		local n = tonumber(self:GetValue())
+		if n then
+			GLOBEVARIABLE("WorldMapScale", n/10)
+			--EKMinimapDB["MinimapScale"] = n/10
+		end
+		WMFScaleText:SetText(L.SizeOpt.." "..EKMinimapDB["WorldMapScale"], "LEFT")
+	end)
+	
+	local WMFFadeBar = CreateBar(MainFrame, "WMFFade", 160, 20, 0, 10, 1)
+	WMFFadeBar:SetPoint("TOP", WMFScaleBar, "BOTTOM", 0, -40)
+	WMFFadeBar:SetValue(EKMinimapDB["WorldMapAlpha"]*10)
+	_G[WMFFadeBar:GetName().."Low"]:SetText(0)
+	_G[WMFFadeBar:GetName().."High"]:SetText(1)
+	
+	local WMFFadeText = F.CreateFS(WMFFadeBar, L.AlphaOpt.." "..EKMinimapDB["WorldMapAlpha"], "LEFT")
+	WMFFadeText:SetPoint("BOTTOM", WMFFadeBar, "TOP", 0, 5)
+	
+	WMFFadeBar:SetScript("OnValueChanged", function(self)
+		local n = tonumber(self:GetValue())
+		if n then
+			GLOBEVARIABLE("WorldMapAlpha", n/10)
+			--EKMinimapDB["MinimapScale"] = n/10
+		end
+		WMFFadeText:SetText(L.AlphaOpt.." "..EKMinimapDB["WorldMapAlpha"], "LEFT")
+	end)
+	
+	-- infos
+	--[[
 	local info = F.CreateFS(MainFrame, INFO, "LEFT", "BOTTOMLEFT", 30, 60)
 	
 	local q = CreateFrame("Button", nil, MainFrame)
@@ -552,14 +592,14 @@ local function CreateOptions()
 	end)
 	q:SetScript("OnLeave", function() GameTooltip:Hide() end)
 	
-	local infoDrag = F.CreateFS(MainFrame, L.dragInfo, "LEFT")
-	infoDrag:SetPoint("TOPLEFT", q, "TOPRIGHT", 4, 8)
+	local infoDrag1 = F.CreateFS(MainFrame, L.dragInfo, "LEFT")
+	infoDrag1:SetPoint("LEFT", q, "RIGHT", 4, 8)
 	
 	local infoScroll = F.CreateFS(MainFrame, L.scrollInfo, "LEFT")
-	infoScroll:SetPoint("BOTTOMLEFT", q, "BOTTOMRIGHT", 4, -4)
+	infoScroll:SetPoint("LEFT", q, "RIGHT", 4, -8)
 	
 	local infoApply = F.CreateFS(MainFrame, L.Apply, "LEFT", "BOTTOMLEFT", 30, 12)
-	
+	]]--
 	-- buttons
 	
 	local closeButton = CreateButton(MainFrame, 22, 22, "X")

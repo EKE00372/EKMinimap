@@ -31,7 +31,7 @@ local function setQWF()
 	if not EKMinimapDB["QuestWatchStyle"] then return end
 	
 	QWF:SetMovable(true)
-	QWF:SetUserPlaced(true)
+	--QWF:SetUserPlaced(true)
 	QWF:SetClampedToScreen(true)
 	--QWF:SetHeight(EKMinimapDB["QuestWatchHeight"])
 	--setParent()
@@ -39,12 +39,12 @@ local function setQWF()
 	--QWF:EnableMouse(true)
 	
 	local ObjectiveFrameHolder = CreateFrame("Frame", "QWFHoler", UIParent)
-	ObjectiveFrameHolder:SetSize(140, G.QfontSize + 4)
+	ObjectiveFrameHolder:SetSize(200, G.QfontSize + 4)
 	ObjectiveFrameHolder:ClearAllPoints()
 	--ObjectiveFrameHolder:SetPoint("TOPLEFT", UIParent, "TOPLEFT", 200, -270)
-	ObjectiveFrameHolder:SetPoint(EKMinimapDB["QuestWatchTargetAnchor"], UIParent, EKMinimapDB["QuestWatchRelativeAnchor"], EKMinimapDB["QuestWatchX"], EKMinimapDB["QuestWatchY"])
+	ObjectiveFrameHolder:SetPoint(EKMinimapDB["QuestWatchAnchor"], UIParent, EKMinimapDB["QuestWatchAnchor"], EKMinimapDB["QuestWatchX"], EKMinimapDB["QuestWatchY"])
 
-	QWF:SetParent(ObjectiveFrameHolder)
+	--QWF:SetParent(ObjectiveFrameHolder)
 	QWF:ClearAllPoints()
 	QWF:SetPoint("TOPLEFT", ObjectiveFrameHolder)
 end
@@ -59,7 +59,7 @@ local function styleQuestBlock()
 
 	-- title line
 	HeaderBar:SetSize(140, 3)
-	HeaderBar:SetPoint("TOPLEFT", QWF, 0, -2)
+	HeaderBar:SetPoint("RIGHT", QWF, "LEFT", 0, -2)
 	HeaderBar:SetStatusBarTexture(G.Tex)
 	HeaderBar:SetStatusBarColor(G.Ccolors.r, G.Ccolors.g, G.Ccolors.b)
 	-- title line shadow
@@ -75,7 +75,7 @@ local function styleQuestBlock()
 	HeaderText:SetFont(G.font, G.QfontSize, G.QfontFlag)
 	HeaderText:SetTextColor(G.Ccolors.r, G.Ccolors.g, G.Ccolors.b)
 	HeaderText:SetShadowOffset(0, 0)
-	HeaderText:SetPoint("LEFT", HeaderBar, "LEFT", -2, G.QfontSize)
+	HeaderText:SetPoint("RIGHT", HeaderBar, "RIGHT", -2, G.QfontSize)
 	HeaderText:SetText(CURRENT_QUESTS)
 	
 	-- Change font of watched quests
@@ -86,6 +86,8 @@ local function styleQuestBlock()
 		Line:SetHeight(G.QfontSize+2)
 		Line:SetShadowOffset(0, 0)
 	end
+	
+	--hooksecurefunc("QuestWatch_Update", function()
 end
 
 
@@ -140,12 +142,12 @@ F.ResetO = function()
 end
 
 local function OnEvent()
-	if not IsAddOnLoaded("Blizzard_QuestWatchTracker") then
-		LoadAddOn("Blizzard_QuestWatchTracker")
-	end
+	--if not IsAddOnLoaded("Blizzard_QuestWatchTracker") then
+	--	LoadAddOn("Blizzard_QuestWatchTracker")
+	--end
 	--setParent()
 	setQWF()
-	--styleQuestBlock()
+	styleQuestBlock()
 	moveQWF()
 end
 

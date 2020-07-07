@@ -1,13 +1,15 @@
-﻿local C, G = unpack(select(2, ...))
-
---if not C.Map then return end
+﻿local addon, ns = ...
+local C, F, G, L = unpack(ns)
+local WMF = WorldMapFrame
 
 --================================================--
 -----------------    [[ Core ]]    -----------------
 --================================================--
 
-local WMF = WorldMapFrame
-	WMF:SetScale(C.scale)						-- Scale / 縮放
+local function styleWMF()
+	if not EKMinimapDB["WorldMapStyle"] then return end
+
+	WMF:SetScale(EKMinimapDB["WorldMapScale"])	-- Scale / 縮放
 	WMF.BlackoutFrame.Blackout:SetAlpha(0)		-- No background / 去背
 	--WMF.BlackoutFrame.Blackout = function() end
 	WMF.BlackoutFrame:EnableMouse(false)		-- Click through / 點擊穿透	
@@ -23,9 +25,9 @@ local WMF = WorldMapFrame
 	WMF:SetMovable(true)						-- 使地圖可移動
 	WMF:SetUserPlaced(true)						-- 使框架可以超出畫面
 	WMF:ClearAllPoints()
-	WMF.ClearAllPoints = function() end			-- 使座標可自訂義
+	WMF.ClearAllPoints = F.dummy				-- 使座標可自訂義
 	WMF:SetPoint("LEFT", UIParent)				-- Default at left / 初始化於畫面左邊
-	WMF.SetPoint = function() end				-- 使拖動過的位置可以被儲存
+	WMF.SetPoint = F.dummy						-- 使拖動過的位置可以被儲存
 	
 	-- Alt+right click to drag frame / alt+右鍵拖動
 	WMF:RegisterForDrag("RightButton")
@@ -37,26 +39,35 @@ local WMF = WorldMapFrame
 	WMF:SetScript("OnDragStop", function(self)
 		self:StopMovingOrSizing()
 	end)
+end
 	
-	-- Reset / 重置
-	SlashCmdList["RESETMAP"] = function()
-		WMF:SetUserPlaced(false)
-		ReloadUI()
-	end
-	SLASH_RESETMAP1 = "/resetmap"
-	SLASH_RESETMAP2 = "/rmp"
-	
+local function fadeWMF()
 	-- Fadeout when moving / 移動時淡出
 	local MoveFade = CreateFrame("Frame")
 	MoveFade:SetScript("OnEvent", function(_, event, ...)
 		local PMFF = PlayerMovementFrameFader
+		local alpha = EKMinimapDB["WorldMapAlpha"]
 		
 		if event == "PLAYER_STOPPED_MOVING" then
 			PMFF.AddDeferredFrame(WMF, 1, 1, .5)
 		elseif event == "PLAYER_STARTED_MOVING" then
-			PMFF.AddDeferredFrame(WMF, C.alpha, 1, .5)
+			PMFF.AddDeferredFrame(WMF, alpha, 1, .5)
 		end
 	end)
 
 	MoveFade:RegisterEvent("PLAYER_STARTED_MOVING")
 	MoveFade:RegisterEvent("PLAYER_STOPPED_MOVING")
+end
+
+local function OnEvent()
+	--if not IsAddOnLoaded("Blizzard_WorldMap") then
+	--	LoadAddOn("Blizzard_WorldMap")
+	--end
+	
+	styleWMF()
+	fadeWMF()
+end
+
+local frame = CreateFrame("FRAME")
+	frame:RegisterEvent("PLAYER_LOGIN")
+	frame:SetScript("OnEvent", OnEvent)
