@@ -25,9 +25,9 @@ local function styleWMF()
 	WMF:SetMovable(true)						-- 使地圖可移動
 	WMF:SetUserPlaced(true)						-- 使框架可以超出畫面
 	WMF:ClearAllPoints()
-	WMF.ClearAllPoints = F.dummy				-- 使座標可自訂義
+	WMF.ClearAllPoints = F.Dummy				-- 使座標可自訂義
 	WMF:SetPoint("LEFT", UIParent)				-- Default at left / 初始化於畫面左邊
-	WMF.SetPoint = F.dummy						-- 使拖動過的位置可以被儲存
+	WMF.SetPoint = F.Dummy						-- 使拖動過的位置可以被儲存
 	
 	-- Alt+right click to drag frame / alt+右鍵拖動
 	WMF:RegisterForDrag("RightButton")
@@ -48,10 +48,10 @@ local function fadeWMF()
 		local PMFF = PlayerMovementFrameFader
 		local alpha = EKMinimapDB["WorldMapAlpha"]
 		
-		if event == "PLAYER_STOPPED_MOVING" then
-			PMFF.AddDeferredFrame(WMF, 1, 1, .5)
-		elseif event == "PLAYER_STARTED_MOVING" then
+		if event == "PLAYER_STARTED_MOVING" then
 			PMFF.AddDeferredFrame(WMF, alpha, 1, .5)
+		elseif event == "PLAYER_STOPPED_MOVING" then
+			PMFF.AddDeferredFrame(WMF, 1, 1, .5)
 		end
 	end)
 

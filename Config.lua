@@ -187,6 +187,7 @@ F.CreateFS = function(parent, text, justify, anchor, x, y)
 	local fs = parent:CreateFontString(nil, "OVERLAY")
 	fs:SetFont(G.font, G.fontSize, G.fontFlag)
 	fs:SetText(text)
+	fs:SetShadowOffset(0, 0)
 	fs:SetWordWrap(false)
 	fs:SetJustifyH(justify)
 	if anchor and x and y then
