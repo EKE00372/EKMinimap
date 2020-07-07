@@ -126,7 +126,7 @@ local function createGarrisonTooltip(self)
 	GameTooltip:AddLine(CHARACTER_BUTTON, .6,.8, 1)
 
 	-- Experience
-	if UnitLevel("player") < MAX_PLAYER_LEVEL and not IsXPUserDisabled() then
+	if UnitLevel("player") < MAX_PLAYER_LEVEL then
 		local cur, max = UnitXP("player"), UnitXPMax("player")
 		local lvl = UnitLevel("player")
 		local rested = GetXPExhaustion()
