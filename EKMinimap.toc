@@ -1,11 +1,13 @@
-## Interface: 11302
+## Interface: 11304
 ## Title: |cff00ffffEK|rMinimap_Classic
-## Version: C1.5
+## Version: C2
 ## Author: EK
+## SavedVariables: EKMinimapDB
 ## Notes: A square minimap.
+## X-Credits: Ooglogput, Chiril, ape47, sakaras, Siweia, Paopao, HopeASD
 
 Config.lua
 QuestWatch.lua
 EKMinimap.lua
 Clickmenu.lua
-Map.lua
+WorldMap.lua

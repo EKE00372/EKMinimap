@@ -1,6 +1,6 @@
 ﻿local C, G = unpack(select(2, ...))
 
-if not C.Map then return end
+--if not C.Map then return end
 
 --================================================--
 -----------------    [[ Core ]]    -----------------
