@@ -19,7 +19,6 @@ local MediaFolder = "Interface\\AddOns\\EKMinimap\\Media\\"
 	G.Tex = "Interface\\Buttons\\WHITE8x8"
 	G.Glow = MediaFolder.."glow.tga"
 	G.Mail = "Interface\\MINIMAP\\TRACKING\\Mailbox.blp"
-	G.Diff = MediaFolder.."difficulty.tga"
 	G.Report = "Interface\\HelpFrame\\HelpIcon-ReportLag.blp"
 	
 	G.Question = "Interface\\HelpFrame\\HelpIcon-KnowledgeBase"
