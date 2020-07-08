@@ -1,7 +1,7 @@
 local addon, ns = ...
 local C, F, G, L = unpack(ns)
 
-local QWF, QTF = QuestWatchFrame, QuestTimerFrame
+local QWF, QTF, gsub = QuestWatchFrame, QuestTimerFrame, string.gsub
 
 --================================================--
 -----------------    [[ Core ]]    -----------------
@@ -15,27 +15,20 @@ local function updateQWFPos()
 	ObjectiveFrameHolder:SetPoint(EKMinimapDB["QuestWatchAnchor"], UIParent, EKMinimapDB["QuestWatchAnchor"], EKMinimapDB["QuestWatchX"], EKMinimapDB["QuestWatchY"])
 	ObjectiveFrameHolder:SetMovable(true)
 	ObjectiveFrameHolder:SetClampedToScreen(true)
-end
-
--- [[ Load Blizzard ]] --
-
-local function setQWF()
-	if not EKMinimapDB["QuestWatchStyle"] then return end
-	updateQWFPos()
-	-- create holder
-	--[[local ObjectiveFrameHolder = CreateFrame("Frame", "QWFHoler", UIParent)
-	ObjectiveFrameHolder:SetSize(160, G.QfontSize + 4)
-	ObjectiveFrameHolder:ClearAllPoints()
-	ObjectiveFrameHolder:SetPoint(EKMinimapDB["QuestWatchAnchor"], UIParent, EKMinimapDB["QuestWatchAnchor"], EKMinimapDB["QuestWatchX"], EKMinimapDB["QuestWatchY"])
-	ObjectiveFrameHolder:SetMovable(true)]]--
 	
-	QWF:SetClampedToScreen(true)
-	QWF:SetMovable(true)
-	QWF:SetUserPlaced(true)
 	QWF:SetParent(ObjectiveFrameHolder)
 	QWF:ClearAllPoints()
 	QWF:SetPoint("TOPLEFT", ObjectiveFrameHolder)
+end
+
+local function setQWF()
+	if not EKMinimapDB["QuestWatchStyle"] then return end
 	
+	updateQWFPos()
+	QWF:SetClampedToScreen(true)
+	QWF:SetMovable(true)
+	QWF:SetUserPlaced(true)
+
 	hooksecurefunc(QWF, "SetPoint", function(self, _, parent)
 		if parent == "MinimapCluster" or parent == _G.MinimapCluster then
 			self:SetParent(ObjectiveFrameHolder)
@@ -71,6 +64,14 @@ local function setQWF()
 		GameTooltip:Show()
 	end
 	
+	for i = 1, 30 do
+		local line = _G["QuestWatchLine"..i]
+		
+		line:SetFont(G.font, G.QfontSize-2, G.QfontFlag)
+		line:SetHeight(G.QfontSize)
+		line:SetShadowOffset(0, 0)
+	end
+	
 	local QWFMove = CreateFrame("FRAME", "QWFdrag", ObjectiveFrameHolder)
 		-- Create frame for click
 		QWFMove:SetSize(160, G.QfontSize + 6)
@@ -103,10 +104,10 @@ end
 --=================================================--
 -----------------    [[ Block ]]    -----------------
 --=================================================--
-
+--[[
 local function styleQuestBlock()
-	if not EKMinimapDB["QuestWatchStyle"] then return end
-	if not EKMinimapDB["QuestWatchStar"] then return end
+	if not EKMinimapDB["QuestWatchStyle"] and  then return end
+	
 	-- Change font of watched quests
 	hooksecurefunc("QuestWatch_Update", function()
 		for i = 1, 30 do
@@ -115,15 +116,17 @@ local function styleQuestBlock()
 			line:SetFont(G.font, G.QfontSize-2, G.QfontFlag)
 			line:SetHeight(G.QfontSize+2)
 			line:SetShadowOffset(0, 0)
-			local text = line:GetText()
-			if text then
-				line:SetText(gsub(text, "- ", "★ "))
+			
+			if EKMinimapDB["QuestWatchStar"] then
+				local text = line:GetText()
+				if text then
+					line:SetText(gsub(text, "- ", "★ "))
+				end
 			end
-			--print(line:GetText())
 		end
 	end)
-	--hooksecurefunc("QuestWatch_Update", function()
 end
+]]--
 
 --============================================================--
 -----------------    [[ ModernQuestWatch ]]    -----------------
@@ -131,10 +134,11 @@ end
 
 local function ModernQuestWatch()
 	if not EKMinimapDB["QuestWatchStyle"] then return end
-	if not EKMinimapDB["QuestWatchClick"] then return end
 	
 	-- ModernQuestWatch, Ketho
 	local function onMouseUp(self)
+		if not EKMinimapDB["QuestWatchClick"] then return end
+		
 		if IsShiftKeyDown() then -- untrack quest
 			local questID = GetQuestIDFromLogIndex(self.questIndex)
 			for index, value in ipairs(QUEST_WATCH_LIST) do
@@ -179,7 +183,7 @@ local function ModernQuestWatch()
 			end
 		end
 	end
-
+	
 	local ClickFrames = {}
 	local function SetClickFrame(watchIndex, questIndex, headerText, objectiveTexts, completed)
 		if not ClickFrames[watchIndex] then
@@ -201,6 +205,17 @@ local function ModernQuestWatch()
 	hooksecurefunc("QuestWatch_Update", function()
 		local watchTextIndex = 1
 		local numWatches = GetNumQuestWatches()
+		
+		if EKMinimapDB["QuestWatchStar"] then
+			for i = 1, 30 do
+				local line = _G["QuestWatchLine"..i]
+				local text = line:GetText()
+				if text then
+					line:SetText(gsub(text, "- ", "★ "))
+				end
+			end
+		end
+		
 		for i = 1, numWatches do
 			local questIndex = GetQuestIndexForWatch(i)
 			if questIndex then
@@ -260,7 +275,7 @@ local function OnEvent()
 	--end
 	--setParent()
 	setQWF()
-	styleQuestBlock()
+	--styleQuestBlock()
 	ModernQuestWatch()
 end
 

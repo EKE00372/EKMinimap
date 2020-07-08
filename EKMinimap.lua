@@ -76,7 +76,7 @@ local function setMinimap()
 	
 	-- Mail Frame / 信件提示
 	MiniMapMailBorder:Hide()
-	MiniMapMailIcon:SetTexture(G.mail)
+	MiniMapMailIcon:SetTexture(G.Mail)
 
 	-- Minimap Tracker / 追蹤
 	MiniMapTrackingBorder:Hide()
@@ -225,13 +225,6 @@ end
 		securecall(UIFrameFadeOut, Stat, .8, 1, 0)
 		GameTooltip:Hide()
 	end)
-	--[[Stat:SetScript("OnMouseDown", function(self, button)
-		if InCombatLockdown() then
-			UIErrorsFrame:AddMessage("|cffff0000"..ERR_NOT_IN_COMBAT.."|r")
-			return
-		end
-		:Click()
-	end)]]--
 
 --=================================================--
 -----------------    [[ Load ]]    -----------------

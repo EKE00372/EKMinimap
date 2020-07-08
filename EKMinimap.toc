@@ -4,10 +4,13 @@
 ## Author: EK
 ## SavedVariables: EKMinimapDB
 ## Notes: A square minimap.
-## X-Credits: Ooglogput, Chiril, ape47, sakaras, Siweia, Paopao, HopeASD
+## X-Credits: HopeASD, Ooglogput, Chiril, ape47, sakaras, Siweia, Paopao
 
+Init.lua
+Locales.lua
 Config.lua
-QuestWatch.lua
+
 EKMinimap.lua
 Clickmenu.lua
+QuestWatch.lua
 WorldMap.lua
