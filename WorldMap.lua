@@ -42,9 +42,12 @@ local function styleWMF()
 end
 	
 local function fadeWMF()
+	if not EKMinimapDB["WorldMapStyle"] then return end
+	if not EKMinimapDB["WorldMapFade"] then return end
 	-- Fadeout when moving / 移動時淡出
 	local MoveFade = CreateFrame("Frame")
 	MoveFade:SetScript("OnEvent", function(_, event, ...)
+		
 		local PMFF = PlayerMovementFrameFader
 		local alpha = EKMinimapDB["WorldMapAlpha"]
 		

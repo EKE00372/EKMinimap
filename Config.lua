@@ -38,11 +38,11 @@ local CreateFrame, tonumber, pairs = CreateFrame, tonumber, pairs
 
 	C.defaultSettings = {
 		["QuestWatchStyle"] = true,
+		["QuestWatchClick"] = true,
 		["QuestWatchStar"] = true,
-		--["QuestWatchHeight"] = 600,
 		["QuestWatchAnchor"] = "TOPRIGHT",
-		["QuestWatchX"] = -160,
-		["QuestWatchY"] = -200,
+		["QuestWatchX"] = -170,
+		["QuestWatchY"] = -220,
 		
 		["MinimapScale"] = 1.2,
 		["MinimapAnchor"] = "TOPRIGHT",
@@ -61,22 +61,25 @@ local CreateFrame, tonumber, pairs = CreateFrame, tonumber, pairs
 -----------------    [[ Locales ]]    -----------------
 --===================================================--
 
-if GetLocale() == "enUS" then
+if GetLocale() == "zhTW" then
 	L.ClickMenuOpt = "啟用點擊選單"
 	L.MinimapOpt = "小地圖"
 	L.SizeOpt = "縮放"
 	L.AlphaOpt = "淡出透明度"
 	L.AnchorOpt = "錨點"
-	L.XOpt = "X 座標"
-	L.YOpt = "Y 座標"
+	L.XOpt = "X"
+	L.YOpt = "Y"
 	L.QuestWatchOpt = "追蹤框"
 	L.QuestWatchStarOpt = "使用 ★ 標記追蹤項目"
+	L.QuestWatchClickOpt = "使任務標題可點擊"
 	L.QuestWatchStyleOpt = "啟用追蹤框美化"
 	L.HeightOpt = "高度"
 	L.IconOpt = "角色資訊提示"
 	
 	L.Next = "下一級："
-	
+	L.WorldMapOpt = "世界地圖"
+	L.WorldMapStyleOpt = "啟用世界地圖美化"
+	L.fadeOpt = "移動中淡出"
 	L.Calendar = SLASH_CALENDAR2:gsub("/(.*)","%1")
 	L.Left = "左"
 	L.Right = "右"
@@ -87,7 +90,6 @@ if GetLocale() == "enUS" then
 	L.tempTip1 = "Alt 功能是臨時性功能，提供給需要追蹤某些特定目標的偶發情況，所以它們的變動不會被儲存。"
 	L.tempTip2 = "所有 Alt 功能造成的更改會在重載介面或點擊「"..L.posApply.."」後復原。"
 	L.tempTip3 = "設定時，單純更改尺寸和座標而不更改選項，可以點擊「"..L.posApply.."」來直接套用而不需重載。"
-	L.cmdInfo = "/ej1 /ej2 彈出載具乘客"
 	L.dragInfo = "Alt+右鍵：臨時性拖動框體"
 	L.scrollInfo = "Alt+滾輪：臨時縮放小地圖"
 elseif GetLocale() == "zhCN" then
@@ -96,15 +98,20 @@ elseif GetLocale() == "zhCN" then
 	L.SizeOpt = "缩放"
 	L.AlphaOpt = "淡出透明度"
 	L.AnchorOpt = "锚点"
-	L.XOpt = "X 座标"
-	L.YOpt = "Y 座标"
+	L.XOpt = "X"
+	L.YOpt = "Y"
 	L.QuestWatchOpt = "追踪框"
 	L.QuestWatchStarOpt = "使用 ★ 标记追踪项目"
+	L.QuestWatchClickOpt = "使任务标题可点击"
 	L.QuestWatchStyleOpt = "启用追踪框美化"
 	L.HeightOpt = "高度"
 	L.IconOpt = "角色信息提示"
 	
 	L.Next = "下一級："
+	
+	L.WorldMapOpt = "世界地图"
+	L.WorldMapStyleOpt = "启用世界地图美化"
+	L.fadeOpt = "移动中淡出"
 	
 	L.Calendar = "行事历"
 	L.Left = "左"
@@ -116,9 +123,8 @@ elseif GetLocale() == "zhCN" then
 	L.tempTip1 = "Alt 功能是临时性功能，提供给需要追踪某些特定目标的偶发情况，所以它们的变动不会被保存。"
 	L.tempTip2 = "所有 Alt 功能造成的更改会在重载界面或点击＂"..L.posApply.."＂后复原。"
 	L.tempTip3 = "设置时，单纯更改尺寸和座标而不更改选项，可以点击＂"..L.posApply.."＂来直接套用而不需重载。"
-	L.cmdInfo = "/ej1 /ej2 弹出载具乘客"
 	L.dragInfo = "Alt+右键临时性拖动框体"
-	L.scrollInfo = "Alt+滚轮临时性缩放小地图"
+	L.scrollInfo = "Alt+滚轮临时缩放小地图"
 else
 	L.ClickMenuOpt = "Enable click menu"
 	L.MinimapOpt = "Minimap"
@@ -129,6 +135,7 @@ else
 	L.YOpt = "Y"
 	L.QuestWatchOpt = "QuestWatch"
 	L.QuestWatchStarOpt = "Mark object as ★ star"
+	L.QuestWatchClickOpt = "Click-able quest title"
 	L.QuestWatchStyleOpt = "Enable tracker style"
 	L.HeightOpt = "Height"
 	L.IconOpt = "Character icon tooltip"
@@ -149,11 +156,9 @@ else
 	L.tempTip1 = "Alt-function is a temporary function, for people wanna track something recently, they will not be saved to settgins."
 	L.tempTip2 = 'Any scale and position change caused by alt-function will reset after you reload or click "'..L.posApply..'" button.'
 	L.tempTip3 = 'If wanna config position and scale only (did not change check box), you can directly click"'..L.posApply..'" to apply them	without reload.'
-	L.cmdInfo = "/ej1 /ej2 Eject Passenger"
-	L.dragInfo = "Alt-right click drag frame"
+	L.dragInfo = "Alt-right click to drag"
 	L.scrollInfo = "Alt-scroll scale minimap"
 end
-
 
 --===================================================--
 -----------------    [[ Initial ]]    -----------------
@@ -438,10 +443,10 @@ local function CreateOptions()
 	
 	-- minimap / 小地圖
 	
-	local mmapTitle = F.CreateFS(MainFrame, L.MinimapOpt, "LEFT", "TOPLEFT", 30, -30)
+	local mapTitle = F.CreateFS(MainFrame, L.MinimapOpt, "LEFT", "TOPLEFT", 24, -20)
 
 	local ClickMenuBox = CreateCheckBox(MainFrame, L.ClickMenuOpt, "ClickMenu")
-	ClickMenuBox:SetPoint("TOPLEFT", MainFrame, 30, -60)
+	ClickMenuBox:SetPoint("TOPLEFT", MainFrame, 24, -44)
 	
 	local IconBox = CreateCheckBox(MainFrame, L.IconOpt, "CharacterIcon")
 	IconBox:SetPoint("BOTTOM", ClickMenuBox, 0, -30)
@@ -465,7 +470,7 @@ local function CreateOptions()
 	mapYBox:SetPoint("LEFT", mapYText, "RIGHT", 4, 0)
 
 	local mapSizeBar = CreateBar(MainFrame, "Size", 160, 20, 10, 20, 1)
-	mapSizeBar:SetPoint("TOPLEFT", mapPosText, "BOTTOMRIGHT", -40, -60)
+	mapSizeBar:SetPoint("TOPLEFT", mapXBox, "BOTTOMRIGHT", -70, -30)
 	mapSizeBar:SetValue(EKMinimapDB["MinimapScale"]*10)
 	_G[mapSizeBar:GetName().."Low"]:SetText(1)
 	_G[mapSizeBar:GetName().."High"]:SetText(2)
@@ -484,16 +489,21 @@ local function CreateOptions()
 	
 	-- QuestWatch tracker
 	
-	local QWFTitle = F.CreateFS(MainFrame, L.QuestWatchOpt, "LEFT", "TOPLEFT", 260, -30)
+	--local QWFTitle = F.CreateFS(MainFrame, L.QuestWatchOpt, "LEFT", "TOPLEFT", 260, -30)
+	local QWFTitle = F.CreateFS(MainFrame, L.QuestWatchOpt, "LEFT", "LEFT", 24, -30)
 	
 	local QWFBox = CreateCheckBox(MainFrame, L.QuestWatchStyleOpt, "QuestWatchStyle")
-	QWFBox:SetPoint("TOP", MainFrame, 20, -60)
+	--QWFBox:SetPoint("TOP", MainFrame, 20, -60)
+	QWFBox:SetPoint("LEFT", MainFrame, 24, -60)
 	
 	local StarBox = CreateCheckBox(MainFrame, L.QuestWatchStarOpt, "QuestWatchStar")
 	StarBox:SetPoint("BOTTOM", QWFBox, 0, -30)
 	
+	local ClickBox = CreateCheckBox(MainFrame, L.QuestWatchClickOpt, "QuestWatchClick")
+	ClickBox:SetPoint("BOTTOM", StarBox, 0, -30)
+	
 	local QWFPosText = F.CreateFS(MainFrame, L.AnchorOpt, "LEFT")
-	QWFPosText:SetPoint("TOPLEFT", StarBox, "BOTTOMLEFT", 10, -10)
+	QWFPosText:SetPoint("TOPLEFT", ClickBox, "BOTTOMLEFT", 10, -10)
 	
 	local QWFAnchor = CreateDropDown(MainFrame, 120, 20, optList, "QuestWatchAnchor")
 	QWFAnchor:SetPoint("LEFT", QWFPosText, "RIGHT", 4, 0)
@@ -509,34 +519,21 @@ local function CreateOptions()
 	
 	local QWFYBox = CreateEditBox(MainFrame, 68, 20, "QuestWatchY")
 	QWFYBox:SetPoint("LEFT", QWFYText, "RIGHT", 4, 0)
---[[
-	local QWFHeightBar = CreateBar(MainFrame, "Height", 160, 20, 200, 1200, 100)
-	QWFHeightBar:SetPoint("TOPLEFT", QWFPosText2, "BOTTOMRIGHT", -40, -60)
-	QWFHeightBar:SetValue(EKMinimapDB["QuestWatchHeight"])
-	
-	local QWFHeightText = F.CreateFS(QWFHeightBar, L.HeightOpt.." "..EKMinimapDB["QuestWatchHeight"], "LEFT")
-	QWFHeightText:SetPoint("BOTTOM", QWFHeightBar, "TOP", 0, 5)
-	
-	QWFHeightBar:SetScript("OnValueChanged", function(self)
-		local n = tonumber(self:GetValue())
-		if n then
-			GLOBEVARIABLE("QuestWatchHeight", n)
-			--EKMinimapDB["QuestWatchHeight"] = n
-		end
-		QWFHeightText:SetText(L.HeightOpt.." "..EKMinimapDB["QuestWatchHeight"])
-	end)
-	]]--
 
-	local WMFTitle = F.CreateFS(MainFrame, L.WorldMapOpt, "LEFT", "LEFT", 30, -50)
+	-- world map
+	
+	--local WMFTitle = F.CreateFS(MainFrame, L.WorldMapOpt, "LEFT", "LEFT", 30, -50)
+	local WMFTitle = F.CreateFS(MainFrame, L.WorldMapOpt, "LEFT", "TOPLEFT", 260, -20)
 	
 	local WMFBox = CreateCheckBox(MainFrame, L.WorldMapStyleOpt, "WorldMapStyle")
-	WMFBox:SetPoint("LEFT", MainFrame, 30, -80)
+	--WMFBox:SetPoint("LEFT", MainFrame, 30, -80)
+	WMFBox:SetPoint("TOP", MainFrame, 24, -44)
 	
 	local fadeBox = CreateCheckBox(MainFrame, L.fadeOpt, "WorldMapFade")
 	fadeBox:SetPoint("BOTTOM", WMFBox, 0, -30)
 	
 	local WMFScaleBar = CreateBar(MainFrame, "WMFScale", 160, 20, 0, 10, 1)
-	WMFScaleBar:SetPoint("TOPLEFT", fadeBox, "BOTTOMRIGHT", 0, -30)
+	WMFScaleBar:SetPoint("TOPLEFT", fadeBox, "BOTTOMRIGHT", 0, -24)
 	WMFScaleBar:SetValue(EKMinimapDB["WorldMapScale"]*10)
 	_G[WMFScaleBar:GetName().."Low"]:SetText(0)
 	_G[WMFScaleBar:GetName().."High"]:SetText(1)
@@ -548,13 +545,12 @@ local function CreateOptions()
 		local n = tonumber(self:GetValue())
 		if n then
 			GLOBEVARIABLE("WorldMapScale", n/10)
-			--EKMinimapDB["MinimapScale"] = n/10
 		end
 		WMFScaleText:SetText(L.SizeOpt.." "..EKMinimapDB["WorldMapScale"], "LEFT")
 	end)
 	
 	local WMFFadeBar = CreateBar(MainFrame, "WMFFade", 160, 20, 0, 10, 1)
-	WMFFadeBar:SetPoint("TOP", WMFScaleBar, "BOTTOM", 0, -40)
+	WMFFadeBar:SetPoint("TOP", WMFScaleBar, "BOTTOM", 0, -30)
 	WMFFadeBar:SetValue(EKMinimapDB["WorldMapAlpha"]*10)
 	_G[WMFFadeBar:GetName().."Low"]:SetText(0)
 	_G[WMFFadeBar:GetName().."High"]:SetText(1)
@@ -572,11 +568,13 @@ local function CreateOptions()
 	end)
 	
 	-- infos
-	--[[
-	local info = F.CreateFS(MainFrame, INFO, "LEFT", "BOTTOMLEFT", 30, 60)
+	
+	--local info = F.CreateFS(MainFrame, INFO, "LEFT", "BOTTOMLEFT", 30, 60)
+	local info = F.CreateFS(MainFrame, INFO, "LEFT", "LEFT", 260, -30)
 	
 	local q = CreateFrame("Button", nil, MainFrame)
-	q:SetPoint("BOTTOMLEFT", MainFrame, 30, 20)
+	--q:SetPoint("BOTTOMLEFT", MainFrame, 30, 20)
+	q:SetPoint("LEFT", MainFrame, 250, -60)
 	q:SetSize(G.fontSize*3, G.fontSize*3)
 	q.Icon = q:CreateTexture(nil, "ARTWORK")
 	q.Icon:SetAllPoints()
@@ -584,7 +582,7 @@ local function CreateOptions()
 	q:SetHighlightTexture("Interface\\HelpFrame\\HelpIcon-KnowledgeBase")
 	q:SetScript("OnEnter", function(self)
 		GameTooltip:ClearLines()
-		GameTooltip:SetOwner(self, "ANCHOR_LEFT", -20, 0)
+		GameTooltip:SetOwner(self, "ANCHOR_RIGHT", 0, 0)
 		GameTooltip:AddLine(INFO)
 		GameTooltip:AddLine(L.tempTip1, 1, 1, 1, true)
 		GameTooltip:AddLine(" ")
@@ -594,13 +592,14 @@ local function CreateOptions()
 	q:SetScript("OnLeave", function() GameTooltip:Hide() end)
 	
 	local infoDrag1 = F.CreateFS(MainFrame, L.dragInfo, "LEFT")
-	infoDrag1:SetPoint("LEFT", q, "RIGHT", 4, 8)
+	infoDrag1:SetPoint("LEFT", q, "RIGHT", 0, 8)
 	
 	local infoScroll = F.CreateFS(MainFrame, L.scrollInfo, "LEFT")
-	infoScroll:SetPoint("LEFT", q, "RIGHT", 4, -8)
+	infoScroll:SetPoint("LEFT", q, "RIGHT", 0, -8)
 	
-	local infoApply = F.CreateFS(MainFrame, L.Apply, "LEFT", "BOTTOMLEFT", 30, 12)
-	]]--
+	local infoApply = F.CreateFS(MainFrame, L.Apply, "RIGHT")
+	infoApply:SetPoint("TOPLEFT", q, "BOTTOMLEFT", 4, -4)
+
 	-- buttons
 	
 	local closeButton = CreateButton(MainFrame, 22, 22, "X")
@@ -608,11 +607,11 @@ local function CreateOptions()
 	closeButton:SetScript("OnClick", function() MainFrame:Hide() end)
 	
 	local reloadButton = CreateButton(MainFrame, 80, 30, APPLY)
-	reloadButton:SetPoint("BOTTOMRIGHT", MainFrame, -8, 8)
+	reloadButton:SetPoint("BOTTOMRIGHT", MainFrame, -20, 20)
 	reloadButton:SetScript("OnClick", function() ReloadUI() end)
 	
 	local reposButton = CreateButton(MainFrame, 170, 30, L.posApply)
-	reposButton:SetPoint("BOTTOMRIGHT", MainFrame, -8, 48)
+	reposButton:SetPoint("BOTTOMRIGHT", MainFrame, -20, 60)
 	reposButton:SetScript("OnClick", function() F.ResetM() F.ResetO() end)
 	
 	local i = CreateFrame("Button", nil, MainFrame)
