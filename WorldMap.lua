@@ -2,23 +2,39 @@
 local C, F, G, L = unpack(ns)
 local WMF = WorldMapFrame
 
+--====================================================--
+-----------------    [[ Function ]]    -----------------
+--====================================================--
+
+local function isMouseOverMap()
+	return not WMF:IsMouseOver()
+end
+
 --================================================--
 -----------------    [[ Core ]]    -----------------
 --================================================--
 
 local function styleWMF()
 	if not EKMinimapDB["WorldMapStyle"] then return end
-
-	WMF:SetScale(EKMinimapDB["WorldMapScale"])	-- Scale / 縮放
+	if IsAddOnLoaded("Leatrix_Maps") then return end
+	
+	WMF:SetScale(EKMinimapDB["WorldMapScale"])
 	WMF.BlackoutFrame.Blackout:SetAlpha(0)		-- No background / 去背
 	--WMF.BlackoutFrame.Blackout = function() end
 	WMF.BlackoutFrame:EnableMouse(false)		-- Click through / 點擊穿透	
 	-- Cursor match scale / 滑鼠跟隨縮放
 	WMF.ScrollContainer.GetCursorPosition = function(f)
-		local x,y = MapCanvasScrollControllerMixin.GetCursorPosition(f)
+		local x, y = MapCanvasScrollControllerMixin.GetCursorPosition(f)
 		local s = WorldMapFrame:GetScale()
 		
 		return x/s, y/s
+	end
+	
+	if EKMinimapDB["WorldMapFade"] then
+		local alpha = EKMinimapDB["WorldMapAlpha"]
+		PlayerMovementFrameFader.AddDeferredFrame(WMF, alpha, 1, .5, isMouseOverMap)
+	else
+		PlayerMovementFrameFader.RemoveFrame(WMF)
 	end
 	
 	-- Movable
@@ -26,7 +42,7 @@ local function styleWMF()
 	WMF:SetUserPlaced(true)						-- 使框架可以超出畫面
 	WMF:ClearAllPoints()
 	WMF.ClearAllPoints = F.Dummy				-- 使座標可自訂義
-	WMF:SetPoint("LEFT", UIParent)				-- Default at left / 初始化於畫面左邊
+	WMF:SetPoint("LEFT", UIParent, 10, 0)		-- Default at left / 初始化於畫面左邊
 	WMF.SetPoint = F.Dummy						-- 使拖動過的位置可以被儲存
 	
 	-- Alt+right click to drag frame / alt+右鍵拖動
@@ -40,35 +56,9 @@ local function styleWMF()
 		self:StopMovingOrSizing()
 	end)
 end
-	
-local function fadeWMF()
-	if not EKMinimapDB["WorldMapStyle"] then return end
-	if not EKMinimapDB["WorldMapFade"] then return end
-	-- Fadeout when moving / 移動時淡出
-	local MoveFade = CreateFrame("Frame")
-	MoveFade:SetScript("OnEvent", function(_, event, ...)
-		
-		local PMFF = PlayerMovementFrameFader
-		local alpha = EKMinimapDB["WorldMapAlpha"]
-		
-		if event == "PLAYER_STARTED_MOVING" then
-			PMFF.AddDeferredFrame(WMF, alpha, 1, .5)
-		elseif event == "PLAYER_STOPPED_MOVING" then
-			PMFF.AddDeferredFrame(WMF, 1, 1, .5)
-		end
-	end)
-
-	MoveFade:RegisterEvent("PLAYER_STARTED_MOVING")
-	MoveFade:RegisterEvent("PLAYER_STOPPED_MOVING")
-end
 
 local function OnEvent()
-	--if not IsAddOnLoaded("Blizzard_WorldMap") then
-	--	LoadAddOn("Blizzard_WorldMap")
-	--end
-	
 	styleWMF()
-	fadeWMF()
 end
 
 local frame = CreateFrame("FRAME")

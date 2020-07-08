@@ -1,164 +1,16 @@
-----------------------
--- Dont touch this! --
-----------------------
-
 local addon, ns = ...
-	ns[1] = {} -- C, config
-	ns[2] = {} -- F, functions, constants, variables
-	ns[3] = {} -- G, globals (Optionnal)
-	ns[4] = {} -- L, localization
-
 local C, F, G, L = unpack(ns)
-local MediaFolder = "Interface\\AddOns\\EKMinimap\\Media\\"
+
 local v = GetAddOnMetadata("EKMinimap", "Version")
 local CreateFrame, tonumber, pairs = CreateFrame, tonumber, pairs
 
--------------------
--- Golbal / 全局 --
--------------------
 
-	G.Ccolors = (CUSTOM_CLASS_COLORS or RAID_CLASS_COLORS)[select(2, UnitClass("player"))] -- Class color / 職業顏色
-	G.Tex = "Interface\\Buttons\\WHITE8x8"
-	G.Glow = MediaFolder.."glow.tga"
-	G.Mail = "Interface\\MINIMAP\\TRACKING\\Mailbox.blp"
-	G.Diff = MediaFolder.."difficulty.tga"
-	G.Report = "Interface\\HelpFrame\\HelpIcon-ReportLag.blp"
-	-- 字體 / font
-	G.font = STANDARD_TEXT_FONT		-- 字型 / Font
-	-- Minimap font / 小地圖字型
-	G.fontSize = 14					-- 大小 / size
-	G.fontFlag = "THINOUTLINE"		-- 描邊 / outline
-	-- QuestWatchFrame / 任務追蹤字型
-	G.QfontSize = 18				-- 大小 / size
-	G.QfontFlag = "OUTLINE"			-- 描邊 / outline
+------
+	
+	-- EKMinimap 現在有了遊戲內控制台，請輸入 /ekm 或 /ekminimap 打開控制台更改設定
+	-- EKMinimap have in-game config. type /ekm or /ekminimap to toggle options
 
------------------------
--- Settings / 小地圖 --
------------------------
-
-	C.defaultSettings = {
-		["QuestWatchStyle"] = true,
-		["QuestWatchClick"] = true,
-		["QuestWatchStar"] = true,
-		["QuestWatchAnchor"] = "TOPRIGHT",
-		["QuestWatchX"] = -170,
-		["QuestWatchY"] = -220,
-		
-		["MinimapScale"] = 1.2,
-		["MinimapAnchor"] = "TOPRIGHT",
-		["MinimapY"] = -10,
-		["MinimapX"] = -10,
-		["ClickMenu"] = true,
-		["CharacterIcon"] = true,
-		
-		["WorldMapStyle"] = true,
-		["WorldMapScale"] = 0.6,
-		["WorldMapFade"] = true,
-		["WorldMapAlpha"] = 0.6,
-	}
-
---===================================================--
------------------    [[ Locales ]]    -----------------
---===================================================--
-
-if GetLocale() == "zhTW" then
-	L.ClickMenuOpt = "啟用點擊選單"
-	L.MinimapOpt = "小地圖"
-	L.SizeOpt = "縮放"
-	L.AlphaOpt = "淡出透明度"
-	L.AnchorOpt = "錨點"
-	L.XOpt = "X"
-	L.YOpt = "Y"
-	L.QuestWatchOpt = "追蹤框"
-	L.QuestWatchStarOpt = "使用 ★ 標記追蹤項目"
-	L.QuestWatchClickOpt = "使任務標題可點擊"
-	L.QuestWatchStyleOpt = "啟用追蹤框美化"
-	L.HeightOpt = "高度"
-	L.IconOpt = "角色資訊提示"
-	
-	L.Next = "下一級："
-	L.WorldMapOpt = "世界地圖"
-	L.WorldMapStyleOpt = "啟用世界地圖美化"
-	L.fadeOpt = "移動中淡出"
-	L.Calendar = SLASH_CALENDAR2:gsub("/(.*)","%1")
-	L.Left = "左"
-	L.Right = "右"
-	
-	L.Apply = "更改後點擊「"..APPLY.."」立即重載生效。"
-	L.posApply = APPLY..L.SizeOpt.."座標"
-	
-	L.tempTip1 = "Alt 功能是臨時性功能，提供給需要追蹤某些特定目標的偶發情況，所以它們的變動不會被儲存。"
-	L.tempTip2 = "所有 Alt 功能造成的更改會在重載介面或點擊「"..L.posApply.."」後復原。"
-	L.tempTip3 = "設定時，單純更改尺寸和座標而不更改選項，可以點擊「"..L.posApply.."」來直接套用而不需重載。"
-	L.dragInfo = "Alt+右鍵：臨時性拖動框體"
-	L.scrollInfo = "Alt+滾輪：臨時縮放小地圖"
-elseif GetLocale() == "zhCN" then
-	L.ClickMenuOpt = "启用点击菜单"
-	L.MinimapOpt = "小地图"
-	L.SizeOpt = "缩放"
-	L.AlphaOpt = "淡出透明度"
-	L.AnchorOpt = "锚点"
-	L.XOpt = "X"
-	L.YOpt = "Y"
-	L.QuestWatchOpt = "追踪框"
-	L.QuestWatchStarOpt = "使用 ★ 标记追踪项目"
-	L.QuestWatchClickOpt = "使任务标题可点击"
-	L.QuestWatchStyleOpt = "启用追踪框美化"
-	L.HeightOpt = "高度"
-	L.IconOpt = "角色信息提示"
-	
-	L.Next = "下一級："
-	
-	L.WorldMapOpt = "世界地图"
-	L.WorldMapStyleOpt = "启用世界地图美化"
-	L.fadeOpt = "移动中淡出"
-	
-	L.Calendar = "行事历"
-	L.Left = "左"
-	L.Right = "右"
-	
-	L.Apply = "更改后点击＂"..APPLY.."＂立即重载生效。"
-	L.posApply = APPLY..L.SizeOpt.."座标"
-	
-	L.tempTip1 = "Alt 功能是临时性功能，提供给需要追踪某些特定目标的偶发情况，所以它们的变动不会被保存。"
-	L.tempTip2 = "所有 Alt 功能造成的更改会在重载界面或点击＂"..L.posApply.."＂后复原。"
-	L.tempTip3 = "设置时，单纯更改尺寸和座标而不更改选项，可以点击＂"..L.posApply.."＂来直接套用而不需重载。"
-	L.dragInfo = "Alt+右键临时性拖动框体"
-	L.scrollInfo = "Alt+滚轮临时缩放小地图"
-else
-	L.ClickMenuOpt = "Enable click menu"
-	L.MinimapOpt = "Minimap"
-	L.SizeOpt = "Scale"
-	L.AlphaOpt = "Fade out alpha"
-	L.AnchorOpt = "Anchor"
-	L.XOpt = "X"
-	L.YOpt = "Y"
-	L.QuestWatchOpt = "QuestWatch"
-	L.QuestWatchStarOpt = "Mark object as ★ star"
-	L.QuestWatchClickOpt = "Click-able quest title"
-	L.QuestWatchStyleOpt = "Enable tracker style"
-	L.HeightOpt = "Height"
-	L.IconOpt = "Character icon tooltip"
-	
-	L.Next = "Next: "
-	
-	L.Calendar = SLASH_CALENDAR1:gsub("/(.*)","%1")
-	L.Left = "Left"
-	L.Right = "Right"
-	
-	L.WorldMapOpt = "WorldMap"
-	L.WorldMapStyleOpt = "Enable World Map style"
-	L.fadeOpt = "Fade out when moving"
-
-	L.Apply = "Click "..APPLY.." to active changes."
-	L.posApply = APPLY.." Size and Pos"
-	
-	L.tempTip1 = "Alt-function is a temporary function, for people wanna track something recently, they will not be saved to settgins."
-	L.tempTip2 = 'Any scale and position change caused by alt-function will reset after you reload or click "'..L.posApply..'" button.'
-	L.tempTip3 = 'If wanna config position and scale only (did not change check box), you can directly click"'..L.posApply..'" to apply them	without reload.'
-	L.dragInfo = "Alt-right click to drag"
-	L.scrollInfo = "Alt-scroll scale minimap"
-end
+------
 
 --===================================================--
 -----------------    [[ Initial ]]    -----------------
@@ -187,49 +39,6 @@ local default = CreateFrame("Frame")
 --=====================================================--
 -----------------    [[ Functions ]]    -----------------
 --=====================================================--
-
-F.CreateFS = function(parent, text, justify, anchor, x, y)
-	local fs = parent:CreateFontString(nil, "OVERLAY")
-	fs:SetFont(G.font, G.fontSize, G.fontFlag)
-	fs:SetText(text)
-	fs:SetShadowOffset(0, 0)
-	fs:SetWordWrap(false)
-	fs:SetJustifyH(justify)
-	if anchor and x and y then
-		fs:SetPoint(anchor, x, y)
-	else
-		fs:SetPoint("CENTER", 1, 0)
-	end
-	
-	return fs
-end
-
-F.CreateBG = function(parent, size, offset, a)
-	local frame = parent
-	if parent:GetObjectType() == "Texture" then
-		frame = parent:GetParent()
-	end
-	local lvl = frame:GetFrameLevel()
-
-	local bg = CreateFrame("Frame", nil, frame)
-	bg:ClearAllPoints()
-	bg:SetPoint("TOPLEFT", parent, -size, size)
-	bg:SetPoint("BOTTOMRIGHT", parent, size, -size)
-	bg:SetFrameLevel(lvl == 0 and 0 or lvl - 1)
-	bg:SetBackdrop({
-			bgFile = G.Tex,
-			tile = false,
-			edgeFile = G.Glow,	-- 陰影邊框
-			edgeSize = offset,	-- 邊框大小
-			insets = { left = offset, right = offset, top = offset, bottom = offset },
-		})
-	bg:SetBackdropColor(0, 0, 0, a)
-	bg:SetBackdropBorderColor(0, 0, 0, 1)
-	
-	return bg
-end
-
-F.Dummy = function() end
 
 local optList = {
 	[1] = "TOP",
@@ -399,18 +208,54 @@ local function CreateDropDown(self, width, height, data, value)
 end
 
 -- slider bar
-local function CreateBar(self, name, width, height, min, max, step)
+local function CreateBar(self, name, width, height, min, max, step, value, text)
 	local s = CreateFrame("Slider", name.."Bar", self, "OptionsSliderTemplate")
 	s:SetSize(width, height)
-	_G[s:GetName().."Low"]:SetText(min)
-	_G[s:GetName().."High"]:SetText(max)
+	_G[s:GetName().."Low"]:SetText(min/10)
+	_G[s:GetName().."High"]:SetText(max/10)
 	
 	s:SetMinMaxValues(min, max)
 	s:SetObeyStepOnDrag(true)
 	s:SetValueStep(step)
 	s:SetOrientation("HORIZONTAL")
 	
+	s:SetValue(GLOBEVARIABLE(value)*10)
+	
+	s.text = F.CreateFS(s, text.." "..GLOBEVARIABLE(value), "LEFT")
+	s.text:SetPoint("BOTTOM", s, "TOP", 0, 5)
+	
+	s:SetScript("OnValueChanged", function(self)
+		local n = tonumber(self:GetValue())
+		if n then
+			GLOBEVARIABLE(value, n/10)
+		end
+		s.text:SetText(text.." "..GLOBEVARIABLE(value), "LEFT")
+	end)
+	
 	return s
+end
+
+-- tooltip
+local function CreateTooltip(self, tex, anchor, title, text)
+	local i = CreateFrame("Button", nil, self)
+	--local f = i:GetParent()
+	i:SetSize(G.fontSize+2, G.fontSize+2)
+	--i:SetFrameLevel(f:GetFrameLevel()+2)
+	i.Icon = i:CreateTexture(nil, "ARTWORK")
+	i.Icon:SetAllPoints()
+	i.Icon:SetTexture(tex)
+	i:SetHighlightTexture(tex)
+	
+	i:SetScript("OnEnter", function(self)
+		GameTooltip:ClearLines()
+		GameTooltip:SetOwner(self, anchor, 0, 0)
+		GameTooltip:AddLine(title)
+		GameTooltip:AddLine(text, 1, 1, 1, true)
+		GameTooltip:Show()
+	end)
+	i:SetScript("OnLeave", function() GameTooltip:Hide() end)
+	
+	return i
 end
 
 --===============================================--
@@ -443,7 +288,7 @@ local function CreateOptions()
 	
 	-- minimap / 小地圖
 	
-	local mapTitle = F.CreateFS(MainFrame, L.MinimapOpt, "LEFT", "TOPLEFT", 24, -20)
+	local mapTitle = F.CreateFS(MainFrame, MINIMAP_LABEL, "LEFT", "TOPLEFT", 24, -20)
 
 	local ClickMenuBox = CreateCheckBox(MainFrame, L.ClickMenuOpt, "ClickMenu")
 	ClickMenuBox:SetPoint("TOPLEFT", MainFrame, 24, -44)
@@ -457,43 +302,26 @@ local function CreateOptions()
 	local mapAnchor = CreateDropDown(MainFrame, 120, 20, optList, "MinimapAnchor")
 	mapAnchor:SetPoint("LEFT", mapPosText, "RIGHT", 4, 0)
 	
-	local mapXText = F.CreateFS(MainFrame, L.XOpt, "LEFT")
+	local mapXText = F.CreateFS(MainFrame, "X", "LEFT")
 	mapXText:SetPoint("LEFT", mapPosText, 0, -30)
 	
 	local mapXBox = CreateEditBox(MainFrame, 68, 20, "MinimapX")
 	mapXBox:SetPoint("LEFT", mapXText, "RIGHT", 4, 0)
 	
-	local mapYText = F.CreateFS(MainFrame, L.YOpt, "LEFT")
+	local mapYText = F.CreateFS(MainFrame, "Y", "LEFT")
 	mapYText:SetPoint("LEFT", mapXBox, "RIGHT", 8, 0)
 	
 	local mapYBox = CreateEditBox(MainFrame, 68, 20, "MinimapY")
 	mapYBox:SetPoint("LEFT", mapYText, "RIGHT", 4, 0)
 
-	local mapSizeBar = CreateBar(MainFrame, "Size", 160, 20, 10, 20, 1)
+	local mapSizeBar = CreateBar(MainFrame, "Size", 160, 20, 10, 20, 1, "MinimapScale", L.SizeOpt)
 	mapSizeBar:SetPoint("TOPLEFT", mapXBox, "BOTTOMRIGHT", -70, -30)
-	mapSizeBar:SetValue(EKMinimapDB["MinimapScale"]*10)
-	_G[mapSizeBar:GetName().."Low"]:SetText(1)
-	_G[mapSizeBar:GetName().."High"]:SetText(2)
-	
-	local mapSizeText = F.CreateFS(mapSizeBar, L.SizeOpt.." "..EKMinimapDB["MinimapScale"], "LEFT")
-	mapSizeText:SetPoint("BOTTOM", mapSizeBar, "TOP", 0, 5)
-	
-	mapSizeBar:SetScript("OnValueChanged", function(self)
-		local n = tonumber(self:GetValue())
-		if n then
-			GLOBEVARIABLE("MinimapScale", n/10)
-			--EKMinimapDB["MinimapScale"] = n/10
-		end
-		mapSizeText:SetText(L.SizeOpt.." "..EKMinimapDB["MinimapScale"], "LEFT")
-	end)
 	
 	-- QuestWatch tracker
 	
-	--local QWFTitle = F.CreateFS(MainFrame, L.QuestWatchOpt, "LEFT", "TOPLEFT", 260, -30)
 	local QWFTitle = F.CreateFS(MainFrame, L.QuestWatchOpt, "LEFT", "LEFT", 24, -30)
 	
 	local QWFBox = CreateCheckBox(MainFrame, L.QuestWatchStyleOpt, "QuestWatchStyle")
-	--QWFBox:SetPoint("TOP", MainFrame, 20, -60)
 	QWFBox:SetPoint("LEFT", MainFrame, 24, -60)
 	
 	local StarBox = CreateCheckBox(MainFrame, L.QuestWatchStarOpt, "QuestWatchStar")
@@ -508,13 +336,13 @@ local function CreateOptions()
 	local QWFAnchor = CreateDropDown(MainFrame, 120, 20, optList, "QuestWatchAnchor")
 	QWFAnchor:SetPoint("LEFT", QWFPosText, "RIGHT", 4, 0)
 	
-	local QWFXText = F.CreateFS(MainFrame, L.XOpt, "LEFT")
+	local QWFXText = F.CreateFS(MainFrame, "X", "LEFT")
 	QWFXText:SetPoint("LEFT", QWFPosText, 0, -30)
 	
 	local QWFXBox = CreateEditBox(MainFrame, 68, 20, "QuestWatchX")
 	QWFXBox:SetPoint("LEFT", QWFXText, "RIGHT", 4, 0)
 	
-	local QWFYText = F.CreateFS(MainFrame, L.YOpt, "LEFT")
+	local QWFYText = F.CreateFS(MainFrame, "Y", "LEFT")
 	QWFYText:SetPoint("LEFT", QWFXBox, "RIGHT", 8, 0)
 	
 	local QWFYBox = CreateEditBox(MainFrame, 68, 20, "QuestWatchY")
@@ -522,75 +350,31 @@ local function CreateOptions()
 
 	-- world map
 	
-	--local WMFTitle = F.CreateFS(MainFrame, L.WorldMapOpt, "LEFT", "LEFT", 30, -50)
-	local WMFTitle = F.CreateFS(MainFrame, L.WorldMapOpt, "LEFT", "TOPLEFT", 260, -20)
+	local WMFTitle = F.CreateFS(MainFrame, WORLDMAP_BUTTON, "LEFT", "TOPLEFT", 260, -20)
 	
 	local WMFBox = CreateCheckBox(MainFrame, L.WorldMapStyleOpt, "WorldMapStyle")
-	--WMFBox:SetPoint("LEFT", MainFrame, 30, -80)
 	WMFBox:SetPoint("TOP", MainFrame, 24, -44)
 	
 	local fadeBox = CreateCheckBox(MainFrame, L.fadeOpt, "WorldMapFade")
 	fadeBox:SetPoint("BOTTOM", WMFBox, 0, -30)
 	
-	local WMFScaleBar = CreateBar(MainFrame, "WMFScale", 160, 20, 0, 10, 1)
+	local WMFScaleBar = CreateBar(MainFrame, "WMFScale", 160, 20, 0, 10, 1, "WorldMapScale", L.SizeOpt)
 	WMFScaleBar:SetPoint("TOPLEFT", fadeBox, "BOTTOMRIGHT", 0, -24)
-	WMFScaleBar:SetValue(EKMinimapDB["WorldMapScale"]*10)
-	_G[WMFScaleBar:GetName().."Low"]:SetText(0)
-	_G[WMFScaleBar:GetName().."High"]:SetText(1)
 	
-	local WMFScaleText = F.CreateFS(WMFScaleBar, L.SizeOpt.." "..EKMinimapDB["WorldMapScale"], "LEFT")
-	WMFScaleText:SetPoint("BOTTOM", WMFScaleBar, "TOP", 0, 5)
-	
-	WMFScaleBar:SetScript("OnValueChanged", function(self)
-		local n = tonumber(self:GetValue())
-		if n then
-			GLOBEVARIABLE("WorldMapScale", n/10)
-		end
-		WMFScaleText:SetText(L.SizeOpt.." "..EKMinimapDB["WorldMapScale"], "LEFT")
-	end)
-	
-	local WMFFadeBar = CreateBar(MainFrame, "WMFFade", 160, 20, 0, 10, 1)
+	local WMFFadeBar = CreateBar(MainFrame, "WMFFade", 160, 20, 0, 10, 1, "WorldMapAlpha", L.AlphaOpt)
 	WMFFadeBar:SetPoint("TOP", WMFScaleBar, "BOTTOM", 0, -30)
-	WMFFadeBar:SetValue(EKMinimapDB["WorldMapAlpha"]*10)
-	_G[WMFFadeBar:GetName().."Low"]:SetText(0)
-	_G[WMFFadeBar:GetName().."High"]:SetText(1)
 	
-	local WMFFadeText = F.CreateFS(WMFFadeBar, L.AlphaOpt.." "..EKMinimapDB["WorldMapAlpha"], "LEFT")
-	WMFFadeText:SetPoint("BOTTOM", WMFFadeBar, "TOP", 0, 5)
-	
-	WMFFadeBar:SetScript("OnValueChanged", function(self)
-		local n = tonumber(self:GetValue())
-		if n then
-			GLOBEVARIABLE("WorldMapAlpha", n/10)
-			--EKMinimapDB["MinimapScale"] = n/10
-		end
-		WMFFadeText:SetText(L.AlphaOpt.." "..EKMinimapDB["WorldMapAlpha"], "LEFT")
-	end)
+	local WMFi = CreateTooltip(MainFrame, G.Info, "ANCHOR_RIGHT", INFO, L.WMFTip)
+	WMFi:SetPoint("RIGHT", WMFTitle, G.fontSize+2, 0)
 	
 	-- infos
 	
-	--local info = F.CreateFS(MainFrame, INFO, "LEFT", "BOTTOMLEFT", 30, 60)
 	local info = F.CreateFS(MainFrame, INFO, "LEFT", "LEFT", 260, -30)
 	
-	local q = CreateFrame("Button", nil, MainFrame)
-	--q:SetPoint("BOTTOMLEFT", MainFrame, 30, 20)
-	q:SetPoint("LEFT", MainFrame, 250, -60)
+	local q = CreateTooltip(MainFrame, G.Question, "ANCHOR_RIGHT", INFO, L.tempTip1.."\n\n"..L.tempTip2)
 	q:SetSize(G.fontSize*3, G.fontSize*3)
-	q.Icon = q:CreateTexture(nil, "ARTWORK")
-	q.Icon:SetAllPoints()
-	q.Icon:SetTexture("Interface\\HelpFrame\\HelpIcon-KnowledgeBase")
-	q:SetHighlightTexture("Interface\\HelpFrame\\HelpIcon-KnowledgeBase")
-	q:SetScript("OnEnter", function(self)
-		GameTooltip:ClearLines()
-		GameTooltip:SetOwner(self, "ANCHOR_RIGHT", 0, 0)
-		GameTooltip:AddLine(INFO)
-		GameTooltip:AddLine(L.tempTip1, 1, 1, 1, true)
-		GameTooltip:AddLine(" ")
-		GameTooltip:AddLine(L.tempTip2, 1, 1, 1, true)
-		GameTooltip:Show()
-	end)
-	q:SetScript("OnLeave", function() GameTooltip:Hide() end)
-	
+	q:SetPoint("LEFT", MainFrame, 250, -60)
+
 	local infoDrag1 = F.CreateFS(MainFrame, L.dragInfo, "LEFT")
 	infoDrag1:SetPoint("LEFT", q, "RIGHT", 0, 8)
 	
@@ -614,21 +398,8 @@ local function CreateOptions()
 	reposButton:SetPoint("BOTTOMRIGHT", MainFrame, -20, 60)
 	reposButton:SetScript("OnClick", function() F.ResetM() F.ResetO() end)
 	
-	local i = CreateFrame("Button", nil, MainFrame)
+	local i = CreateTooltip(reposButton, G.Info, "ANCHOR_RIGHT", INFO, L.tempTip3)
 	i:SetPoint("TOPRIGHT", reposButton, 8, 8)
-	i:SetSize(G.fontSize+2, G.fontSize+2)
-	i.Icon = i:CreateTexture(nil, "ARTWORK")
-	i.Icon:SetAllPoints()
-	i.Icon:SetTexture("Interface\\FriendsFrame\\InformationIcon")
-	i:SetHighlightTexture("Interface\\FriendsFrame\\InformationIcon")
-	i:SetScript("OnEnter", function(self)
-		GameTooltip:ClearLines()
-		GameTooltip:SetOwner(self, "ANCHOR_RIGHT", 0, 0)
-		GameTooltip:AddLine(INFO)
-		GameTooltip:AddLine(L.tempTip3, 1, 1, 1, true)
-		GameTooltip:Show()
-	end)
-	i:SetScript("OnLeave", function() GameTooltip:Hide() end)
 	
 	local resetButton = CreateButton(MainFrame, 80, 30, RESET)
 	resetButton:SetPoint("RIGHT", reloadButton, "LEFT", -10, 0)
@@ -643,15 +414,3 @@ SlashCmdList["EKMINIMAP"] = function()
 end
 SLASH_EKMINIMAP1 = "/ekm"
 SLASH_EKMINIMAP2 = "/ekminimap"
-
---------------------
--- Credits / 銘謝 --
---------------------
-
-	-- Felix S., sakaras, ape47, iMinimap by Chiril, ooMinimap by Ooglogput, intMinimap by Int0xMonkey
-	-- NeavUI by Neal
-	-- https://www.wowinterface.com/downloads/info13981-NeavUI.html#info
-	-- ClickMenu by 10leej
-	-- https://www.wowinterface.com/downloads/info22660-ClickMenu.html
-	-- rQuestWatchTracker by zork
-	-- https://www.wowinterface.com/downloads/info18322-rQuestWatchTracker.html
