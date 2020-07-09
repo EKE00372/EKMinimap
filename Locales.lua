@@ -41,7 +41,7 @@ elseif GetLocale() == "zhCN" then
 	L.SizeOpt = "缩放"
 	L.AlphaOpt = "淡出透明度"
 	L.AnchorOpt = "锚点"
-	L.Next = "下一級："
+	L.Next = "下一级："
 	L.Calendar = "行事历"
 	
 	L.ClickMenuOpt = "启用点击菜单"
@@ -54,8 +54,6 @@ elseif GetLocale() == "zhCN" then
 	L.WorldMapStyleOpt = "启用世界地图调整"
 	L.fadeOpt = "移动中淡出"
 	
-	
-
 	L.Apply = "更改后点击＂"..APPLY.."＂立即重载生效。"
 	L.posApply = APPLY..L.SizeOpt.."和座标"
 	

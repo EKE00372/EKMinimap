@@ -1,6 +1,7 @@
 ﻿local addon, ns = ...
 local C, F, G, L = unpack(ns)
-local Minimap, sub, floor, CreateFrame = Minimap, string.sub, math.floor, CreateFrame
+local Minimap, CreateFrame = Minimap, CreateFrame
+local sub, floor, tinsert = string.sub, math.floor, table.insert
 
 --====================================================--
 -----------------    [[ Function ]]    -----------------
@@ -13,7 +14,6 @@ function GetMinimapShape()
 end
 
 local function findAnchor(value)
-	--local anchor = EKMinimapDB["MinimapAnchor"]
 	local anchor = EKMinimapDB[value]
 	local myAnchor = sub(anchor, -4)				-- get minimap anchor left or rignt
 	local iconAnchor = not not (myAnchor == "LEFT")	-- hope教我的語法糖
@@ -264,6 +264,9 @@ local function OnEvent(self, event, addon)
 		end)
 		self:UnregisterEvent("ADDON_LOADED")
 	elseif event == "PLAYER_LOGIN" then
+		-- make sure MBB dont take my icon 益rz
+		tinsert(MBB_Ignore, "EKMinimapTooltipButton")
+		
 		whoPing()
 		setMinimap()
 		updateIconPos()

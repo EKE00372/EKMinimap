@@ -2,7 +2,7 @@ local addon, ns = ...
 local C, F, G, L = unpack(ns)
 
 local v = GetAddOnMetadata("EKMinimap", "Version")
-local CreateFrame, tonumber, pairs = CreateFrame, tonumber, pairs
+local CreateFrame, tonumber, pairs, tinsert = CreateFrame, tonumber, pairs, table.insert
 
 
 ------
