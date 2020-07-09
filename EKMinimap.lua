@@ -265,7 +265,9 @@ local function OnEvent(self, event, addon)
 		self:UnregisterEvent("ADDON_LOADED")
 	elseif event == "PLAYER_LOGIN" then
 		-- make sure MBB dont take my icon 益rz
-		tinsert(MBB_Ignore, "EKMinimapTooltipButton")
+		if MBB_Ignore then
+			tinsert(MBB_Ignore, "EKMinimapTooltipButton")
+		end
 		
 		whoPing()
 		setMinimap()
