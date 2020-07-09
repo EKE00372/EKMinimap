@@ -139,7 +139,7 @@ local function OnEvent()
 			end,
 			notCheckable = true
 		},
-		{	-- 語音
+		{	-- 碼表
 			text = STOPWATCH_TITLE,
 			icon = "Interface\\Icons\\INV_Misc_PocketWatch_01",
 			func = function()
