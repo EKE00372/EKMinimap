@@ -2,13 +2,16 @@ local addon, ns = ...
 local C, F, G, L = unpack(ns)
 
 local QWF, QTF, gsub = QuestWatchFrame, QuestTimerFrame, string.gsub
+local GetNumQuestWatches = GetNumQuestWatches
+local ClickFrames = {}
+local frame
 
 --================================================--
 -----------------    [[ Core ]]    -----------------
 --================================================--
 
 local ObjectiveFrameHolder = CreateFrame("Frame", "QWFHoler", UIParent)
-	ObjectiveFrameHolder:SetSize(160, G.QfontSize + 4)
+	ObjectiveFrameHolder:SetSize(160, G.fontSize + 4)
 
 local function updateQWFPos()
 	ObjectiveFrameHolder:ClearAllPoints()
@@ -23,6 +26,8 @@ end
 
 local function setQWF()
 	if not EKMinimapDB["QuestWatchStyle"] then return end
+	
+	local numWatches = GetNumQuestWatches()
 	
 	updateQWFPos()
 	QWF:SetClampedToScreen(true)
@@ -52,11 +57,70 @@ local function setQWF()
 	HeaderBar:SetStatusBarTexture(G.Tex)
 	HeaderBar:SetStatusBarColor(G.Ccolors.r, G.Ccolors.g, G.Ccolors.b)
 	HeaderBar.bg = F.CreateBG(HeaderBar, 3, 3, 1)
+	HeaderBar:SetShown(numWatches > 0)
 
 	-- add title text
-	HeaderBar.Text = F.CreateFS(HeaderBar, CURRENT_QUESTS, "RIGHT", "RIGHT", 2, G.QfontSize)
-	HeaderBar.Text:SetFont(G.font, G.QfontSize, G.QfontFlag)
+	HeaderBar.Text = F.CreateFS(HeaderBar, CURRENT_QUESTS, "RIGHT", "RIGHT", 2, G.fontSize+2)
+	HeaderBar.Text:SetFont(G.font, G.fontSize, G.fontFlag)
 	HeaderBar.Text:SetTextColor(G.Ccolors.r, G.Ccolors.g, G.Ccolors.b)
+	
+	local HeaderButton = CreateFrame("Button", nil, HeaderBar)
+	HeaderButton:SetSize(20, 20)
+	HeaderButton:SetPoint("LEFT", HeaderBar, "RIGHT", 8, 8)
+	HeaderButton.bg = F.CreateBG(HeaderButton, 3, 3, .5)
+	HeaderButton.collapse = false
+	HeaderButton.text = F.CreateFS(HeaderButton, "-", "CENTER", "CENTER", 0, 0)
+	HeaderButton:SetNormalTexture("")
+	HeaderButton:SetHighlightTexture("")
+	HeaderButton:SetShown(numWatches > 0)
+	
+	HeaderButton:SetScript("OnEnter", function(self)
+		HeaderButton.bg:SetBackdropBorderColor(G.Ccolors.r, G.Ccolors.g, G.Ccolors.b, 1)
+	end)
+	
+	HeaderButton:SetScript("OnLeave", function(self)
+		HeaderButton.bg:SetBackdropBorderColor(0, 0, 0, 1)
+	end)
+	
+	HeaderButton:SetScript("OnClick", function(self)
+		self.collapse = not self.collapse
+		if self.collapse then
+			self.text:SetText("+")
+			QWF:Hide()
+		else
+			self.text:SetText("-")
+			if numWatches > 0 then
+				QWF:Show()
+			end
+		end
+	end)
+	
+	-- block text outline
+	for i = 1, 30 do
+		local line = _G["QuestWatchLine"..i]
+		
+		line:SetFont(G.font, G.fontSize, G.fontFlag)
+		line:SetHeight(G.fontSize)
+		line:SetShadowOffset(0, 0)
+	end
+	
+	hooksecurefunc("QuestWatch_Update", function()
+		-- make sure header and collapse button show only when tracking quest
+		HeaderBar:SetShown(GetNumQuestWatches() > 0)
+		HeaderButton:SetShown(GetNumQuestWatches() > 0)
+		-- if quest update when collapse then keep collapse it
+		if HeaderButton.collapse then QuestWatchFrame:Hide() end
+		
+		if EKMinimapDB["QuestWatchStar"] then
+			for i = 1, 30 do
+				local line = _G["QuestWatchLine"..i]
+				local text = line:GetText()
+				if text then
+					line:SetText(gsub(text, "- ", "★ "))
+				end
+			end
+		end
+	end)
 	
 	local function QWF_Tooltip(self)
 		GameTooltip:SetOwner(self, "ANCHOR_TOP")
@@ -64,18 +128,10 @@ local function setQWF()
 		GameTooltip:Show()
 	end
 	
-	for i = 1, 30 do
-		local line = _G["QuestWatchLine"..i]
-		
-		line:SetFont(G.font, G.QfontSize-2, G.QfontFlag)
-		line:SetHeight(G.QfontSize)
-		line:SetShadowOffset(0, 0)
-	end
-	
 	local QWFMove = CreateFrame("FRAME", "QWFdrag", ObjectiveFrameHolder)
 		-- Create frame for click
-		QWFMove:SetSize(160, G.QfontSize + 6)
-		QWFMove:SetPoint("TOP", ObjectiveFrameHolder, 0, G.QfontSize)
+		QWFMove:SetSize(160, G.fontSize + 2)
+		QWFMove:SetPoint("TOP", ObjectiveFrameHolder, 0, G.fontSize)
 		QWFMove:SetFrameStrata("BACKGROUND")
 		QWFMove:EnableMouse(true)
 		-- Make it drag-able
@@ -100,33 +156,6 @@ local function setQWF()
 			GameTooltip:Hide()
 		end)
 end
-
---=================================================--
------------------    [[ Block ]]    -----------------
---=================================================--
---[[
-local function styleQuestBlock()
-	if not EKMinimapDB["QuestWatchStyle"] and  then return end
-	
-	-- Change font of watched quests
-	hooksecurefunc("QuestWatch_Update", function()
-		for i = 1, 30 do
-			local line = _G["QuestWatchLine"..i]
-			
-			line:SetFont(G.font, G.QfontSize-2, G.QfontFlag)
-			line:SetHeight(G.QfontSize+2)
-			line:SetShadowOffset(0, 0)
-			
-			if EKMinimapDB["QuestWatchStar"] then
-				local text = line:GetText()
-				if text then
-					line:SetText(gsub(text, "- ", "★ "))
-				end
-			end
-		end
-	end)
-end
-]]--
 
 --============================================================--
 -----------------    [[ ModernQuestWatch ]]    -----------------
@@ -184,7 +213,6 @@ local function ModernQuestWatch()
 		end
 	end
 	
-	local ClickFrames = {}
 	local function SetClickFrame(watchIndex, questIndex, headerText, objectiveTexts, completed)
 		if not ClickFrames[watchIndex] then
 			ClickFrames[watchIndex] = CreateFrame("Frame")
@@ -205,17 +233,7 @@ local function ModernQuestWatch()
 	hooksecurefunc("QuestWatch_Update", function()
 		local watchTextIndex = 1
 		local numWatches = GetNumQuestWatches()
-		
-		if EKMinimapDB["QuestWatchStar"] then
-			for i = 1, 30 do
-				local line = _G["QuestWatchLine"..i]
-				local text = line:GetText()
-				if text then
-					line:SetText(gsub(text, "- ", "★ "))
-				end
-			end
-		end
-		
+
 		for i = 1, numWatches do
 			local questIndex = GetQuestIndexForWatch(i)
 			if questIndex then
@@ -228,6 +246,7 @@ local function ModernQuestWatch()
 					watchTextIndex = watchTextIndex + 1
 					local objectivesGroup = {}
 					local objectivesCompleted = 0
+					
 					for j = 1, numObjectives do
 						local finished = select(3, GetQuestLogLeaderBoard(j, questIndex))
 						if finished then
@@ -245,12 +264,9 @@ local function ModernQuestWatch()
 		for _, frame in pairs(ClickFrames) do
 			frame[GetQuestIndexForWatch(frame.watchIndex) and "Show" or "Hide"](frame)
 		end
-
-		--bu:SetShown(numWatches > 0)
-		--if bu.collapse then QuestWatchFrame:Hide() end
 	end)
 
-	local function autoQuestWatch(_, questIndex)
+	local function autoQuestWatch(self, _, questIndex)
 		-- tracking otherwise untrackable quests (without any objectives) would still count against the watch limit
 		-- calling AddQuestWatch() while on the max watch limit silently fails
 		if GetCVarBool("autoQuestWatch") and GetNumQuestLeaderBoards(questIndex) ~= 0 and GetNumQuestWatches() < MAX_WATCHABLE_QUESTS then
@@ -266,16 +282,10 @@ end
 -- Reset / 重置
 F.ResetO = function()
 	updateQWFPos()
-	--setQWF()
 end
 
 local function OnEvent()
-	--if not IsAddOnLoaded("Blizzard_QuestWatchTracker") then
-	--	LoadAddOn("Blizzard_QuestWatchTracker")
-	--end
-	--setParent()
 	setQWF()
-	--styleQuestBlock()
 	ModernQuestWatch()
 end
 
