@@ -139,6 +139,15 @@ local function OnEvent()
 			end,
 			notCheckable = true
 		},
+		{	-- 語音
+			text = STOPWATCH_TITLE,
+			icon = "Interface\\Icons\\INV_Misc_PocketWatch_01",
+			func = function()
+				ToggleFrame(TimeManagerFrame)
+			end,
+			notCheckable = true
+		},
+		
 		{	-- 區域地圖
 			text = BATTLEFIELD_MINIMAP,
 			colorCode = "|cff999999",
