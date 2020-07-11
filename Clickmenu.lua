@@ -1,8 +1,9 @@
-local C, G = unpack(select(2, ...))
-
+local addon, ns = ...
+local C, F, G = unpack(ns)
 if not C.ClickMenu then return end
 
---  [[ Click Menu ]] --
+local Minimap, InCombatLockdown = Minimap, InCombatLockdown
+local EasyMenu, ToggleDropDownMenu = EasyMenu, ToggleDropDownMenu
 
 -- Right Click Menu List
 local menuFrame = CreateFrame("Frame", "MinimapRightClickMenu", UIParent, "UIDropDownMenuTemplate")
@@ -69,7 +70,7 @@ local menuList = {
 		text = SOCIAL_BUTTON,
 		icon = "Interface\\FriendsFrame\\UI-Toast-ChatInviteIcon",
 		func = function() 
-			securecall(ToggleFriendsFrame, 1) 
+			securecall(ToggleFriendsFrame, 1)
 		end,
 		notCheckable = true,
 	},
@@ -137,6 +138,15 @@ local menuList = {
 		end,
 		notCheckable = true
 	},
+	{	-- 碼表
+		text = STOPWATCH_TITLE,
+		icon = "Interface\\Icons\\INV_Misc_PocketWatch_01",
+		func = function()
+			ToggleFrame(TimeManagerFrame)
+		end,
+		notCheckable = true
+	},
+	
 	{	-- 區域地圖
 		text = BATTLEFIELD_MINIMAP,
 		colorCode = "|cff999999",
@@ -166,16 +176,16 @@ local menuList = {
 -- Right Click for Game Menu / 右鍵遊戲選單
 Minimap:SetScript("OnMouseUp", function(self, button)
 	if button == "RightButton" then
-		EasyMenu(menuList, menuFrame, self, (Minimap:GetWidth() * .7), -3, "MENU", 3)
+		EasyMenu(menuList, menuFrame, self, (Minimap:GetWidth() * .7), -10, "MENU", 3)
 	else
 		Minimap_OnClick(self)
 	end
 end)
 
--- avoid taint / 避免taint
+-- Avoid Taint / 避免taint
 local initialize = CreateFrame("Frame")
-initialize:SetScript("OnEvent", function()
-	ShowUIPanel(SpellBookFrame)
-	HideUIPanel(SpellBookFrame)
-end)
-initialize:RegisterEvent("PLAYER_ENTERING_WORLD")
+	initialize:SetScript("OnEvent", function()
+		ShowUIPanel(SpellBookFrame)
+		HideUIPanel(SpellBookFrame)
+	end)
+	initialize:RegisterEvent("PLAYER_ENTERING_WORLD")
