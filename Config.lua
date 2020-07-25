@@ -19,8 +19,8 @@ local CreateFrame, tonumber, pairs = CreateFrame, tonumber, pairs
 
 	G.Ccolors = (CUSTOM_CLASS_COLORS or RAID_CLASS_COLORS)[select(2, UnitClass("player"))]
 	G.Mask = MediaFolder.."mask.blp"
-	--G.Tex = "Interface\\Buttons\\WHITE8x8"
-	G.Tex = "Interface\\ChatFrame\\ChatFrameBackground"
+	G.Tex = "Interface\\Buttons\\WHITE8x8"
+	--G.Tex = "Interface\\ChatFrame\\ChatFrameBackground"
 	G.Glow = MediaFolder.."glow.tga"
 	G.Mail = "Interface\\MINIMAP\\TRACKING\\Mailbox.blp"  -- "Interface\\HELPFRAME\\ReportLagIcon-Mail.blp"
 	G.Diff = MediaFolder.."difficulty.tga"
@@ -232,7 +232,7 @@ end
 local function CreateButton(self, width, height, text)
 	local bu = CreateFrame("Button", nil, self)
 	bu:SetSize(width, height)
-	bu.bg = F.CreateBG(bu, 1, 1, .5)
+	bu.bg = F.CreateBG(bu, 3, 3, .5)
 	
 	bu:SetNormalTexture("")
 	bu:SetHighlightTexture("")

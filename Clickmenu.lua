@@ -237,6 +237,14 @@ local function OnEvent()
 			end,
 			notCheckable = true,
 		},
+		{	-- 語音
+			text = CHANNEL,
+			icon = "Interface\\CHATFRAME\\UI-ChatIcon-ArmoryChat-AwayMobile",
+			func = function()
+				ToggleChannelFrame()
+			end,
+			notCheckable = true
+		},
 		{	-- 行事曆
 			text = L.Calendar,
 			func = function()
