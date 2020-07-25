@@ -1,144 +1,18 @@
-----------------------
--- Dont touch this! --
-----------------------
-
 local addon, ns = ...
-	ns[1] = {} -- C, config
-	ns[2] = {} -- F, functions, constants, variables
-	ns[3] = {} -- G, globals (Optionnal)
-	ns[4] = {} -- L, localization
-	
 local C, F, G, L = unpack(ns)
-local MediaFolder = "Interface\\AddOns\\EKMinimap\\Media\\"
+
 local v = GetAddOnMetadata("EKMinimap", "Version")
-local CreateFrame, tonumber, pairs = CreateFrame, tonumber, pairs
+local CreateFrame, tonumber, pairs, tinsert = CreateFrame, tonumber, pairs, table.insert
+
+------
+	
+	-- EKMinimap 現在有了遊戲內控制台，請輸入 /ekm 或 /ekminimap 打開控制台更改設定
+	-- EKMinimap have in-game config. type /ekm or /ekminimap to toggle options
+
+------
 
 --===================================================--
 -----------------    [[ Initial	]]    -----------------
---===================================================--
-
-	G.Ccolors = (CUSTOM_CLASS_COLORS or RAID_CLASS_COLORS)[select(2, UnitClass("player"))]
-	G.Mask = MediaFolder.."mask.blp"
-	G.Tex = "Interface\\Buttons\\WHITE8x8"
-	--G.Tex = "Interface\\ChatFrame\\ChatFrameBackground"
-	G.Glow = MediaFolder.."glow.tga"
-	G.Mail = "Interface\\MINIMAP\\TRACKING\\Mailbox.blp"  -- "Interface\\HELPFRAME\\ReportLagIcon-Mail.blp"
-	G.Diff = MediaFolder.."difficulty.tga"
-	G.Report = "Interface\\HelpFrame\\HelpIcon-ReportLag.blp"
-	-- 字體 / font
-	G.font = STANDARD_TEXT_FONT
-	-- minimap / 小地圖字型
-	G.fontSize = 14
-	G.fontFlag = "THINOUTLINE"
-	-- objectframe / 追蹤字型
-	G.obfontSize = 18
-	G.obfontFlag = "OUTLINE"
-
---====================================================--
------------------    [[ Settings ]]    -----------------
---====================================================--
-
-	C.defaultSettings = {
-		["ObjectiveStyle"] = true,
-		["ObjectiveStar"] = true,
-		["ObjectiveHeight"] = 600,
-		["ObjectiveAnchor"] = "TOPRIGHT",
-		["ObjectiveX"] = -100,
-		["ObjectiveY"] = -170,
-		["MinimapScale"] = 1.2,
-		["MinimapAnchor"] = "TOPLEFT",
-		["MinimapY"] = -10,
-		["MinimapX"] = 10,
-		["ClickMenu"] = true,
-		["CharacterIcon"] = true,
-	}
-
---===================================================--
------------------    [[ Locales ]]    -----------------
---===================================================--
-
-if GetLocale() == "zhTW" then
-	L.ClickMenuOpt = "啟用點擊選單"
-	L.MinimapOpt = "小地圖"
-	L.SizeOpt = "縮放"
-	L.AnchorOpt = "錨點"
-	L.XOpt = "X 座標"
-	L.YOpt = "Y 座標"
-	L.ObjectiveOpt = "追蹤框"
-	L.ObjectiveStarOpt = "使用 ★ 標記追蹤項目"
-	L.ObjectiveStyleOpt = "啟用追蹤框美化"
-	L.HeightOpt = "高度"
-	L.IconOpt = "角色資訊提示"
-	
-	L.Calendar = SLASH_CALENDAR2:gsub("/(.*)","%1")
-	L.Left = "左"
-	L.Right = "右"
-	
-	L.Apply = "更改後點擊「"..APPLY.."」立即重載生效。"
-	L.posApply = APPLY..L.SizeOpt.."座標"
-	
-	L.tempTip1 = "Alt 功能是臨時性功能，提供給需要追蹤某些特定目標的偶發情況，所以它們的變動不會被儲存。"
-	L.tempTip2 = "所有 Alt 功能造成的更改會在重載介面或點擊「"..L.posApply.."」後復原。"
-	L.tempTip3 = "設定時，單純更改尺寸和座標而不更改選項，可以點擊「"..L.posApply.."」來直接套用而不需重載。"
-	L.cmdInfo = "/ej1 /ej2 彈出載具乘客"
-	L.dragInfo = "Alt+右鍵：臨時性拖動框體"
-	L.scrollInfo = "Alt+滾輪：臨時縮放小地圖"
-elseif GetLocale() == "zhCN" then
-	L.ClickMenuOpt = "启用点击菜单"
-	L.MinimapOpt = "小地图"
-	L.SizeOpt = "缩放"
-	L.AnchorOpt = "锚点"
-	L.XOpt = "X 座标"
-	L.YOpt = "Y 座标"
-	L.ObjectiveOpt = "追踪框"
-	L.ObjectiveStarOpt = "使用 ★ 标记追踪项目"
-	L.ObjectiveStyleOpt = "启用追踪框美化"
-	L.HeightOpt = "高度"
-	L.IconOpt = "角色信息提示"
-	
-	L.Calendar = "行事历"
-	L.Left = "左"
-	L.Right = "右"
-	
-	L.Apply = "更改后点击＂"..APPLY.."＂立即重载生效。"
-	L.posApply = APPLY..L.SizeOpt.."座标"
-	
-	L.tempTip1 = "Alt 功能是临时性功能，提供给需要追踪某些特定目标的偶发情况，所以它们的变动不会被保存。"
-	L.tempTip2 = "所有 Alt 功能造成的更改会在重载界面或点击＂"..L.posApply.."＂后复原。"
-	L.tempTip3 = "设置时，单纯更改尺寸和座标而不更改选项，可以点击＂"..L.posApply.."＂来直接套用而不需重载。"
-	L.cmdInfo = "/ej1 /ej2 弹出载具乘客"
-	L.dragInfo = "Alt+右键临时性拖动框体"
-	L.scrollInfo = "Alt+滚轮临时性缩放小地图"
-else
-	L.ClickMenuOpt = "Enable click menu"
-	L.MinimapOpt = "Minimap"
-	L.SizeOpt = "Scale"
-	L.AnchorOpt = "Anchor"
-	L.XOpt = "X"
-	L.YOpt = "Y"
-	L.ObjectiveOpt = "Objective tracker"
-	L.ObjectiveStarOpt = "Mark object as ★ star"
-	L.ObjectiveStyleOpt = "Enable tracker style"
-	L.HeightOpt = "Height"
-	L.IconOpt = "Character icon tooltip"
-	
-	L.Calendar = SLASH_CALENDAR1:gsub("/(.*)","%1")
-	L.Left = "Left"
-	L.Right = "Right"
-	
-	L.Apply = "Click "..APPLY.." to active changes."
-	L.posApply = APPLY.." Size and Pos"
-	
-	L.tempTip1 = "Alt-function is a temporary function, for people wanna track something recently, they will not be saved to settgins."
-	L.tempTip2 = 'Any scale and position change caused by alt-function will reset after you reload or click "'..L.posApply..'" button.'
-	L.tempTip3 = 'If wanna config position and scale only (did not change check box), you can directly click"'..L.posApply..'" to apply them	without reload.'
-	L.cmdInfo = "/ej1 /ej2 Eject Passenger"
-	L.dragInfo = "Alt-right click drag frame"
-	L.scrollInfo = "Alt-scroll scale minimap"
-end
-
---===================================================--
------------------    [[ Initial ]]    -----------------
 --===================================================--
 
 local default = CreateFrame("Frame")
@@ -164,48 +38,6 @@ local default = CreateFrame("Frame")
 --=====================================================--
 -----------------    [[ Functions ]]    -----------------
 --=====================================================--
-
-F.CreateFS = function(parent, text, justify, anchor, x, y)
-	local fs = parent:CreateFontString(nil, "OVERLAY")
-	fs:SetFont(G.font, G.fontSize, G.fontFlag)
-	fs:SetText(text)
-	fs:SetWordWrap(false)
-	fs:SetJustifyH(justify)
-	if anchor and x and y then
-		fs:SetPoint(anchor, x, y)
-	else
-		fs:SetPoint("CENTER", 1, 0)
-	end
-	
-	return fs
-end
-
-F.CreateBG = function(parent, size, offset, a)
-	local frame = parent
-	if parent:GetObjectType() == "Texture" then
-		frame = parent:GetParent()
-	end
-	local lvl = frame:GetFrameLevel()
-
-	local bg = CreateFrame("Frame", nil, frame)
-	bg:ClearAllPoints()
-	bg:SetPoint("TOPLEFT", parent, -size, size)
-	bg:SetPoint("BOTTOMRIGHT", parent, size, -size)
-	bg:SetFrameLevel(lvl == 0 and 0 or lvl - 1)
-	bg:SetBackdrop({
-			bgFile = G.Tex,
-			tile = false,
-			edgeFile = G.Glow,	-- 陰影邊框
-			edgeSize = offset,	-- 邊框大小
-			insets = { left = offset, right = offset, top = offset, bottom = offset },
-		})
-	bg:SetBackdropColor(0, 0, 0, a)
-	bg:SetBackdropBorderColor(0, 0, 0, 1)
-	
-	return bg
-end
-
-F.Dummy = function() end
 
 local optList = {
 	[1] = "TOP",
@@ -374,18 +206,55 @@ local function CreateDropDown(self, width, height, data, value)
 	return dd
 end
 
-local function CreateBar(self, name, width, height, min, max, step)
+-- slider bar
+local function CreateBar(self, name, width, height, min, max, step, value, text, coeff)
 	local s = CreateFrame("Slider", name.."Bar", self, "OptionsSliderTemplate")
 	s:SetSize(width, height)
-	_G[s:GetName().."Low"]:SetText(min)
-	_G[s:GetName().."High"]:SetText(max)
+	_G[s:GetName().."Low"]:SetText(min * coeff)
+	_G[s:GetName().."High"]:SetText(max * coeff)
 	
 	s:SetMinMaxValues(min, max)
 	s:SetObeyStepOnDrag(true)
 	s:SetValueStep(step)
 	s:SetOrientation("HORIZONTAL")
 	
+	s:SetValue(GLOBEVARIABLE(value)/coeff)
+	
+	s.text = F.CreateFS(s, text.." "..GLOBEVARIABLE(value), "LEFT")
+	s.text:SetPoint("BOTTOM", s, "TOP", 0, 5)
+	
+	s:SetScript("OnValueChanged", function(self)
+		local n = tonumber(self:GetValue())
+		if n then
+			GLOBEVARIABLE(value, n * coeff)
+		end
+		s.text:SetText(text.." "..GLOBEVARIABLE(value), "LEFT")
+	end)
+	
 	return s
+end
+
+-- tooltip
+local function CreateTooltip(self, tex, anchor, title, text)
+	local i = CreateFrame("Button", nil, self)
+	--local f = i:GetParent()
+	i:SetSize(G.fontSize+2, G.fontSize+2)
+	--i:SetFrameLevel(f:GetFrameLevel()+2)
+	i.Icon = i:CreateTexture(nil, "ARTWORK")
+	i.Icon:SetAllPoints()
+	i.Icon:SetTexture(tex)
+	i:SetHighlightTexture(tex)
+	
+	i:SetScript("OnEnter", function(self)
+		GameTooltip:ClearLines()
+		GameTooltip:SetOwner(self, anchor, 0, 0)
+		GameTooltip:AddLine(title)
+		GameTooltip:AddLine(text, 1, 1, 1, true)
+		GameTooltip:Show()
+	end)
+	i:SetScript("OnLeave", function() GameTooltip:Hide() end)
+	
+	return i
 end
 
 --===============================================--
@@ -444,23 +313,8 @@ local function CreateOptions()
 	local mapYBox = CreateEditBox(MainFrame, 100, 20, "MinimapY")
 	mapYBox:SetPoint("LEFT", mapYText, "RIGHT", 4, 0)
 
-	local mapSizeBar = CreateBar(MainFrame, "Size", 160, 20, 10, 20, 1)
+	local mapSizeBar = CreateBar(MainFrame, "Size", 160, 20, 10, 20, 1, "MinimapScale", L.SizeOpt, .1)
 	mapSizeBar:SetPoint("TOP", mapYText, "BOTTOM", 80, -34)
-	mapSizeBar:SetValue(EKMinimapDB["MinimapScale"]*10)
-	_G[mapSizeBar:GetName().."Low"]:SetText(1)
-	_G[mapSizeBar:GetName().."High"]:SetText(2)
-	
-	local mapSizeText = F.CreateFS(mapSizeBar, L.SizeOpt.." "..EKMinimapDB["MinimapScale"], "LEFT")
-	mapSizeText:SetPoint("BOTTOM", mapSizeBar, "TOP", 0, 5)
-	
-	mapSizeBar:SetScript("OnValueChanged", function(self)
-		local n = tonumber(self:GetValue())
-		if n then
-			GLOBEVARIABLE("MinimapScale", n/10)
-			--EKMinimapDB["MinimapScale"] = n/10
-		end
-		mapSizeText:SetText(L.SizeOpt.." "..EKMinimapDB["MinimapScale"], "LEFT")
-	end)
 	
 	-- objective tracker
 	
@@ -490,44 +344,16 @@ local function CreateOptions()
 	local otfYBox = CreateEditBox(MainFrame, 100, 20, "ObjectiveY")
 	otfYBox:SetPoint("LEFT", otfYText, "RIGHT", 4, 0)
 
-	local otfHeightBar = CreateBar(MainFrame, "Height", 160, 20, 200, 1200, 100)
+	local otfHeightBar = CreateBar(MainFrame, "Height", 160, 20, 200, 1200, 100, "ObjectiveHeight", L.HeightOpt, 1)
 	otfHeightBar:SetPoint("TOP", otfYText, "BOTTOM", 80, -34)
-	otfHeightBar:SetValue(EKMinimapDB["ObjectiveHeight"])
-	
-	local otfHeightText = F.CreateFS(otfHeightBar, L.HeightOpt.." "..EKMinimapDB["ObjectiveHeight"], "LEFT")
-	otfHeightText:SetPoint("BOTTOM", otfHeightBar, "TOP", 0, 5)
-	
-	otfHeightBar:SetScript("OnValueChanged", function(self)
-		local n = tonumber(self:GetValue())
-		if n then
-			GLOBEVARIABLE("ObjectiveHeight", n)
-			--EKMinimapDB["ObjectiveHeight"] = n
-		end
-		otfHeightText:SetText(L.HeightOpt.." "..EKMinimapDB["ObjectiveHeight"])
-	end)
 	
 	-- infos
 	
 	local info = F.CreateFS(MainFrame, INFO, "LEFT", "BOTTOMLEFT", 30, 120)
-	
-	local q = CreateFrame("Button", nil, MainFrame)
+	local q = CreateTooltip(MainFrame, G.Question, "ANCHOR_LEFT", INFO, L.tempTip1.."\n\n"..L.tempTip2)
 	q:SetPoint("BOTTOMLEFT", MainFrame, 30, 60)
 	q:SetSize(G.fontSize*3, G.fontSize*3)
-	q.Icon = q:CreateTexture(nil, "ARTWORK")
-	q.Icon:SetAllPoints()
-	q.Icon:SetTexture("Interface\\HelpFrame\\HelpIcon-KnowledgeBase")
-	q:SetHighlightTexture("Interface\\HelpFrame\\HelpIcon-KnowledgeBase")
-	q:SetScript("OnEnter", function(self)
-		GameTooltip:ClearLines()
-		GameTooltip:SetOwner(self, "ANCHOR_LEFT", -20, 0)
-		GameTooltip:AddLine(INFO)
-		GameTooltip:AddLine(L.tempTip1, 1, 1, 1, true)
-		GameTooltip:AddLine(" ")
-		GameTooltip:AddLine(L.tempTip2, 1, 1, 1, true)
-		GameTooltip:Show()
-	end)
-	q:SetScript("OnLeave", function() GameTooltip:Hide() end)
-	
+
 	local infoCmd = F.CreateFS(MainFrame, L.cmdInfo, "LEFT")
 	infoCmd:SetPoint("TOPLEFT", q, "TOPRIGHT", 4, 8)
 	
@@ -553,22 +379,9 @@ local function CreateOptions()
 	reposButton:SetPoint("BOTTOMRIGHT", MainFrame, -20, 60)
 	reposButton:SetScript("OnClick", function() F.ResetM() F.ResetO() end)
 	
-	local i = CreateFrame("Button", nil, MainFrame)
+	local i = CreateTooltip(reposButton, G.Info, "ANCHOR_RIGHT", INFO, L.tempTip3)
 	i:SetPoint("TOPRIGHT", reposButton, 8, 8)
-	i:SetSize(G.fontSize+2, G.fontSize+2)
-	i.Icon = i:CreateTexture(nil, "ARTWORK")
-	i.Icon:SetAllPoints()
-	i.Icon:SetTexture("Interface\\FriendsFrame\\InformationIcon")
-	i:SetHighlightTexture("Interface\\FriendsFrame\\InformationIcon")
-	i:SetScript("OnEnter", function(self)
-		GameTooltip:ClearLines()
-		GameTooltip:SetOwner(self, "ANCHOR_RIGHT", 0, 0)
-		GameTooltip:AddLine(INFO)
-		GameTooltip:AddLine(L.tempTip3, 1, 1, 1, true)
-		GameTooltip:Show()
-	end)
-	i:SetScript("OnLeave", function() GameTooltip:Hide() end)
-	
+
 	local resetButton = CreateButton(MainFrame, 80, 30, RESET)
 	resetButton:SetPoint("RIGHT", reloadButton, "LEFT", -10, 0)
 	resetButton:SetScript("OnClick", function()

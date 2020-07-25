@@ -1,11 +1,13 @@
 local addon, ns = ...
-local L = unpack(ns)
+local C, F, G, L = unpack(ns)
 local GetLocale = GetLocale
+
 --===================================================--
 -----------------    [[ Locales ]]    -----------------
 --===================================================--
 
 if GetLocale() == "zhTW" then
+
 	L.ClickMenuOpt = "啟用點擊選單"
 	L.MinimapOpt = "小地圖"
 	L.SizeOpt = "縮放"
@@ -18,6 +20,10 @@ if GetLocale() == "zhTW" then
 	L.HeightOpt = "高度"
 	L.IconOpt = "角色資訊提示"
 	
+	L.Calendar = SLASH_CALENDAR2:gsub("/(.*)","%1")
+	L.Left = "左"
+	L.Right = "右"
+	
 	L.Apply = "更改後點擊「"..APPLY.."」立即重載生效。"
 	L.posApply = APPLY..L.SizeOpt.."座標"
 	
@@ -27,7 +33,9 @@ if GetLocale() == "zhTW" then
 	L.cmdInfo = "/ej1 /ej2 彈出載具乘客"
 	L.dragInfo = "Alt+右鍵：臨時性拖動框體"
 	L.scrollInfo = "Alt+滾輪：臨時縮放小地圖"
+	
 elseif GetLocale() == "zhCN" then
+
 	L.ClickMenuOpt = "启用点击菜单"
 	L.MinimapOpt = "小地图"
 	L.SizeOpt = "缩放"
@@ -38,7 +46,11 @@ elseif GetLocale() == "zhCN" then
 	L.ObjectiveStarOpt = "使用 ★ 标记追踪项目"
 	L.ObjectiveStyleOpt = "启用追踪框美化"
 	L.HeightOpt = "高度"
-	L.IconOpt = "角色资讯提示"
+	L.IconOpt = "角色信息提示"
+	
+	L.Calendar = "行事历"
+	L.Left = "左"
+	L.Right = "右"
 	
 	L.Apply = "更改后点击＂"..APPLY.."＂立即重载生效。"
 	L.posApply = APPLY..L.SizeOpt.."座标"
@@ -49,7 +61,9 @@ elseif GetLocale() == "zhCN" then
 	L.cmdInfo = "/ej1 /ej2 弹出载具乘客"
 	L.dragInfo = "Alt+右键临时性拖动框体"
 	L.scrollInfo = "Alt+滚轮临时性缩放小地图"
+	
 else
+
 	L.ClickMenuOpt = "Enable click menu"
 	L.MinimapOpt = "Minimap"
 	L.SizeOpt = "Scale"
@@ -62,6 +76,10 @@ else
 	L.HeightOpt = "Height"
 	L.IconOpt = "Character icon tooltip"
 	
+	L.Calendar = SLASH_CALENDAR1:gsub("/(.*)","%1")
+	L.Left = "Left"
+	L.Right = "Right"
+	
 	L.Apply = "Click "..APPLY.." to active changes."
 	L.posApply = APPLY.." Size and Pos"
 	
@@ -71,4 +89,5 @@ else
 	L.cmdInfo = "/ej1 /ej2 Eject Passenger"
 	L.dragInfo = "Alt-right click drag frame"
 	L.scrollInfo = "Alt-scroll scale minimap"
+	
 end
