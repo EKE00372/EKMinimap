@@ -152,7 +152,7 @@ local function createGarrisonTooltip(self)
 		
 		GameTooltip:AddLine(" ")
 		GameTooltip:AddDoubleLine(CHARACTER, LEVEL.. " "..lvl, 0, 1, .5, 0, 1, .5)
-		GameTooltip:AddDoubleLine(XP..HEADER_COLON, cur.." / "..max.." ("..floor(cur/max*100).."%)", 1,1,1,1,1,1)
+		GameTooltip:AddDoubleLine(XP..HEADER_COLON, cur.."/"..max.." ("..floor(cur/max*100).."%)", 1,1,1,1,1,1)
 		if rested then
 			GameTooltip:AddDoubleLine(TUTORIAL_TITLE26..HEADER_COLON, rested.." ("..floor(rested/max*100).."%)", 1,1,1,1,1,1)
 		end
@@ -180,7 +180,7 @@ local function createGarrisonTooltip(self)
 				max = min + 1e3
 				cur = max - 1
 			end
-			GameTooltip:AddDoubleLine(REFORGE_CURRENT..HEADER_COLON, cur - min.." / "..max - min.." ("..floor((cur - min)/(max - min)*100).."%)", 1, 1, 1, 1, 1, 1)
+			GameTooltip:AddDoubleLine(REFORGE_CURRENT..HEADER_COLON, cur - min.."/"..max - min.." ("..floor((cur - min)/(max - min)*100).."%)", 1, 1, 1, 1, 1, 1)
 			if standing ~= 8 then
 				GameTooltip:AddDoubleLine(NEXT_RANK_COLON, (max-cur), 1, 1, 1, 1, 1, 1)
 			end
