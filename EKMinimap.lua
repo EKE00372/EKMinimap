@@ -6,10 +6,6 @@ local Minimap, sub, floor, CreateFrame = Minimap, string.sub, math.floor, Create
 -----------------    [[ Function ]]    -----------------
 --====================================================--
 
---================================================--
------------------    [[ Core ]]    -----------------
---================================================--
-
 -- [[ Make A Square for minimap icon / 弄成方型 ]] --
 
 function GetMinimapShape()
@@ -59,7 +55,6 @@ local function setMinimap()
 	--MinimapCluster:ClearAllPoints()
 	--MinimapCluster:SetAllPoints(Minimap)
 	MinimapCluster:EnableMouse(false)
-	
 	Minimap.bg = F.CreateBG(Minimap, 5, 5, 1)
 	
 	hooksecurefunc(UIWidgetBelowMinimapContainerFrame, "SetPoint", function(self, _, parent)
@@ -221,11 +216,11 @@ local Diff = CreateFrame("Frame", "EKMinimapDungeonIcon", Minimap)
 	Diff.Texture:SetAllPoints(Diff)
 	Diff.Texture:SetTexture(G.Diff)
 	Diff.Texture:SetVertexColor(G.Ccolors.r, G.Ccolors.g, G.Ccolors.b)
+	Diff.Text = F.CreateFS(Diff, "", "CENTER")
 
 local function styleDifficulty(self)
 	-- Difficulty Text / 難度文字
-	local DiffText = F.CreateFS(self, "", "CENTER")
-	DiffText:SetPoint("CENTER")
+	local DiffText = self.Text
 	
 	local inInstance, instanceType = IsInInstance()
 	local difficulty = select(3, GetInstanceInfo())
@@ -437,7 +432,6 @@ F.ResetM = function()
 	updateMinimapPos()
 	updateMinimapSize()
 	updateIconPos()
-	
 end
 
 local function OnEvent(self, event, addon)
@@ -449,6 +443,11 @@ local function OnEvent(self, event, addon)
 		end)
 		self:UnregisterEvent("ADDON_LOADED")
 	elseif event == "PLAYER_LOGIN" then
+		-- make sure MBB dont take my icon 益rz
+		if MBB_Ignore then
+			tinsert(MBB_Ignore, "EKMinimapTooltipButton")
+		end
+		
 		whoPing()
 		setMinimap()
 		updateIconPos()

@@ -7,8 +7,6 @@ local OTF = ObjectiveTrackerFrame
 -----------------    [[ Core ]]    -----------------
 --================================================--
 
--- [[ Load Blizzard ]] --
-
 local function updateOTFPos()
 	if not EKMinimapDB["ObjectiveStyle"] then return end
 	
