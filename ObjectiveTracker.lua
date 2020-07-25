@@ -45,37 +45,47 @@ local function styleQuestBlock()
 		header.Text:SetWordWrap(false)
 		
 		header.Text:ClearAllPoints()
-		header.Text:SetPoint("RIGHT", header, -5, 0)
+		header.Text:SetPoint("RIGHT", header.MinimizeButton, "LEFT", -5, 0)
 		header.Text:SetJustifyH("RIGHT")
 	end
 
 	local headers = {
+		ObjectiveTrackerBlocksFrame.CampaignQuestHeader,
 		ObjectiveTrackerBlocksFrame.QuestHeader,
 		ObjectiveTrackerBlocksFrame.AchievementHeader,
 		ObjectiveTrackerBlocksFrame.ScenarioHeader,
 		BONUS_OBJECTIVE_TRACKER_MODULE.Header,
 		WORLD_QUEST_TRACKER_MODULE.Header,
+		ObjectiveTrackerFrame.BlocksFrame.UIWidgetsHeader
 	}
 	for _, header in pairs(headers) do
 		reskinHeader(header)
 	end
 
-	-- [[ quest title / 任務標題 ]] --
+	-- [[ Title ]] --
 
-	hooksecurefunc(QUEST_TRACKER_MODULE, "SetBlockHeader", function(_, block)
+	local function skinTitle(_, block)
 		block.HeaderText:SetFont(G.font, G.obfontSize - 2, G.obfontFlag)
 		block.HeaderText:SetShadowColor(0, 0, 0, 1)
 		block.HeaderText:SetShadowOffset(0, 0)
 		block.HeaderText:SetWordWrap(false)
 		block.HeaderText:SetTextColor(G.Ccolors.r, G.Ccolors.g, G.Ccolors.b)
 		block.HeaderText:SetJustifyH("LEFT")
-	end)
-
-	local function hoverquest(_, block)
+	end
+	
+	local function hoverTitle(_, block)
 		block.HeaderText:SetTextColor(G.Ccolors.r, G.Ccolors.g, G.Ccolors.b)
 	end
+	
+	-- [[ campaign title / 戰役標題 ]] --
+	
+	hooksecurefunc(CAMPAIGN_QUEST_TRACKER_MODULE, "OnBlockHeaderLeave", hoverTitle)
+	hooksecurefunc(CAMPAIGN_QUEST_TRACKER_MODULE, "SetBlockHeader", skinTitle)
 
-	hooksecurefunc(QUEST_TRACKER_MODULE, "OnBlockHeaderLeave", hoverquest)
+	-- [[ quest title / 任務標題 ]] --
+
+	hooksecurefunc(QUEST_TRACKER_MODULE, "SetBlockHeader", skinTitle)
+	hooksecurefunc(QUEST_TRACKER_MODULE, "OnBlockHeaderLeave", hoverTitle)
 
 	-- [[ achievement title / 成就標題 ]] --
 
@@ -87,21 +97,11 @@ local function styleQuestBlock()
 			local _, achievementName, _, completed, _, _, _, description, _, icon, _, _, wasEarnedByMe = GetAchievementInfo(achieveID)
 
 			if not wasEarnedByMe then
-				block.HeaderText:SetFont(G.font, G.obfontSize - 2, G.obfontFlag)
-				block.HeaderText:SetShadowColor(0, 0, 0, 1)
-				block.HeaderText:SetShadowOffset(0, 0)
-				block.HeaderText:SetWordWrap(false)
-				block.HeaderText:SetTextColor(G.Ccolors.r, G.Ccolors.g, G.Ccolors.b)
-				block.HeaderText:SetJustifyH("LEFT")
+				skinTitle(_, block)
 			end
 		end
 	end)
-
-	local function hoverachieve(_, block)
-		block.HeaderText:SetTextColor(G.Ccolors.r, G.Ccolors.g, G.Ccolors.b)
-	end
-
-	hooksecurefunc(ACHIEVEMENT_TRACKER_MODULE, "OnBlockHeaderLeave", hoverachieve)
+	hooksecurefunc(ACHIEVEMENT_TRACKER_MODULE, "OnBlockHeaderLeave", hoverTitle)
 
 	-- [[ 細項與內文 ]] --
 
@@ -119,7 +119,7 @@ local function styleQuestBlock()
 			if EKMinimapDB["ObjectiveStar"] then
 				line.Dash:SetText("★ ")
 			else
-				line.Dash:SetText("-")
+				line.Dash:SetText(QUEST_DASH)
 			end
 			
 			line.Dash:SetShadowColor(0, 0, 0, 1)
@@ -201,7 +201,11 @@ local function miniIcon()
 	local Minimize = OTF.HeaderMenu.MinimizeButton
 		Minimize:SetSize(16, 20)
 		Minimize:SetNormalTexture("")
+		Minimize:GetNormalTexture():SetAlpha(0)
+		Minimize:SetHighlightTexture("")
+		Minimize:GetHighlightTexture():SetAlpha(0)
 		Minimize:SetPushedTexture("")
+		Minimize:GetPushedTexture():SetAlpha(0)
 		-- Close  / 關閉按鈕
 		Minimize.minus = Minimize:CreateFontString(nil, "OVERLAY")
 		Minimize.minus:SetFont(G.font, G.obfontSize, G.obfontFlag)
