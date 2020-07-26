@@ -1,6 +1,6 @@
 ## Interface: 90001
 ## Title: |cff00ffffEK|rMinimap
-## Version: R3
+## Version: A3.1
 ## Author: EK
 ## Notes: A square minimap.
 ## SavedVariables: EKMinimapDB
