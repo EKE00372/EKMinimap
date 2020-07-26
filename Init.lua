@@ -18,6 +18,7 @@ local MediaFolder = "Interface\\AddOns\\EKMinimap\\Media\\"
 	G.Ccolors = (CUSTOM_CLASS_COLORS or RAID_CLASS_COLORS)[select(2, UnitClass("player"))] -- Class color / 職業顏色
 	G.Tex = "Interface\\Buttons\\WHITE8x8"
 	G.Glow = MediaFolder.."glow.tga"
+	G.Diff = MediaFolder.."difficulty.tga"
 	G.Mail = "Interface\\MINIMAP\\TRACKING\\Mailbox.blp"
 	G.Report = "Interface\\HelpFrame\\HelpIcon-ReportLag.blp"
 	
@@ -67,7 +68,7 @@ F.CreateFS = function(parent, text, justify, anchor, x, y)
 	if anchor and x and y then
 		fs:SetPoint(anchor, x, y)
 	else
-		fs:SetPoint("CENTER", 1, 0)
+		fs:SetPoint("CENTER", 0, 0)
 	end
 	
 	return fs
