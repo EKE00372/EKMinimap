@@ -221,7 +221,7 @@ local Diff = CreateFrame("Frame", "EKMinimapDungeonIcon", Minimap)
 local function styleDifficulty(self)
 	-- Difficulty Text / 難度文字
 	local DiffText = self.Text
-	
+
 	local inInstance, instanceType = IsInInstance()
 	local difficulty = select(3, GetInstanceInfo())
 	local num = select(9, GetInstanceInfo())
