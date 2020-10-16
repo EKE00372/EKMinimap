@@ -129,21 +129,29 @@ local function styleQuestBlock()
 	
 	-- [[ Quick Click: Alt to Share, Ctrl to Abandon / 快速按鍵：alt分享ctrl放棄 ]]--
 
-	local function QuestHook(id)
-		local questLogIndex = GetQuestLogIndexByID(id)
+	hooksecurefunc(QUEST_TRACKER_MODULE, "OnBlockHeaderClick", function(self, block, mouseButton)
+		local questLogIndex = C_QuestLog.GetLogIndexForQuestID(block.id)
 		
-		if IsControlKeyDown() and CanAbandonQuest(id) then
-			QuestMapQuestOptions_AbandonQuest(id)
-		elseif IsAltKeyDown() and GetQuestLogPushable(questLogIndex) then
-			QuestMapQuestOptions_ShareQuest(id)
+		if mouseButton == "RightButton" and IsModifiedClick() then
+			if IsControlKeyDown() and C_QuestLog.CanAbandonQuest(block.id) then
+				QuestMapQuestOptions_AbandonQuest(block.id)
+				
+				--[[if QuestLogPopupDetailFrame:IsShown() then
+					HideUIPanel(QuestLogPopupDetailFrame)
+				end]]--
+				
+				for i = 1, STATICPOPUP_NUMDIALOGS do
+					local dialog = _G["StaticPopup"..i]
+					if (dialog.which == "ABANDON_QUEST" or dialog.which == "ABANDON_QUEST_WITH_ITEMS") and dialog:IsVisible() then
+						StaticPopup_OnClick(dialog, 1)
+						break
+					end
+				end
+			
+			elseif IsAltKeyDown() and C_QuestLog.IsPushableQuest(questLogIndex) then
+				QuestMapQuestOptions_ShareQuest(block.id)
+			end
 		end
-	end
-
-	hooksecurefunc(QUEST_TRACKER_MODULE, "OnBlockHeaderClick", function(self, block)
-		QuestHook(block.id)
-	end)
-	hooksecurefunc("QuestMapLogTitleButton_OnClick", function(self)
-		QuestHook(self.questID)
 	end)
 end
 
@@ -169,7 +177,7 @@ local function moveOTF()
 		OTFMove:EnableMouse(true)
 		OTFMove:RegisterForDrag("RightButton")
 		OTFMove:SetHitRectInsets(-5, -5, -5, -5)
-		
+	
 	-- Alt+right click to drag frame
 	OTFMove:SetScript("OnDragStart", function(self, button)
 		if IsAltKeyDown() then
@@ -251,6 +259,59 @@ local function miniIcon()
 			Minimize.minus:Show()
 		end)
 end
+
+local function mythicCollapse()
+	local difficulty = select(3, GetInstanceInfo())
+	
+	local whitelist = {
+	   ["SCENARIO_CONTENT_TRACKER_MODULE"] = true,
+	   ["UI_WIDGET_TRACKER_MODULE"] = true,
+	}
+
+	if difficulty == 8 then
+		local changed = false
+		for i, v in pairs(ObjectiveTrackerFrame.MODULES) do 
+		   if not whitelist[v.friendlyName] then
+			  v:SetCollapsed(true)
+			  changed = true
+		   end
+		end
+		
+		if changed then ObjectiveTracker_Update() end
+	end
+end
+
+local function test(_, event)
+	if event == "PLAYER_ENTERING_WORLD" then
+	C_Timer.After(1, function()
+		if ObjectiveTrackerFrame.initialized and not InCombatLockdown() then mythicCollapse() end
+	end)
+	else
+		mythicCollapse()
+	end
+end
+
+local mcol = CreateFrame("FRAME")
+	mcol:RegisterEvent("PLAYER_ENTERING_WORLD")
+	mcol:RegisterEvent("CHALLENGE_MODE_START")
+	mcol:RegisterEvent("ZONE_CHANGED_NEW_AREA")
+	mcol:SetScript("OnEvent", test)
+
+local function raidCollapse(_, event)
+	local instanceType = select(2, IsInInstance())
+	if not instanceType == "raid" then return end
+	
+	if event == "ENCOUNTER_START" then
+		ObjectiveTracker_Collapse()
+	else
+		ObjectiveTracker_Expand()
+	end
+end
+
+local rcol = CreateFrame("FRAME")
+	rcol:RegisterEvent("ENCOUNTER_START")
+	rcol:RegisterEvent("ENCOUNTER_END")
+	rcol:SetScript("OnEvent", raidCollapse)
 
 --================================================--
 -----------------    [[ Load ]]    -----------------
