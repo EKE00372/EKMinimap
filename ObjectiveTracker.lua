@@ -105,7 +105,8 @@ local function styleQuestBlock()
 
 	-- [[ 細項與內文 ]] --
 
-	hooksecurefunc(DEFAULT_OBJECTIVE_TRACKER_MODULE, "AddObjective", function(self, block, objectiveKey, _, lineType)
+	
+	local function skinText(self, block, objectiveKey, _, lineType)
 		local line = self:GetLine(block, objectiveKey, lineType)
 		
 		line.Text:SetFont(G.font, G.obfontSize - 4, G.obfontFlag)
@@ -125,7 +126,35 @@ local function styleQuestBlock()
 			line.Dash:SetShadowColor(0, 0, 0, 1)
 			line.Dash:SetShadowOffset(0, 0)
 		end
-	end)
+	end
+	
+	hooksecurefunc(QUEST_TRACKER_MODULE, "AddObjective", skinText)
+	hooksecurefunc(ACHIEVEMENT_TRACKER_MODULE, "AddObjective", skinText)
+	hooksecurefunc(CAMPAIGN_QUEST_TRACKER_MODULE, "AddObjective", skinText)
+	hooksecurefunc(WORLD_QUEST_TRACKER_MODULE, "AddObjective", skinText)
+	hooksecurefunc(BONUS_OBJECTIVE_TRACKER_MODULE, "AddObjective", skinText)
+	
+	--[[hooksecurefunc(QUEST_TRACKER_MODULE, "AddObjective", function(self, block, objectiveKey, text, lineType, _, dashStyle)
+		local line = self:GetLine(block, objectiveKey, lineType)
+		
+		line.Text:SetFont(G.font, G.obfontSize - 4, G.obfontFlag)
+		line.Text:SetShadowColor(0, 0, 0, 1)
+		line.Text:SetShadowOffset(0, 0)
+		line.Text:SetWidth(OTF:GetWidth() - 25)
+			
+		if line.Dash and line.Dash:IsShown() then
+			line.Dash:SetFont(G.font, G.obfontSize - 2, G.obfontFlag)
+			
+			if EKMinimapDB["ObjectiveStar"] then
+				line.Dash:SetText("★ ")
+			else
+				line.Dash:SetText(QUEST_DASH)
+			end
+			
+			line.Dash:SetShadowColor(0, 0, 0, 1)
+			line.Dash:SetShadowOffset(0, 0)
+		end
+	end)]]--
 	
 	-- [[ Quick Click: Alt to Share, Ctrl to Abandon / 快速按鍵：alt分享ctrl放棄 ]]--
 
@@ -154,6 +183,7 @@ local function styleQuestBlock()
 		end
 	end)
 end
+
 
 --===================================================--
 -----------------    [[ Movable ]]    -----------------
