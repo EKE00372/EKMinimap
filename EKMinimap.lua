@@ -233,19 +233,19 @@ end
 local function updateIconPos()
 	MiniMapMailFrame:ClearAllPoints()
 	MiniMapBattlefieldFrame:ClearAllPoints()
-	MiniMapTrackingFrame:ClearAllPoints()
+	MiniMapTracking:ClearAllPoints()
 	Stat:ClearAllPoints()
 
 	if findAnchor("MinimapAnchor") then
 		MiniMapMailFrame:SetPoint("BOTTOMLEFT", Minimap, 0, 0)
 		Stat:SetPoint("BOTTOMRIGHT", Minimap, 1, 2)
 		MiniMapBattlefieldFrame:SetPoint("TOPRIGHT", 0, 0)
-		MiniMapTrackingFrame:SetPoint("TOPLEFT", Minimap, 0, 0)
+		MiniMapTracking:SetPoint("TOPLEFT", Minimap, 0, 0)
 	else
 		MiniMapMailFrame:SetPoint("BOTTOMRIGHT", Minimap, 0, 0)
 		Stat:SetPoint("BOTTOMLEFT", Minimap, -1, 2)
 		MiniMapBattlefieldFrame:SetPoint("TOPLEFT", 0, 0)
-		MiniMapTrackingFrame:SetPoint("TOPRIGHT", Minimap, 0, 0)
+		MiniMapTracking:SetPoint("TOPRIGHT", Minimap, 0, 0)
 	end
 end
 

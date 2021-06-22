@@ -6,6 +6,19 @@ local GetNumQuestWatches = GetNumQuestWatches
 local ClickFrames = {}
 local frame
 
+--================================----================--
+-----------------    [[ Function ]]    -----------------
+--======================================----==========--
+
+-- block text outline
+--[[local function ReskinFont(font, size)
+	local oldSize = select(2, font:GetFont())
+	size = size or oldSize
+	local fontSize = G.fontSize
+	font:SetFont(G.font, G.fontSize, G.fontFlag)
+	font:SetShadowColor(0, 0, 0, 0)
+end]]--
+
 --================================================--
 -----------------    [[ Core ]]    -----------------
 --================================================--
@@ -89,13 +102,16 @@ local function setQWF()
 			QWF:Hide()
 		else
 			self.text:SetText("-")
-			if numWatches > 0 then
+			if GetNumQuestWatches() > 0 then
 				QWF:Show()
 			end
 		end
 	end)
 	
-	-- block text outline
+	--[[if EKMinimapDB["QuestOutline"] then
+		ReskinFont(SystemFont_Shadow_Med1)
+	--end]]
+	
 	for i = 1, 30 do
 		local line = _G["QuestWatchLine"..i]
 		
@@ -103,7 +119,7 @@ local function setQWF()
 		line:SetHeight(G.fontSize)
 		line:SetShadowOffset(0, 0)
 	end
-	
+
 	hooksecurefunc("QuestWatch_Update", function()
 		-- make sure header and collapse button show only when tracking quest
 		HeaderBar:SetShown(GetNumQuestWatches() > 0)
