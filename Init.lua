@@ -81,7 +81,7 @@ F.CreateBG = function(parent, size, offset, a)
 	end
 	local lvl = frame:GetFrameLevel()
 
-	local bg = CreateFrame("Frame", nil, frame)
+	local bg = CreateFrame("Frame", nil, frame, BackdropTemplateMixin and "BackdropTemplate")
 	bg:ClearAllPoints()
 	bg:SetPoint("TOPLEFT", parent, -size, size)
 	bg:SetPoint("BOTTOMRIGHT", parent, size, -size)
