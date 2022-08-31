@@ -1,7 +1,6 @@
 local addon, ns = ...
 local C, F, G, L = unpack(ns)
-local Minimap, InCombatLockdown = Minimap, InCombatLockdown
-local EasyMenu, ToggleDropDownMenu = EasyMenu, ToggleDropDownMenu
+local Minimap, EasyMenu, ToggleDropDownMenu = Minimap, EasyMenu, ToggleDropDownMenu
 
 local function OnEvent()
 	if not EKMinimapDB["ClickMenu"] then return end
@@ -38,14 +37,22 @@ local function OnEvent()
 		{	--天賦
 			text = TALENTS,
 			icon = "Interface\\MINIMAP\\TRACKING\\Ammunition",
-			func = function() 
+			func = function()
 				if (not PlayerTalentFrame) then
 					LoadAddOn("Blizzard_TalentUI")
 				end
 				if (not GlyphFrame) then
 					LoadAddOn("Blizzard_GlyphUI")
 				end
-				securecall(ToggleFrame, TalentFrame)
+				securecall(ToggleTalentFrame)
+			end,
+			notCheckable = true,
+		},
+		{	-- 成就
+			text = ACHIEVEMENT_BUTTON,
+			icon = "Interface\\ACHIEVEMENTFRAME\\UI-Achievement-Shield",
+			func = function()
+				securecall(ToggleAchievementFrame)
 			end,
 			notCheckable = true,
 		},
@@ -70,21 +77,8 @@ local function OnEvent()
 		{	-- 好友
 			text = SOCIAL_BUTTON,
 			icon = "Interface\\FriendsFrame\\UI-Toast-ChatInviteIcon",
-			func = function() 
+			func = function()
 				securecall(ToggleFriendsFrame, 1) 
-			end,
-			notCheckable = true,
-		},
-		{	-- 公會
-			text = GUILD,
-			icon = "Interface\\GossipFrame\\TabardGossipIcon",
-			arg1 = IsInGuild("player"),
-			func = function() 
-				if (not GuildFrame) then
-					LoadAddOn("Blizzard_GuildUI")
-				end
-				--GuildFrame_Toggle()
-				securecall(ToggleFriendsFrame, 3)
 			end,
 			notCheckable = true,
 		},
@@ -98,23 +92,6 @@ local function OnEvent()
 			isTitle = true,
 			notCheckable = true,
 		},
-		{	-- 背包
-			text = BACKPACK_TOOLTIP,
-			icon = "Interface\\MINIMAP\\TRACKING\\Banker",
-			func = function()
-				securecall(ToggleAllBags)
-			end,
-			notCheckable = true,
-		},
-		{	-- PVP
-			text = PLAYER_V_PLAYER,
-			icon = "Interface\\MINIMAP\\TRACKING\\BattleMaster",
-			func = function() 
-				--securecall(ToggleHonorFrame)
-				securecall(ToggleCharacter, "HonorFrame")
-			end,
-			notCheckable = true,
-		},
 		{	-- 團隊
 			text = RAID,
 			icon = "Interface\\Buttons\\UI-GuildButton-PublicNote-Up",
@@ -126,7 +103,7 @@ local function OnEvent()
 		{	-- 客服支援
 			text = GM_EMAIL_NAME,
 			icon = "Interface\\CHATFRAME\\UI-ChatIcon-Blizz",
-			func = function() 
+			func = function()
 				securecall(ToggleHelpFrame) 
 			end,
 			notCheckable = true,
@@ -147,7 +124,16 @@ local function OnEvent()
 			end,
 			notCheckable = true
 		},
-		
+		{	-- 行事曆
+			text = L.Calendar,
+			func = function()
+				if not CalendarFrame then 
+					LoadAddOn("Blizzard_Calendar")
+				end
+				Calendar_Toggle()
+			end,
+			notCheckable = true,
+		},
 		{	-- 區域地圖
 			text = BATTLEFIELD_MINIMAP,
 			colorCode = "|cff999999",
@@ -156,6 +142,14 @@ local function OnEvent()
 					LoadAddOn("Blizzard_BattlefieldMap") 
 				end
 				BattlefieldMapFrame:Toggle()
+			end,
+			notCheckable = true,
+		},
+		{
+			text = L.ToggleConfig,
+			colorCode = "|cff00FFFF",
+			func = function()
+				F.CreateOptions()
 			end,
 			notCheckable = true,
 		},
@@ -177,7 +171,9 @@ local function OnEvent()
 	-- Right Click for Game Menu / 右鍵遊戲選單
 	Minimap:SetScript("OnMouseUp", function(self, button)
 		if button == "RightButton" then
-			EasyMenu(menuList, menuFrame, self, (Minimap:GetWidth() * .7), -3, "MENU", 3)
+			EasyMenu(menuList, menuFrame, self, (Minimap:GetWidth() * .7), -3, "MENU", 2)
+		elseif button == "MiddleButton" then
+			ToggleDropDownMenu(1, nil, MiniMapTrackingDropDown, self, (Minimap:GetWidth() * .7), -3, nil, nil, 2)
 		else
 			Minimap_OnClick(self)
 		end

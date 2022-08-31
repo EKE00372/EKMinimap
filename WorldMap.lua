@@ -16,12 +16,28 @@ end
 
 local function styleWMF()
 	if not EKMinimapDB["WorldMapStyle"] then return end
-	if IsAddOnLoaded("Leatrix_Maps") then return end
+	if IsAddOnLoaded("Leatrix_Maps") or IsAddOnLoaded("Mapster") then return end
 	
+	-- SetScale
 	WMF:SetScale(EKMinimapDB["WorldMapScale"])
-	WMF.BlackoutFrame.Blackout:SetAlpha(0)		-- No background / 去背
-	--WMF.BlackoutFrame.Blackout = function() end
-	WMF.BlackoutFrame:EnableMouse(false)		-- Click through / 點擊穿透	
+	
+	-- No background / 去背
+	WMF.BlackoutFrame:Hide()
+	WMF.BorderFrame:SetAlpha(0)
+	WMF.BorderFrame.BG = F.CreateBG(WMF,3,3,.7)
+	
+	-- Options in middle
+	WorldMapFrame:SetFrameStrata("MEDIUM")
+	WorldMapFrame.BorderFrame:SetFrameStrata("MEDIUM")
+	WorldMapFrame.BorderFrame:SetFrameLevel(1)
+	WorldMapFrame:SetAttribute("UIPanelLayout-area", "center")
+	WorldMapFrame:SetAttribute("UIPanelLayout-enabled", false)
+	WorldMapFrame:SetAttribute("UIPanelLayout-allowOtherPanels", true)
+	WorldMapFrame.HandleUserActionToggleSelf = function()
+		if WorldMapFrame:IsShown() then WorldMapFrame:Hide() else WorldMapFrame:Show() end
+	end
+	tinsert(UISpecialFrames, "WorldMapFrame")
+	
 	-- Cursor match scale / 滑鼠跟隨縮放
 	WMF.ScrollContainer.GetCursorPosition = function(f)
 		local x, y = MapCanvasScrollControllerMixin.GetCursorPosition(f)
@@ -30,6 +46,22 @@ local function styleWMF()
 		return x/s, y/s
 	end
 	
+	-- Fix scroll zooming / 縮放修正
+	WorldMapFrame.ScrollContainer:HookScript("OnMouseWheel", function(self, delta)
+		local x, y = self:GetNormalizedCursorPosition()
+		local nextZoomOutScale, nextZoomInScale = self:GetCurrentZoomRange()
+		if delta == 1 then
+			if nextZoomInScale > self:GetCanvasScale() then
+				self:InstantPanAndZoom(nextZoomInScale, x, y)
+			end
+		else
+			if nextZoomOutScale < self:GetCanvasScale() then
+				self:InstantPanAndZoom(nextZoomOutScale, x, y)
+			end
+		end
+	end)
+	
+	-- Fade when moving
 	if EKMinimapDB["WorldMapFade"] then
 		local alpha = EKMinimapDB["WorldMapAlpha"]
 		PlayerMovementFrameFader.AddDeferredFrame(WMF, alpha, 1, .5, isMouseOverMap)

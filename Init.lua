@@ -18,8 +18,8 @@ local MediaFolder = "Interface\\AddOns\\EKMinimap\\Media\\"
 	G.Ccolors = (CUSTOM_CLASS_COLORS or RAID_CLASS_COLORS)[select(2, UnitClass("player"))] -- Class color / 職業顏色
 	G.Tex = "Interface\\Buttons\\WHITE8x8"
 	G.Glow = MediaFolder.."glow.tga"
+	G.Diff = MediaFolder.."difficulty.tga"
 	G.Mail = "Interface\\MINIMAP\\TRACKING\\Mailbox.blp"
-	G.Report = "Interface\\HelpFrame\\HelpIcon-ReportLag.blp"
 	
 	G.Question = "Interface\\HelpFrame\\HelpIcon-KnowledgeBase"
 	G.Info = "Interface\\FriendsFrame\\InformationIcon"
@@ -35,10 +35,9 @@ local MediaFolder = "Interface\\AddOns\\EKMinimap\\Media\\"
 
 	C.defaultSettings = {
 		["QuestWatchStyle"] = true,
-		["QuestWatchClick"] = true,
 		["QuestWatchStar"] = true,
 		["QuestWatchAnchor"] = "TOPRIGHT",
-		["QuestWatchX"] = -170,
+		["QuestWatchX"] = -140,
 		["QuestWatchY"] = -220,
 		
 		["MinimapScale"] = 1.2,
@@ -46,7 +45,7 @@ local MediaFolder = "Interface\\AddOns\\EKMinimap\\Media\\"
 		["MinimapY"] = -10,
 		["MinimapX"] = -10,
 		["ClickMenu"] = true,
-		["CharacterIcon"] = true,
+		["HoverClock"] = true,
 		
 		["WorldMapStyle"] = true,
 		["WorldMapScale"] = 0.6,
@@ -108,7 +107,7 @@ F.Dummy = function() end
 	-- Felix S., sakaras, ape47
 	-- iMinimap by Chiril, ooMinimap by Ooglogput, intMinimap by Int0xMonkey
 	-- NeavUI by Neal
-	-- https://www.wowinterface.com/downloads/info13981-NeavUI.html#info
+	-- https://www.wowinterface.com/downloads/info13981-NeavUI.html
 	-- ClickMenu by 10leej
 	-- https://www.wowinterface.com/downloads/info22660-ClickMenu.html
 	-- rQuestWatchTracker by zork
