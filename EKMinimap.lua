@@ -99,7 +99,7 @@ local function setMinimap()
 	-- BG Icon
 	MiniMapBattlefieldBorder:Hide()
 	-- LFG Icon
-	--MiniMapLFGFrameBorder:Hide()
+	MiniMapLFGFrameBorder:Hide()
 end
 
 local function OnMouseWheel(self, delta)
@@ -233,6 +233,7 @@ end
 --==================================================--
 	
 	-- [[ Minimap ]] --
+	
 	Minimap:SetScript("OnMouseWheel", OnMouseWheel)
 	Minimap:SetScript("OnDragStart", function(self)
 		if IsAltKeyDown() then
@@ -243,21 +244,21 @@ end
 		self:StopMovingOrSizing()
 	end)
 
+	-- [[ Difficulty ]] --
+	
 	Diff:RegisterEvent("PLAYER_ENTERING_WORLD")
 	Diff:RegisterEvent("PLAYER_DIFFICULTY_CHANGED")
 	Diff:RegisterEvent("INSTANCE_GROUP_SIZE_CHANGED")
 	Diff:RegisterEvent("ZONE_CHANGED_NEW_AREA")
 	Diff:SetScript("OnEvent", styleDifficulty)
 	
-	
 	--HookScript call bindingType should be 2
-	MiniMapLFGFrame:HookScript("OnEnter", function(self)
+	--[[MiniMapLFGFrame:HookScript("OnEnter", function(self)
 		GameTooltip:SetOwner(self, "ANCHOR_TOP")
-	end)
+	end)]]--
 
-	--[[hooksecurefunc("MiniMapLFGFrame_OnEnter", function(self)
-		GameTooltip:SetOwner(self, "ANCHOR_RIGHT")
-		--GameTooltip:Show()
+	--[[hooksecurefunc("MiniMapLFGFrame_OnEnter", function(self)--EyeTemplate_OnUpdate?
+		GameTooltip:SetOwner(self, "ANCHOR_TOP");
 	end)]]--
 	
 --=================================================--
