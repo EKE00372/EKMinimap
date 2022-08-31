@@ -7,8 +7,8 @@ local CreateFrame, tonumber, pairs, tinsert = CreateFrame, tonumber, pairs, tabl
 
 ------
 	
-	-- EKMinimap 現在有了遊戲內控制台，請輸入 /ekm 或 /ekminimap 打開控制台更改設定
-	-- EKMinimap have in-game config. type /ekm or /ekminimap to toggle options
+	-- EKMinimap 現在有了遊戲內控制台，請輸入 /ekm 或 /ekminimap 或右鍵小地圖選單打開控制台更改設定
+	-- EKMinimap have in-game config. type /ekm or /ekminimap or right-click minimap toggle config to toggle options
 
 ------
 
@@ -249,7 +249,6 @@ local function CreateTooltip(self, tex, anchor, title, text)
 	i:SetScript("OnEnter", function(self)
 		GameTooltip:ClearLines()
 		GameTooltip:SetOwner(self, anchor, 0, 0)
-		GameTooltip:AddLine(title)
 		GameTooltip:AddLine(text, 1, 1, 1, true)
 		GameTooltip:Show()
 	end)
@@ -262,7 +261,7 @@ end
 -----------------    [[ GUI ]]    -----------------
 --===============================================--
 
-local function CreateOptions()
+F.CreateOptions = function()
 	if MainFrame ~= nil then
 		MainFrame:Show()
 		return
@@ -293,11 +292,11 @@ local function CreateOptions()
 	local ClickMenuBox = CreateCheckBox(MainFrame, L.ClickMenuOpt, "ClickMenu")
 	ClickMenuBox:SetPoint("TOPLEFT", MainFrame, 24, -44)
 	
-	local IconBox = CreateCheckBox(MainFrame, L.IconOpt, "CharacterIcon")
-	IconBox:SetPoint("BOTTOM", ClickMenuBox, 0, -30)
+	local HoverClockBox = CreateCheckBox(MainFrame, L.HoverClockOpt, "HoverClock")
+	HoverClockBox:SetPoint("BOTTOM", ClickMenuBox, 0, -30)
 	
 	local mapPosText = F.CreateFS(MainFrame, L.AnchorOpt, "LEFT")
-	mapPosText:SetPoint("TOPLEFT", IconBox, "BOTTOMLEFT", 10, -10)
+	mapPosText:SetPoint("TOPLEFT", HoverClockBox, "BOTTOMLEFT", 10, -10)
 	
 	local mapAnchor = CreateDropDown(MainFrame, 120, 20, optList, "MinimapAnchor")
 	mapAnchor:SetPoint("LEFT", mapPosText, "RIGHT", 4, 0)
@@ -327,11 +326,8 @@ local function CreateOptions()
 	local StarBox = CreateCheckBox(MainFrame, L.QuestWatchStarOpt, "QuestWatchStar")
 	StarBox:SetPoint("BOTTOM", QWFBox, 0, -30)
 	
-	local ClickBox = CreateCheckBox(MainFrame, L.QuestWatchClickOpt, "QuestWatchClick")
-	ClickBox:SetPoint("BOTTOM", StarBox, 0, -30)
-	
 	local QWFPosText = F.CreateFS(MainFrame, L.AnchorOpt, "LEFT")
-	QWFPosText:SetPoint("TOPLEFT", ClickBox, "BOTTOMLEFT", 10, -10)
+	QWFPosText:SetPoint("TOPLEFT", StarBox, "BOTTOMLEFT", 10, -10)
 	
 	local QWFAnchor = CreateDropDown(MainFrame, 120, 20, optList, "QuestWatchAnchor")
 	QWFAnchor:SetPoint("LEFT", QWFPosText, "RIGHT", 4, 0)
@@ -410,7 +406,7 @@ local function CreateOptions()
 end
 
 SlashCmdList["EKMINIMAP"] = function()
-	CreateOptions()
+	F.CreateOptions()
 end
 SLASH_EKMINIMAP1 = "/ekm"
 SLASH_EKMINIMAP2 = "/ekminimap"
