@@ -1,6 +1,6 @@
 ## Interface: 30400
 ## Title: |cff00ffffEK|rMinimap
-## Version: C3.1
+## Version: C3.2
 ## Author: EK
 ## SavedVariables: EKMinimapDB
 ## Notes: A square minimap.

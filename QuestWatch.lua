@@ -2,6 +2,7 @@ local addon, ns = ...
 local C, F, G, L = unpack(ns)
 
 local WatchFrame, gsub = WatchFrame, string.gsub
+local GetNumQuestWatches = GetNumQuestWatches
 
 --================================----================--
 -----------------    [[ Function ]]    -----------------
@@ -41,7 +42,7 @@ local function setWatchFrame()
 	WatchFrame:SetClampedToScreen(true)
 	WatchFrame:SetMovable(true)
 	WatchFrame:SetUserPlaced(true)
-	WatchFrame:SetHeight(GetScreenHeight()*.65)
+	WatchFrame:SetHeight(GetScreenHeight()*.5)
 	hooksecurefunc(WatchFrame, "SetPoint", function(self, _, parent)
 		if parent ~= ObjectiveFrameHolder then
 			self:ClearAllPoints()
@@ -152,12 +153,22 @@ local function setWatchFrame()
 	--if EKMinimapDB["QuestOutline"] then
 		--ReskinFont(SystemFont_Shadow_Med1)
 	--end
-	
 	-- Drag tooltip
 	local function WatchFrame_Tooltip(self)
+		if GetNumQuestWatches() == 0 then return end
+		
 		GameTooltip:SetOwner(self, "ANCHOR_TOP")
 		GameTooltip:AddDoubleLine(DRAG_MODEL, "Alt + |TInterface\\TUTORIALFRAME\\UI-TUTORIAL-FRAME:13:11:0:-1:512:512:12:66:333:411|t", 0, 1, 0.5, 1, 1, 1)
 		GameTooltip:Show()
+	end
+	
+	local function WatchFrame_Drag(self)
+		if GetNumQuestWatches() == 0 then return end
+		
+		if IsAltKeyDown() then
+			local frame = self:GetParent()
+			frame:StartMoving()
+		end
 	end
 	
 	-- Drag move
@@ -166,18 +177,17 @@ local function setWatchFrame()
 		WatchFrameMove:SetSize(160, G.fontSize + 2)
 		WatchFrameMove:SetPoint("TOP", ObjectiveFrameHolder, 0, G.fontSize)
 		WatchFrameMove:SetFrameStrata("BACKGROUND")
-		WatchFrameMove:EnableMouse(true)
+		WatchFrameMove:EnableMouse(GetNumQuestWatches() > 0)
+		--WatchFrameMove:Hide()
+		--WatchFrameMove:SetShown(numWatches > 0)
 		-- Make it drag-able
 		WatchFrameMove:RegisterForDrag("RightButton")
 		WatchFrameMove:SetHitRectInsets(-5, -5, -5, -5)
 		-- Alt+right click to drag frame
-		WatchFrameMove:SetScript("OnDragStart", function(self, button)
-			if IsAltKeyDown() then
-				local frame = self:GetParent()
-				frame:StartMoving()
-			end
+		WatchFrameMove:SetScript("OnDragStart", function(self)
+			WatchFrame_Drag(self)
 		end)
-		WatchFrameMove:SetScript("OnDragStop", function(self, button)
+		WatchFrameMove:SetScript("OnDragStop", function(self)
 			local frame = self:GetParent()
 			frame:StopMovingOrSizing()
 		end)

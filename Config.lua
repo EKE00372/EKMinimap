@@ -3,7 +3,7 @@ local C, F, G, L = unpack(ns)
 
 local v = GetAddOnMetadata("EKMinimap", "Version")
 local CreateFrame, tonumber, pairs, tinsert = CreateFrame, tonumber, pairs, table.insert
-
+local MainFrame = MainFrame
 
 ------
 	
@@ -261,7 +261,7 @@ end
 -----------------    [[ GUI ]]    -----------------
 --===============================================--
 
-F.CreateOptions = function()
+F.CreateEKMOptions = function()
 	if MainFrame ~= nil then
 		MainFrame:Show()
 		return
@@ -406,7 +406,7 @@ F.CreateOptions = function()
 end
 
 SlashCmdList["EKMINIMAP"] = function()
-	F.CreateOptions()
+	F.CreateEKMOptions()
 end
 SLASH_EKMINIMAP1 = "/ekm"
 SLASH_EKMINIMAP2 = "/ekminimap"
