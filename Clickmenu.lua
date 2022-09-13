@@ -149,7 +149,7 @@ local function OnEvent()
 			text = L.ToggleConfig,
 			colorCode = "|cff00FFFF",
 			func = function()
-				F.CreateOptions()
+				F.CreateEKMOptions()
 			end,
 			notCheckable = true,
 		},
