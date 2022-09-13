@@ -82,6 +82,19 @@ local function OnEvent()
 			end,
 			notCheckable = true,
 		},
+		{	-- 公會
+			text = GUILD,
+			icon = "Interface\\GossipFrame\\TabardGossipIcon",
+			arg1 = IsInGuild("player"),
+			func = function() 
+				if (not GuildFrame) then
+					LoadAddOn("Blizzard_GuildUI")
+				end
+				--GuildFrame_Toggle()
+				securecall(ToggleFriendsFrame, 3)
+			end,
+			notCheckable = true,
+		},
 		{	-- 空行
 			text = "",
 			isTitle = true,
