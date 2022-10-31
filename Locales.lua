@@ -8,7 +8,10 @@ local GetLocale = GetLocale
 
 if GetLocale() == "zhTW" then
 
+	L.ToggleConfig = "開啟設定選項"
+	
 	L.ClickMenuOpt = "啟用點擊選單"
+	L.TrackingOpt = "完整追蹤選單"
 	L.MinimapOpt = "小地圖"
 	L.SizeOpt = "縮放"
 	L.AnchorOpt = "錨點"
@@ -17,8 +20,8 @@ if GetLocale() == "zhTW" then
 	L.ObjectiveOpt = "追蹤框"
 	L.ObjectiveStarOpt = "使用 ★ 標記追蹤項目"
 	L.ObjectiveStyleOpt = "啟用追蹤框美化"
-	L.HeightOpt = "高度"
 	L.IconOpt = "角色資訊提示"
+	L.HoverClockOpt = "啟用指向時鐘"
 	
 	L.Calendar = SLASH_CALENDAR2:gsub("/(.*)","%1")
 	L.Left = "左"
@@ -36,7 +39,10 @@ if GetLocale() == "zhTW" then
 	
 elseif GetLocale() == "zhCN" then
 
+	L.ToggleConfig = "开启设置选项"
+	
 	L.ClickMenuOpt = "启用点击菜单"
+	L.TrackingOpt = "完整追踪清单"
 	L.MinimapOpt = "小地图"
 	L.SizeOpt = "缩放"
 	L.AnchorOpt = "锚点"
@@ -45,8 +51,8 @@ elseif GetLocale() == "zhCN" then
 	L.ObjectiveOpt = "追踪框"
 	L.ObjectiveStarOpt = "使用 ★ 标记追踪项目"
 	L.ObjectiveStyleOpt = "启用追踪框美化"
-	L.HeightOpt = "高度"
 	L.IconOpt = "角色信息提示"
+	L.HoverClockOpt = "启用指向时钟"
 	
 	L.Calendar = "行事历"
 	L.Left = "左"
@@ -63,8 +69,11 @@ elseif GetLocale() == "zhCN" then
 	L.scrollInfo = "Alt+滚轮临时性缩放小地图"
 	
 else
+	
+	L.ToggleConfig = "Open Config"
 
 	L.ClickMenuOpt = "Enable click menu"
+	L.TrackingOpt = "Full tracking list"
 	L.MinimapOpt = "Minimap"
 	L.SizeOpt = "Scale"
 	L.AnchorOpt = "Anchor"
@@ -73,8 +82,8 @@ else
 	L.ObjectiveOpt = "Objective tracker"
 	L.ObjectiveStarOpt = "Mark object as ★ star"
 	L.ObjectiveStyleOpt = "Enable tracker style"
-	L.HeightOpt = "Height"
 	L.IconOpt = "Character icon tooltip"
+	L.HoverClockOpt = "Show hover clock"
 	
 	L.Calendar = SLASH_CALENDAR1:gsub("/(.*)","%1")
 	L.Left = "Left"

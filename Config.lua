@@ -3,6 +3,7 @@ local C, F, G, L = unpack(ns)
 
 local v = GetAddOnMetadata("EKMinimap", "Version")
 local CreateFrame, tonumber, pairs, tinsert = CreateFrame, tonumber, pairs, table.insert
+local MainFrame = MainFrame
 
 ------
 	
@@ -248,7 +249,7 @@ local function CreateTooltip(self, tex, anchor, title, text)
 	i:SetScript("OnEnter", function(self)
 		GameTooltip:ClearLines()
 		GameTooltip:SetOwner(self, anchor, 0, 0)
-		GameTooltip:AddLine(title)
+		--GameTooltip:AddLine(title)
 		GameTooltip:AddLine(text, 1, 1, 1, true)
 		GameTooltip:Show()
 	end)
@@ -261,7 +262,7 @@ end
 -----------------    [[ GUI ]]    -----------------
 --===============================================--
 
-local function CreateOptions()
+F.CreateEKMOptions = function()
 	if MainFrame ~= nil then
 		MainFrame:Show()
 		return
@@ -295,8 +296,11 @@ local function CreateOptions()
 	local IconBox = CreateCheckBox(MainFrame, L.IconOpt, "CharacterIcon")
 	IconBox:SetPoint("BOTTOM", ClickMenuBox, 0, -30)
 	
+	local TrackingBox = CreateCheckBox(MainFrame, L.TrackingOpt, "Tracking")
+	TrackingBox:SetPoint("BOTTOM", IconBox, 0, -30)
+	
 	local mapPosText = F.CreateFS(MainFrame, L.AnchorOpt, "LEFT")
-	mapPosText:SetPoint("TOPLEFT", IconBox, "BOTTOMLEFT", 10, -10)
+	mapPosText:SetPoint("TOPLEFT", TrackingBox, "BOTTOMLEFT", 10, -10)
 	
 	local mapAnchor = CreateDropDown(MainFrame, 120, 20, optList, "MinimapAnchor")
 	mapAnchor:SetPoint("LEFT", mapPosText, "RIGHT", 4, 0)
@@ -313,8 +317,8 @@ local function CreateOptions()
 	local mapYBox = CreateEditBox(MainFrame, 100, 20, "MinimapY")
 	mapYBox:SetPoint("LEFT", mapYText, "RIGHT", 4, 0)
 
-	local mapSizeBar = CreateBar(MainFrame, "Size", 160, 20, 10, 20, 1, "MinimapScale", L.SizeOpt, .1)
-	mapSizeBar:SetPoint("TOP", mapYText, "BOTTOM", 80, -34)
+	local mapSizeBar = CreateBar(MainFrame, "Size", 160, 20, 5, 20, 1, "MinimapScale", L.SizeOpt, .1)
+	mapSizeBar:SetPoint("TOP", mapYText, "BOTTOM", 75, -34)
 	
 	-- objective tracker
 	
@@ -325,33 +329,12 @@ local function CreateOptions()
 	
 	local StarBox = CreateCheckBox(MainFrame, L.ObjectiveStarOpt, "ObjectiveStar")
 	StarBox:SetPoint("BOTTOM", OTFBox, 0, -30)
-	
-	local otfPosText = F.CreateFS(MainFrame, L.AnchorOpt, "LEFT")
-	otfPosText:SetPoint("TOPLEFT", StarBox, "BOTTOMLEFT", 10, -10)
-	
-	local otfAnchor = CreateDropDown(MainFrame, 120, 20, optList, "ObjectiveAnchor")
-	otfAnchor:SetPoint("LEFT", otfPosText, "RIGHT", 4, 0)
-	
-	local otfXText = F.CreateFS(MainFrame, L.XOpt, "LEFT")
-	otfXText:SetPoint("LEFT", otfPosText, 0, -30)
-	
-	local otfXBox = CreateEditBox(MainFrame, 100, 20, "ObjectiveX")
-	otfXBox:SetPoint("LEFT", otfXText, "RIGHT", 4, 0)
-	
-	local otfYText = F.CreateFS(MainFrame, L.YOpt, "LEFT")
-	otfYText:SetPoint("LEFT", otfXText, 0, -30)
-	
-	local otfYBox = CreateEditBox(MainFrame, 100, 20, "ObjectiveY")
-	otfYBox:SetPoint("LEFT", otfYText, "RIGHT", 4, 0)
 
-	local otfHeightBar = CreateBar(MainFrame, "Height", 160, 20, 200, 1200, 100, "ObjectiveHeight", L.HeightOpt, 1)
-	otfHeightBar:SetPoint("TOP", otfYText, "BOTTOM", 80, -34)
-	
 	-- infos
 	
-	local info = F.CreateFS(MainFrame, INFO, "LEFT", "BOTTOMLEFT", 30, 120)
+	local info = F.CreateFS(MainFrame, INFO, "LEFT", "TOPLEFT", 260, -150)
 	local q = CreateTooltip(MainFrame, G.Question, "ANCHOR_LEFT", INFO, L.tempTip1.."\n\n"..L.tempTip2)
-	q:SetPoint("BOTTOMLEFT", MainFrame, 30, 60)
+	q:SetPoint("TOPLEFT", MainFrame, 260, -190)
 	q:SetSize(G.fontSize*3, G.fontSize*3)
 
 	local infoCmd = F.CreateFS(MainFrame, L.cmdInfo, "LEFT")
@@ -363,7 +346,7 @@ local function CreateOptions()
 	local infoScroll = F.CreateFS(MainFrame, L.scrollInfo, "LEFT")
 	infoScroll:SetPoint("BOTTOMLEFT", q, "BOTTOMRIGHT", 4, -4)
 	
-	local infoApply = F.CreateFS(MainFrame, L.Apply, "LEFT", "BOTTOMLEFT", 30, 30)
+	local infoApply = F.CreateFS(MainFrame, L.Apply, "LEFT", "TOPLEFT", 260, -250)
 	
 	-- buttons
 	
@@ -377,7 +360,7 @@ local function CreateOptions()
 	
 	local reposButton = CreateButton(MainFrame, 170, 30, L.posApply)
 	reposButton:SetPoint("BOTTOMRIGHT", MainFrame, -20, 60)
-	reposButton:SetScript("OnClick", function() F.ResetM() F.ResetO() end)
+	reposButton:SetScript("OnClick", function() F.ResetM() end)
 	
 	local i = CreateTooltip(reposButton, G.Info, "ANCHOR_RIGHT", INFO, L.tempTip3)
 	i:SetPoint("TOPRIGHT", reposButton, 8, 8)
@@ -391,7 +374,7 @@ local function CreateOptions()
 end
 
 SlashCmdList["EKMINIMAP"] = function()
-	CreateOptions()
+	F.CreateEKMOptions()
 end
 SLASH_EKMINIMAP1 = "/ekm"
 SLASH_EKMINIMAP2 = "/ekminimap"

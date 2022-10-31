@@ -28,7 +28,7 @@ local MediaFolder = "Interface\\AddOns\\EKMinimap\\Media\\"
 	-- 字體 / font
 	G.font = STANDARD_TEXT_FONT		-- 字型 / Font
 	-- minimap / 小地圖字型
-	G.fontSize = 14
+	G.fontSize = 12
 	G.fontFlag = "OUTLINE"
 	-- objectframe / 追蹤字型
 	G.obfontSize = 18
@@ -41,17 +41,14 @@ local MediaFolder = "Interface\\AddOns\\EKMinimap\\Media\\"
 	C.defaultSettings = {
 		["ObjectiveStyle"] = true,
 		["ObjectiveStar"] = true,
-		["ObjectiveHeight"] = 600,
-		["ObjectiveAnchor"] = "TOPRIGHT",
-		["ObjectiveX"] = -100,
-		["ObjectiveY"] = -170,
 		
-		["MinimapScale"] = 1.2,
+		["MinimapScale"] = 1,
 		["MinimapAnchor"] = "TOPLEFT",
 		["MinimapY"] = -10,
 		["MinimapX"] = 10,
 		["ClickMenu"] = true,
 		["CharacterIcon"] = true,
+		["Tracking"] = true,
 	}
 
 ----------------------

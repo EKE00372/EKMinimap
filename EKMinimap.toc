@@ -1,10 +1,14 @@
-## Interface: 90002
+## Interface: 100000
 ## Title: |cff00ffffEK|rMinimap
-## Version: R3.2
+## Version: R3.3
 ## Author: EK
 ## Notes: A square minimap.
 ## SavedVariables: EKMinimapDB
 ## X-Credits: Ooglogput, Chiril, ape47, sakaras, Siweia, Paopao, HopeASD
+
+Libs\LibStub.lua
+Libs\TaintLess.xml
+Libs\LibShowUIPanel-1.0.lua
 
 Init.lua
 Locales.lua

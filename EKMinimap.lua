@@ -1,6 +1,7 @@
 local addon, ns = ...
 local C, F, G, L = unpack(ns)
-local Minimap, sub, floor, CreateFrame = Minimap, string.sub, math.floor, CreateFrame
+local Minimap, MinimapCluster, sub, floor, CreateFrame = Minimap, MinimapCluster, string.sub, math.floor, CreateFrame
+local MailFrame = MinimapCluster.MailFrame
 
 --====================================================--
 -----------------    [[ Function ]]    -----------------
@@ -25,6 +26,14 @@ end
 -----------------    [[ Minimap ]]    -----------------
 --===================================================--
 
+local function updateMiniimapTracking()
+	if EKMinimapDB["Tracking"] then
+		SetCVar("minimapTrackingShowAll", 1)
+	else
+		SetCVar("minimapTrackingShowAll", 0)
+	end
+end
+
 local function updateMinimapPos()
 	Minimap:ClearAllPoints()
 	Minimap:SetPoint(EKMinimapDB["MinimapAnchor"], UIParent, EKMinimapDB["MinimapX"], EKMinimapDB["MinimapY"])
@@ -34,14 +43,18 @@ local function updateMinimapSize()
 	-- default size is ≈ 140
 	-- We use SetScale() instead SetSize() because there's an issue happened on load order and addon icons.
 	-- addon minimap icon may put themself to strange place because this addon load after then icons been created.
-	-- 如果使用 SetScale() 而非 SetSize()，會導致小地圖圖示跑到奇怪的地方
-	-- 因為插件的載入順序不同，本插件的小地圖尺寸更改晚於別的插件生成圖示，是於無法獲取正確的座標
-	Minimap:SetSize(140, 140)
-	Minimap:SetScale(EKMinimapDB["MinimapScale"])
+	--Minimap:SetSize(140, 140)
+	--MinimapCluster:SetSize(140, 140)
+	--Minimap:SetScale(EKMinimapDB["MinimapScale"])
+	MinimapCluster:SetScale(EKMinimapDB["MinimapScale"])
 end
 
 local function setMinimap()
+	
+	--MinimapCluster.SetPoint = F.Dummy
+    --MinimapCluster.ClearAllPoints = F.Dummy
 	updateMinimapPos()
+	
 	Minimap:SetClampedToScreen(true)
 	Minimap:SetMovable(true)
 	Minimap:EnableMouse(true)
@@ -51,6 +64,12 @@ local function setMinimap()
 	Minimap:SetMaskTexture(G.Tex)
 	Minimap:SetFrameStrata("LOW")
 	Minimap:SetFrameLevel(3)
+
+	--[[hooksecurefunc(Minimap, "SetPoint", function(frame, _, _, _, _, _, force)
+		if force then return end
+		frame:ClearAllPoints()
+		frame:SetPoint("TOPRIGHT", Minimap, "TOPRIGHT", 0, 0, true)
+	end)]]--
 	
 	--MinimapCluster:ClearAllPoints()
 	--MinimapCluster:SetAllPoints(Minimap)
@@ -68,42 +87,28 @@ local function setMinimap()
 	Minimap:SetArchBlobRingScalar(0)
 	Minimap:SetQuestBlobRingScalar(0)
 	
-	-- Hide Blizzard / 隱藏暴雪的難度旗子
-	MiniMapInstanceDifficulty:Hide()
-	MiniMapInstanceDifficulty.Show = F.Dummy
-	GuildInstanceDifficulty:Hide()
-	GuildInstanceDifficulty.Show = F.Dummy
-
-	-- Hide all frames / 隱藏各種
+	-- Hide Blizzard
 	local hideAll = {
-		"MinimapBorder",			-- 大圈
-		"MinimapBorderTop",
-		"MinimapNorthTag",			-- 指北針
-		"MiniMapWorldMapButton",	-- 世界地圖
-		"MinimapZoneTextButton",	-- 區域名字
-		"MinimapZoomIn",			-- 放大
-		"MinimapZoomOut",			-- 縮小
-		"GameTimeFrame",			-- 時間
-		"MiniMapTracking",
-		"ZoneTextFrame",
-		"SubZoneTextFrame",
-		"MiniMapChallengeMode",
-		"DurabilityFrame",			-- 裝備耐久
-		"VehicleSeatIndicator",		-- Vehicle / 載具
-		"GarrisonLandingPageMinimapButton",
+		MinimapBackdrop,
+		MinimapCluster.BorderTop,
+		MinimapCluster.ZoneTextButton,
+		Minimap.ZoomIn,
+		Minimap.ZoomOut,
+		MinimapCluster.Tracking,
+		MinimapCluster.InstanceDifficulty,
+		GameTimeFrame,
+		DurabilityFrame,
+		VehicleSeatIndicator,
+		ExpansionLandingPageMinimapButton,
 	}
 	
-	for i, v in pairs(hideAll) do
-		getglobal(v).Show = F.Dummy
-		getglobal(v):Hide()
+	for _, f in ipairs(hideAll) do
+		f.Show = F.Dummy
+		f:Hide()
 	end
 	
-	-- Queue Button / 佇列圖示
-	QueueStatusMinimapButtonBorder:Hide()
-	QueueStatusMinimapButton:SetFrameLevel(10)
 	-- Mail Frame / 信件提示
-	MiniMapMailBorder:Hide()
-	MiniMapMailIcon:SetTexture(G.Mail)
+	MailFrame:SetFrameLevel(11)
 end
 
 local function OnMouseWheel(self, delta)
@@ -187,21 +192,6 @@ local function createGarrisonTooltip(self)
 		end
 	end
 	
-	-- azerite
-	do
-		local azeriteItem = C_AzeriteItem.FindActiveAzeriteItem()
-		
-		if azeriteItem then
-			local cur, max = C_AzeriteItem.GetAzeriteItemXPInfo(azeriteItem)
-			local lvl = C_AzeriteItem.GetPowerLevel(azeriteItem)
-			
-			GameTooltip:AddLine(" ")
-			GameTooltip:AddDoubleLine(ARTIFACT_POWER, LEVEL.." "..lvl, 0, 1, .5, 0, 1, .5)
-			GameTooltip:AddDoubleLine(REFORGE_CURRENT..HEADER_COLON, cur.."/"..max.." ("..floor(cur/max*100).."%)", 1, 1, 1, 1, 1, 1)
-			GameTooltip:AddDoubleLine(NEXT_RANK_COLON, (max-cur), 1, 1, 1, 1, 1, 1)
-		end
-	end
-	
 	GameTooltip:Show()
 end
 
@@ -210,7 +200,7 @@ end
 --======================================================--
 
 local Diff = CreateFrame("Frame", "EKMinimapDungeonIcon", Minimap)
-	Diff:SetSize(40, 40)
+	Diff:SetSize(36, 36)
 	Diff:SetFrameLevel(Minimap:GetFrameLevel()+2)
 	Diff.Texture = Diff:CreateTexture(nil, "OVERLAY")
 	Diff.Texture:SetAllPoints(Diff)
@@ -246,7 +236,7 @@ local function styleDifficulty(self)
 			DiffText:SetText("LFR")
 		-- Challenge Mode and Mythic+
 		elseif difficulty == 8 then
-			DiffText:SetText("M"..mplus)	
+			DiffText:SetText("M"..mplus)
 		elseif difficulty == 9 then
 			DiffText:SetText("40R")
 		-- 11 MOP英雄事件 39 BFA英雄海嶼
@@ -290,6 +280,8 @@ local function styleDifficulty(self)
 		-- 147 英雄戰爭前線
 		elseif difficulty == 149 then
 			DiffText:SetText("HWF")
+		elseif difficulty == 167 then
+			DiffText:SetText("TOR")
 		end
 	elseif instanceType == "pvp" or instanceType == "arena" then
 		DiffText:SetText("PVP")
@@ -370,11 +362,7 @@ end
 		GameTooltip:Hide()
 	end)
 	Stat:SetScript("OnMouseDown", function(self, button)
-		if InCombatLockdown() then
-			UIErrorsFrame:AddMessage("|cffff0000"..ERR_NOT_IN_COMBAT.."|r")
-			return
-		end
-		GarrisonLandingPageMinimapButton:Click()
+		ExpansionLandingPageMinimapButton:Click()
 	end)
 	
 	Diff:RegisterEvent("PLAYER_ENTERING_WORLD")
@@ -386,31 +374,28 @@ end
 	Diff:RegisterEvent("CHALLENGE_MODE_RESET")
 	Diff:SetScript("OnEvent", styleDifficulty)
 
---=================================================--
+--================================================--
 -----------------    [[ Load ]]    -----------------
---=================================================--
+--================================================--
 
 local function updateIconPos()
-	QueueStatusMinimapButton:ClearAllPoints()
-	QueueStatusFrame:ClearAllPoints()	-- Queue Tooltip fix / 佇列圖示提示
-	MiniMapMailFrame:ClearAllPoints()
-	
+	--QueueStatusMinimapButton:ClearAllPoints()
+	--QueueStatusFrame:ClearAllPoints()	-- Queue Tooltip fix / 佇列圖示提示
+	MailFrame:ClearAllPoints()
 	Stat:ClearAllPoints()
 	Diff:ClearAllPoints()
 
 	if findAnchor("MinimapAnchor") then
-		QueueStatusMinimapButton:SetPoint("TOPRIGHT", Minimap, 0, 0)
-		QueueStatusFrame:SetPoint("TOPLEFT", Minimap, "TOPRIGHT", 10, -2)
-		MiniMapMailFrame:SetPoint("BOTTOMLEFT", Minimap, 0, 0)
-		
-		Stat:SetPoint("BOTTOMRIGHT", Minimap, -1, 2)
+		--QueueStatusMinimapButton:SetPoint("TOPRIGHT", Minimap, 0, 0)
+		--QueueStatusFrame:SetPoint("TOPLEFT", Minimap, "TOPRIGHT", 10, -2)
+		MailFrame:SetPoint("BOTTOMLEFT", Minimap, 3, 5)
+		Stat:SetPoint("BOTTOMRIGHT", Minimap, -1, -2)
 		Diff:SetPoint("TOPLEFT", Minimap,  -5, 5)
 	else
-		QueueStatusMinimapButton:SetPoint("TOPLEFT", Minimap, 0, 0)
-		QueueStatusFrame:SetPoint("TOPRIGHT", Minimap, "TOPLEFT", -10, -2)
-		MiniMapMailFrame:SetPoint("BOTTOMRIGHT", Minimap, 0, 0)
-		
-		Stat:SetPoint("BOTTOMLEFT", Minimap, -1, 2)
+		--QueueStatusMinimapButton:SetPoint("TOPLEFT", Minimap, 0, 0)
+		--QueueStatusFrame:SetPoint("TOPRIGHT", Minimap, "TOPLEFT", -10, -2)
+		MailFrame:SetPoint("BOTTOMRIGHT", Minimap, -3, 3)
+		Stat:SetPoint("BOTTOMLEFT", Minimap, -1, -2)
 		Diff:SetPoint("TOPRIGHT", Minimap,  5, 5)
 	end
 end
@@ -432,6 +417,7 @@ F.ResetM = function()
 	updateMinimapPos()
 	updateMinimapSize()
 	updateIconPos()
+	updateMiniimapTracking()
 end
 
 local function OnEvent(self, event, addon)
