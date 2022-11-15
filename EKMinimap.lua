@@ -109,6 +109,7 @@ local function setMinimap()
 	
 	-- Mail Frame / 信件提示
 	MailFrame:SetFrameLevel(11)
+	MailFrame:SetScale(1.2)
 end
 
 local function OnMouseWheel(self, delta)
@@ -134,7 +135,7 @@ end
 
 local Stat = CreateFrame("Button", "EKMinimapTooltipButton", Minimap)
 	Stat:SetHitRectInsets(-5, -5, -5, 5)
-	Stat:SetSize(28, 28)
+	Stat:SetSize(36, 36)
 	Stat:ClearAllPoints()
 	Stat:SetFrameLevel(Minimap:GetFrameLevel()+2)
 	Stat:SetNormalTexture(G.Report)
@@ -195,18 +196,25 @@ local function createGarrisonTooltip(self)
 	GameTooltip:Show()
 end
 
+local function hideExpBar()
+	if EKMinimapDB["CharacterIcon"] then
+		StatusTrackingBarManager.Show = F.Dummy
+		StatusTrackingBarManager:Hide()
+	end
+end
 --======================================================--
 -----------------    [[ Difficulty ]]    -----------------
 --======================================================--
 
 local Diff = CreateFrame("Frame", "EKMinimapDungeonIcon", Minimap)
-	Diff:SetSize(36, 36)
+	Diff:SetSize(46, 46)
 	Diff:SetFrameLevel(Minimap:GetFrameLevel()+2)
 	Diff.Texture = Diff:CreateTexture(nil, "OVERLAY")
 	Diff.Texture:SetAllPoints(Diff)
 	Diff.Texture:SetTexture(G.Diff)
 	Diff.Texture:SetVertexColor(G.Ccolors.r, G.Ccolors.g, G.Ccolors.b)
 	Diff.Text = F.CreateFS(Diff, "", "CENTER")
+	Diff.Text:SetFont(STANDARD_TEXT_FONT, 16, "OUTLINE")
 
 local function styleDifficulty(self)
 	-- Difficulty Text / 難度文字
@@ -233,15 +241,15 @@ local function styleDifficulty(self)
 			DiffText:SetText("25H")
 		-- Old LFR (before SOO)
 		elseif difficulty == 7 then
-			DiffText:SetText("LFR")
+			DiffText:SetText("L")
 		-- Challenge Mode and Mythic+
 		elseif difficulty == 8 then
 			DiffText:SetText("M"..mplus)
 		elseif difficulty == 9 then
-			DiffText:SetText("40R")
+			DiffText:SetText("40")
 		-- 11 MOP英雄事件 39 BFA英雄海嶼
 		elseif difficulty == 11	or difficulty == 39 then
-		DiffText:SetText("3H")
+			DiffText:SetText("3H")
 		-- 12 MOP普通事件 38 BFA普通海嶼
 		elseif difficulty == 12 and difficulty == 38 then 
 			DiffText:SetText("3N")
@@ -273,10 +281,10 @@ local function styleDifficulty(self)
 			DiffText:SetText("PVP")
 		-- 29 pvevp事件(這什麼玩意?)
 		elseif difficulty == 29 then
-			DiffText:SetText("PvEvP")
+			DiffText:SetText("PEP")
 		-- 147 普通戰爭前線
 		elseif difficulty == 147 then
-		DiffText:SetText("WF")
+			DiffText:SetText("WF")
 		-- 147 英雄戰爭前線
 		elseif difficulty == 149 then
 			DiffText:SetText("HWF")
@@ -437,6 +445,7 @@ local function OnEvent(self, event, addon)
 		whoPing()
 		setMinimap()
 		updateIconPos()
+		hideExpBar()
 	else
 		return
 	end
