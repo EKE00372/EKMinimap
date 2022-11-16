@@ -47,17 +47,19 @@ local MediaFolder = "Interface\\AddOns\\EKMinimap\\Media\\"
 		["MinimapY"] = -10,
 		["MinimapX"] = 10,
 		["ClickMenu"] = true,
+		["HoverClock"] = true,
 		["CharacterIcon"] = true,
 		["Tracking"] = true,
+		["QueueStatus"] = true,
 	}
 
 ----------------------
 -- Functions / 功能 --
 ----------------------
 
-F.CreateFS = function(parent, text, justify, anchor, x, y)
+F.CreateFS = function(parent, text, fontsize, justify, anchor, x, y)
 	local fs = parent:CreateFontString(nil, "OVERLAY")
-	fs:SetFont(G.font, G.fontSize, G.fontFlag)
+	fs:SetFont(G.font, fontsize, G.fontFlag)
 	fs:SetText(text)
 	fs:SetShadowOffset(0, 0)
 	fs:SetWordWrap(false)

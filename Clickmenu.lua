@@ -11,25 +11,22 @@ local function OnEvent()
 	-- Right Click Menu List
 	local menuFrame = CreateFrame("Frame", "MinimapRightClickMenu", UIParent, "UIDropDownMenuTemplate")
 	local menuList = {
-		-- 標題
-		{
+		{	-- 標題
 			text = MAINMENU_BUTTON,
 			isTitle = true,
 			notCheckable = true,
 		},
 		
-		-- 角色
-		{
+		{	-- 角色
 			text = CHARACTER_BUTTON,
-			icon = "Interface\\PaperDollInfoFrame\\UI-EquipmentManager-Toggle",
+			icon = "Interface\\PVPFrame\\PVP-Banner-Emblem-3",
 			func = function()
 				if not CharacterFrame:IsShown() then ShowUIPanel(CharacterFrame) else HideUIPanel(CharacterFrame) end
 			end,
 			notCheckable = true,
 		},
-		
-		-- 法術書
-		{
+	
+		{	-- 法術書
 			text = SPELLBOOK_ABILITIES_BUTTON,
 			icon = "Interface\\MINIMAP\\TRACKING\\Class",
 			func = function()
@@ -38,10 +35,10 @@ local function OnEvent()
 			notCheckable = true,
 		},
 		
-		--天賦
-		{
+		
+		{	--天賦
 			text = TALENTS_BUTTON,
-			icon = "Interface\\MINIMAP\\TRACKING\\Ammunition",
+			icon = "Interface\\HELPFRAME\\HelpIcon-CharacterStuck",
 			func = function() 
 				if not ClassTalentFrame then LoadAddOn("Blizzard_ClassTalentUI") end
 				if not ClassTalentFrame:IsShown() then ShowUIPanel(ClassTalentFrame) else HideUIPanel(ClassTalentFrame) end
@@ -51,7 +48,7 @@ local function OnEvent()
 		
 		{	-- 成就
 			text = ACHIEVEMENT_BUTTON,
-			icon = "Interface\\ACHIEVEMENTFRAME\\UI-Achievement-Shield",
+			icon = "Interface\\MINIMAP\\TRACKING\\QuestBlob",
 			func = function() 
 				if not AchievementFrame then LoadAddOn("Blizzard_AchievementUI") end
 				if not AchievementFrame:IsShown() then ShowUIPanel(AchievementFrame) else HideUIPanel(AchievementFrame) end
@@ -69,7 +66,7 @@ local function OnEvent()
 		},
 		
 		{	-- 社群
-			text = COMMUNITIES_FRAME_TITLE,		-- OLD: COMMUNITIES
+			text = COMMUNITIES_FRAME_TITLE,
 			icon = "Interface\\FriendsFrame\\UI-Toast-ChatInviteIcon",
 			arg1 = IsInGuild("player"),
 			func = function()
@@ -81,7 +78,7 @@ local function OnEvent()
 		
 		{	-- 好友
 			text = SOCIAL_BUTTON,
-			icon = "Interface\\FriendsFrame\\PlusManz-BattleNet",
+			icon = "Interface\\CHATFRAME\\UI-ChatWhisperIcon",
 			func = function() 
 				if not FriendsFrame:IsShown() then ShowUIPanel(FriendsFrame) else HideUIPanel(FriendsFrame) end
 			end,
@@ -90,7 +87,7 @@ local function OnEvent()
 		
 		{	-- 地城與團隊
 			text = GROUP_FINDER,	-- DUNGEONS_BUTTON
-			icon = "Interface\\LFGFRAME\\BattleNetWorking0",
+			icon = "Interface\\TUTORIALFRAME\\UI-TutorialFrame-AttackCursor",
 			func = function()
 				securecall(ToggleLFDParentFrame)
 				--if not LFDParentFrame:IsShown() then ShowUIPanel(LFDParentFrame) else HideUIPanel(LFDParentFrame) end
@@ -99,8 +96,8 @@ local function OnEvent()
 		},
 		
 		{	-- 收藏
-			text = COLLECTIONS, -- OLD: MOUNTS_AND_PETS
-			icon = "Interface\\MINIMAP\\TRACKING\\Reagents",
+			text = COLLECTIONS,
+			icon = "Interface\\CURSOR\\Crosshair\\WildPetCapturable",
 			func = function()
 				if not CollectionsJournal then LoadAddOn("Blizzard_Collections") end
 				if not CollectionsJournal:IsShown() then ShowUIPanel(CollectionsJournal) else HideUIPanel(CollectionsJournal) end
@@ -110,7 +107,7 @@ local function OnEvent()
 		
 		{	-- 冒險指南
 			text = ADVENTURE_JOURNAL,	-- OLD: ENCOUNTER_JOURNAL
-			icon = "Interface\\MINIMAP\\TRACKING\\Profession",
+			icon = "Interface\\ENCOUNTERJOURNAL\\UI-EJ-HeroicTextIcon",
 			func = function()
 				if not EncounterJournal then LoadAddOn("Blizzard_EncounterJournal") end
 				if not EncounterJournal:IsShown() then ShowUIPanel(EncounterJournal) else HideUIPanel(EncounterJournal) end
@@ -161,8 +158,8 @@ local function OnEvent()
 		},
 		
 		{	-- 任務指揮桌
-			text = AZEROTH,
-			icon = "Interface\\GossipFrame\\WorkOrderGossipIcon",
+			text = L.BFAReport,
+			icon = "Interface\\HELPFRAME\\OpenTicketIcon",
 			func = function()			
 				securecall(ShowGarrisonLandingPage, 9)
 			end,
@@ -172,7 +169,7 @@ local function OnEvent()
 		{	-- 誓盟報告
 			text = GARRISON_TYPE_9_0_LANDING_PAGE_TITLE,
 			icon = "Interface\\GossipFrame\\WorkOrderGossipIcon",
-			func = function()			
+			func = function()
 				securecall(ShowGarrisonLandingPage, LE_GARRISON_TYPE_9_0)
 			end,
 			notCheckable = true,
