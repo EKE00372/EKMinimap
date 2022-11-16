@@ -22,6 +22,24 @@ local function findAnchor(value)
 	return iconAnchor
 end
 
+--[[ Format 24/12 hour clock ]]--
+
+local function updateTimerFormat(hour, minute)
+	if not EKMinimapDB["HoverClock"] then return end
+	
+	if GetCVarBool("timeMgrUseMilitaryTime") then
+		return format(TIMEMANAGER_TICKER_24HOUR, hour, minute)
+	else
+		local timerUnit = hour < 12 and " AM" or " PM"
+		
+		if hour > 12 then
+			hour = hour - 12
+		end
+		
+		return format(TIMEMANAGER_TICKER_12HOUR..timerUnit, hour, minute)
+	end
+end
+
 --====================-==============================--
 -----------------    [[ Minimap ]]    -----------------
 --===================================================--
@@ -129,6 +147,30 @@ local function OnMouseWheel(self, delta)
 	end
 end
 
+--=================================================--
+-----------------    [[ Queue ]]    -----------------
+--=================================================--
+
+local function QueueStatus()
+	if not EKMinimapDB["QueueStatus"] then return end
+		
+	QueueStatusButton:SetFrameLevel(999)
+	QueueStatusButton:SetParent(Minimap)
+	QueueStatusButton:SetScale(.8)
+	QueueStatusButton:ClearAllPoints()
+
+	if findAnchor("MinimapAnchor") then
+		QueueStatusButton:SetPoint("TOPRIGHT", Minimap, -8, -8)
+		QueueStatusFrame:ClearAllPoints()
+		QueueStatusFrame:SetPoint("TOPLEFT", Minimap, "TOPRIGHT", 10, -2)
+	else
+		QueueStatusButton:SetPoint("TOPLEFT", Minimap, 8, -8)
+		QueueStatusFrame:ClearAllPoints()
+		QueueStatusFrame:SetPoint("TOPRIGHT", Minimap, "TOPLEFT", -10, -2)
+	end
+end
+
+
 --===================================================--
 -----------------    [[ Tooltip ]]    -----------------
 --===================================================--
@@ -213,8 +255,7 @@ local Diff = CreateFrame("Frame", "EKMinimapDungeonIcon", Minimap)
 	Diff.Texture:SetAllPoints(Diff)
 	Diff.Texture:SetTexture(G.Diff)
 	Diff.Texture:SetVertexColor(G.Ccolors.r, G.Ccolors.g, G.Ccolors.b)
-	Diff.Text = F.CreateFS(Diff, "", "CENTER")
-	Diff.Text:SetFont(STANDARD_TEXT_FONT, 16, "OUTLINE")
+	Diff.Text = F.CreateFS(Diff, "",  G.fontSize+4, "CENTER")
 
 local function styleDifficulty(self)
 	-- Difficulty Text / 難度文字
@@ -305,6 +346,35 @@ local function styleDifficulty(self)
 	end
 end
 
+--=================================================--
+-----------------    [[ Clock ]]    -----------------
+--=================================================--
+
+local function HoverClock()
+	if not EKMinimapDB["HoverClock"] then return end
+	
+	local hour, minute
+	if GetCVarBool("timeMgrUseLocalTime") then
+		hour, minute = tonumber(date("%H")), tonumber(date("%M"))
+	else
+		hour, minute = GetGameTime()
+	end
+
+	local Clock = CreateFrame("Frame", nil, Minimap)
+	Clock:SetSize(80, 20)
+	Clock.Text = F.CreateFS(Clock, "",  G.fontSize+4, "CENTER")
+	Clock:SetPoint("TOP", Minimap, 0, -2)
+	Clock.Text:SetText(updateTimerFormat(hour, minute))
+	Clock:Hide()
+	
+	Minimap:SetScript("OnEnter", function()
+		Clock:Show()
+	end)
+	Minimap:SetScript("OnLeave", function()
+		Clock:Hide()
+	end)
+end
+
 --================================================--
 -----------------    [[ Ping ]]    -----------------
 --=================================================--
@@ -314,7 +384,7 @@ local function whoPing()
 	ping:SetSize(100, 20)
 	ping:SetPoint("BOTTOM", Minimap, 0, 2)
 	ping:RegisterEvent("MINIMAP_PING")
-	ping.text = F.CreateFS(ping, "", "CENTER")
+	ping.text = F.CreateFS(ping, "",  G.fontSize+4, "CENTER")
 
 	local anim = ping:CreateAnimationGroup()
 	anim:SetScript("OnPlay", function() ping:SetAlpha(1) end)
@@ -357,9 +427,6 @@ end
 	
 	-- [[ Icon ]] --
 	
-	--Stat:RegisterEvent("PLAYER_ENTERING_WORLD")
-	--Stat:SetScript("OnEvent", StatPos)
-	
 	Stat:SetScript("OnEnter", function(self)
 		createGarrisonTooltip(self)
 		-- fade in
@@ -387,39 +454,20 @@ end
 --================================================--
 
 local function updateIconPos()
-	--QueueStatusMinimapButton:ClearAllPoints()
-	--QueueStatusFrame:ClearAllPoints()	-- Queue Tooltip fix / 佇列圖示提示
 	MailFrame:ClearAllPoints()
 	Stat:ClearAllPoints()
 	Diff:ClearAllPoints()
 
 	if findAnchor("MinimapAnchor") then
-		--QueueStatusMinimapButton:SetPoint("TOPRIGHT", Minimap, 0, 0)
-		--QueueStatusFrame:SetPoint("TOPLEFT", Minimap, "TOPRIGHT", 10, -2)
 		MailFrame:SetPoint("BOTTOMLEFT", Minimap, 3, 5)
 		Stat:SetPoint("BOTTOMRIGHT", Minimap, -1, -2)
 		Diff:SetPoint("TOPLEFT", Minimap,  -5, 5)
 	else
-		--QueueStatusMinimapButton:SetPoint("TOPLEFT", Minimap, 0, 0)
-		--QueueStatusFrame:SetPoint("TOPRIGHT", Minimap, "TOPLEFT", -10, -2)
 		MailFrame:SetPoint("BOTTOMRIGHT", Minimap, -3, 3)
 		Stat:SetPoint("BOTTOMLEFT", Minimap, -1, -2)
 		Diff:SetPoint("TOPRIGHT", Minimap,  5, 5)
 	end
 end
-
-SlashCmdList["EJCET1"] = function()
-	EjectPassengerFromSeat(1)
-end
-SLASH_EJCET11 = "/ej1"
-SLASH_EJCET12 = "/eject1"
-
--- Reset size / 重置
-SlashCmdList["EJCET2"] = function()
-	EjectPassengerFromSeat(2)
-end
-SLASH_EJCET21 = "/ej2"
-SLASH_EJCET22 = "/ejct2"
 
 F.ResetM = function()
 	updateMinimapPos()
@@ -442,6 +490,8 @@ local function OnEvent(self, event, addon)
 			tinsert(MBB_Ignore, "EKMinimapTooltipButton")
 		end
 		
+		QueueStatus()
+		HoverClock()
 		whoPing()
 		setMinimap()
 		updateIconPos()

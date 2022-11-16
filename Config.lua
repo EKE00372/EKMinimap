@@ -72,7 +72,7 @@ local function CreateButton(self, width, height, text)
 	bu:SetPushedTexture("")
 	bu:SetDisabledTexture("")
 	
-	bu.Text = F.CreateFS(bu, text, "CENTER", "CENTER", 0, 0)
+	bu.Text = F.CreateFS(bu, text, G.fontSize, "CENTER", "CENTER", 0, 0)
 	
 	if bu.Left then bu.Left:SetAlpha(0) end
 	if bu.Middle then bu.Middle:SetAlpha(0) end
@@ -108,7 +108,7 @@ local function CreateCheckBox(self, text, value)
 		GLOBEVARIABLE(value, self:GetChecked())
 	end)
 	
-	cb.text = F.CreateFS(cb, text, "LEFT")
+	cb.text = F.CreateFS(cb, text,  G.fontSize, "LEFT")
 	cb.text:SetPoint("LEFT", cb, "RIGHT", 4, 0)
 	
 	return cb
@@ -161,7 +161,7 @@ local function CreateDropDown(self, width, height, data, value)
 	dd.bg = F.CreateBG(dd, 3, 3, .5)
 	dd.options = {}
 	
-	dd.Text = F.CreateFS(dd, "", "CENTER", 0, 0)
+	dd.Text = F.CreateFS(dd, "",  G.fontSize, "CENTER", 0, 0)
 	dd.Text:SetText(GLOBEVARIABLE(value))
 	
 	local bu = CreateGear(dd)
@@ -185,7 +185,7 @@ local function CreateDropDown(self, width, height, data, value)
 		opt[i]:SetSize(width - 6, height)
 		opt[i].bg = F.CreateBG(opt[i], 1, 1, .7)
 		
-		local text = F.CreateFS(opt[i], j, "CENTER", "LEFT", 5, 0)
+		local text = F.CreateFS(opt[i], j,  G.fontSize, "CENTER", "LEFT", 5, 0)
 		text:SetPoint("RIGHT", -5, 0)
 		opt[i].text = j
 		opt[i].__owner = dd
@@ -221,7 +221,7 @@ local function CreateBar(self, name, width, height, min, max, step, value, text,
 	
 	s:SetValue(GLOBEVARIABLE(value)/coeff)
 	
-	s.text = F.CreateFS(s, text.." "..GLOBEVARIABLE(value), "LEFT")
+	s.text = F.CreateFS(s, text.." "..GLOBEVARIABLE(value),  G.fontSize, "LEFT")
 	s.text:SetPoint("BOTTOM", s, "TOP", 0, 5)
 	
 	s:SetScript("OnValueChanged", function(self)
@@ -284,34 +284,40 @@ F.CreateEKMOptions = function()
 	MainFrame:SetScript("OnDragStop", function() MainFrame:StopMovingOrSizing() end)
 	
 	-- Main title
-	local Title = F.CreateFS(MainFrame, "|cff00ffffEK|rMinimap "..v, "CENTER", "TOP", 0, 10)
+	local Title = F.CreateFS(MainFrame, "|cff00ffffEK|rMinimap "..v,  G.fontSize+6, "CENTER", "TOP", 0, 14)
 	
 	-- minimap / 小地圖
 	
-	local mapTitle = F.CreateFS(MainFrame, L.MinimapOpt, "LEFT", "TOPLEFT", 30, -30)
+	local mapTitle = F.CreateFS(MainFrame,  MINIMAP_LABEL, G.fontSize+2, "LEFT", "TOPLEFT", 30, -30)
 
 	local ClickMenuBox = CreateCheckBox(MainFrame, L.ClickMenuOpt, "ClickMenu")
-	ClickMenuBox:SetPoint("TOPLEFT", MainFrame, 30, -60)
+	ClickMenuBox:SetPoint("TOPLEFT", MainFrame, 40, -60)
+	
+	local HoverClockBox = CreateCheckBox(MainFrame, L.HoverClockOpt, "HoverClock")
+	HoverClockBox:SetPoint("BOTTOM", ClickMenuBox, 0, -30)
 	
 	local IconBox = CreateCheckBox(MainFrame, L.IconOpt, "CharacterIcon")
-	IconBox:SetPoint("BOTTOM", ClickMenuBox, 0, -30)
+	IconBox:SetPoint("BOTTOM", HoverClockBox, 0, -30)
 	
 	local TrackingBox = CreateCheckBox(MainFrame, L.TrackingOpt, "Tracking")
 	TrackingBox:SetPoint("BOTTOM", IconBox, 0, -30)
 	
-	local mapPosText = F.CreateFS(MainFrame, L.AnchorOpt, "LEFT")
-	mapPosText:SetPoint("TOPLEFT", TrackingBox, "BOTTOMLEFT", 10, -10)
+	local QueueBox = CreateCheckBox(MainFrame, L.QueueOpt, "QueueStatus")
+	QueueBox:SetPoint("BOTTOM", TrackingBox, 0, -30)
+	
+	local mapPosText = F.CreateFS(MainFrame, L.AnchorOpt, G.fontSize, "LEFT")
+	mapPosText:SetPoint("TOPLEFT", QueueBox, "BOTTOMLEFT", 10, -20)
 	
 	local mapAnchor = CreateDropDown(MainFrame, 120, 20, optList, "MinimapAnchor")
 	mapAnchor:SetPoint("LEFT", mapPosText, "RIGHT", 4, 0)
 	
-	local mapXText = F.CreateFS(MainFrame, L.XOpt, "LEFT")
+	local mapXText = F.CreateFS(MainFrame, L.XOpt, G.fontSize, "LEFT")
 	mapXText:SetPoint("LEFT", mapPosText, 0, -30)
 	
 	local mapXBox = CreateEditBox(MainFrame, 100, 20, "MinimapX")
 	mapXBox:SetPoint("LEFT", mapXText, "RIGHT", 4, 0)
 	
-	local mapYText = F.CreateFS(MainFrame, L.YOpt, "LEFT")
+	local mapYText = F.CreateFS(MainFrame, L.YOpt,  G.fontSize+2, "LEFT")
 	mapYText:SetPoint("LEFT", mapXText, 0, -30)
 	
 	local mapYBox = CreateEditBox(MainFrame, 100, 20, "MinimapY")
@@ -322,7 +328,7 @@ F.CreateEKMOptions = function()
 	
 	-- objective tracker
 	
-	local otfTitle = F.CreateFS(MainFrame, L.ObjectiveOpt, "LEFT", "TOPLEFT", 260, -30)
+	local otfTitle = F.CreateFS(MainFrame, L.ObjectiveOpt,  G.fontSize+2, "LEFT", "TOPLEFT", 260, -30)
 	
 	local OTFBox = CreateCheckBox(MainFrame, L.ObjectiveStyleOpt, "ObjectiveStyle")
 	OTFBox:SetPoint("TOP", MainFrame, 20, -60)
@@ -332,21 +338,18 @@ F.CreateEKMOptions = function()
 
 	-- infos
 	
-	local info = F.CreateFS(MainFrame, INFO, "LEFT", "TOPLEFT", 260, -150)
+	local info = F.CreateFS(MainFrame, INFO,  G.fontSize+2, "LEFT", "TOPLEFT", 260, -210)
 	local q = CreateTooltip(MainFrame, G.Question, "ANCHOR_LEFT", INFO, L.tempTip1.."\n\n"..L.tempTip2)
-	q:SetPoint("TOPLEFT", MainFrame, 260, -190)
+	q:SetPoint("TOPLEFT", MainFrame, 260, -230)
 	q:SetSize(G.fontSize*3, G.fontSize*3)
-
-	local infoCmd = F.CreateFS(MainFrame, L.cmdInfo, "LEFT")
-	infoCmd:SetPoint("TOPLEFT", q, "TOPRIGHT", 4, 8)
 	
-	local infoDrag = F.CreateFS(MainFrame, L.dragInfo, "LEFT")
+	local infoDrag = F.CreateFS(MainFrame, L.dragInfo, G.fontSize, "LEFT")
 	infoDrag:SetPoint("LEFT", q, "RIGHT", 4, 2)
 	
-	local infoScroll = F.CreateFS(MainFrame, L.scrollInfo, "LEFT")
+	local infoScroll = F.CreateFS(MainFrame, L.scrollInfo, G.fontSize, "LEFT")
 	infoScroll:SetPoint("BOTTOMLEFT", q, "BOTTOMRIGHT", 4, -4)
 	
-	local infoApply = F.CreateFS(MainFrame, L.Apply, "LEFT", "TOPLEFT", 260, -250)
+	local infoApply = F.CreateFS(MainFrame, L.Apply,  G.fontSize, "LEFT", "TOPLEFT", 260, -290)
 	
 	-- buttons
 	
@@ -362,7 +365,7 @@ F.CreateEKMOptions = function()
 	reposButton:SetPoint("BOTTOMRIGHT", MainFrame, -20, 60)
 	reposButton:SetScript("OnClick", function() F.ResetM() end)
 	
-	local i = CreateTooltip(reposButton, G.Info, "ANCHOR_RIGHT", INFO, L.tempTip3)
+	local i = CreateTooltip(reposButton, G.Info,  G.fontSize+2, "ANCHOR_RIGHT", INFO, L.tempTip3)
 	i:SetPoint("TOPRIGHT", reposButton, 8, 8)
 
 	local resetButton = CreateButton(MainFrame, 80, 30, RESET)
