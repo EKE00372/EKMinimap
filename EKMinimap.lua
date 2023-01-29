@@ -160,11 +160,11 @@ local function QueueStatus()
 	QueueStatusButton:ClearAllPoints()
 
 	if findAnchor("MinimapAnchor") then
-		QueueStatusButton:SetPoint("TOPRIGHT", Minimap, -8, -8)
+		QueueStatusButton:SetPoint("TOPRIGHT", Minimap, -5, -5)
 		QueueStatusFrame:ClearAllPoints()
 		QueueStatusFrame:SetPoint("TOPLEFT", Minimap, "TOPRIGHT", 10, -2)
 	else
-		QueueStatusButton:SetPoint("TOPLEFT", Minimap, 8, -8)
+		QueueStatusButton:SetPoint("TOPLEFT", Minimap, 5, -5)
 		QueueStatusFrame:ClearAllPoints()
 		QueueStatusFrame:SetPoint("TOPRIGHT", Minimap, "TOPLEFT", -10, -2)
 	end
@@ -175,9 +175,9 @@ end
 -----------------    [[ Tooltip ]]    -----------------
 --===================================================--
 
-local Stat = CreateFrame("Button", "EKMinimapTooltipButton", Minimap)
+local Stat = CreateFrame("Button", "EKMinimapTooltipButton", MinimapCluster)
 	Stat:SetHitRectInsets(-5, -5, -5, 5)
-	Stat:SetSize(46, 46
+	Stat:SetSize(46, 46)
 	Stat:ClearAllPoints()
 	Stat:SetFrameLevel(Minimap:GetFrameLevel()+2)
 	Stat:SetNormalTexture(G.Report)
@@ -248,7 +248,7 @@ end
 -----------------    [[ Difficulty ]]    -----------------
 --======================================================--
 
-local Diff = CreateFrame("Frame", "EKMinimapDungeonIcon", Minimap)
+local Diff = CreateFrame("Frame", "EKMinimapDungeonIcon", MinimapCluster)
 	Diff:SetSize(46, 46)
 	Diff:SetFrameLevel(Minimap:GetFrameLevel()+2)
 	Diff.Texture = Diff:CreateTexture(nil, "OVERLAY")
@@ -362,7 +362,7 @@ local function HoverClock()
 
 	local Clock = CreateFrame("Frame", "EKMinimapTimeIcon", Minimap)
 	Clock:SetFrameLevel(Minimap:GetFrameLevel()+2)
-	Clock:SetSize(Minimap:GetWidth(), 20)
+	Clock:SetSize(Minimap:GetWidth()/2, 20)
 	Clock:EnableMouse(false)
 	Clock:ClearAllPoints()
 	Clock:SetPoint("TOP", Minimap, 0, -2)
@@ -377,7 +377,6 @@ local function HoverClock()
 		securecall(UIFrameFadeOut, Clock, .8, 1, 0)
 	end)
 end
-
 --================================================--
 -----------------    [[ Ping ]]    -----------------
 --=================================================--
@@ -462,13 +461,27 @@ local function updateIconPos()
 	Diff:ClearAllPoints()
 
 	if findAnchor("MinimapAnchor") then
-		MailFrame:SetPoint("BOTTOMLEFT", Minimap, 3, 5)
-		Stat:SetPoint("BOTTOMRIGHT", Minimap, -1, -2)
+		--MailFrame:SetPoint("BOTTOMLEFT", Minimap, 3, 5)
+		Stat:SetPoint("BOTTOMRIGHT", Minimap, 4, -3)
 		Diff:SetPoint("TOPLEFT", Minimap,  -5, 5)
+		
+		local function updateMapAnchor(frame, _, _, _, _, _, force)
+			if force then return end
+			frame:ClearAllPoints()
+			frame:SetPoint("BOTTOMLEFT", Minimap, "BOTTOMLEFT", 3, 3, true)
+		end
+		hooksecurefunc(MailFrame, "SetPoint", updateMapAnchor)
 	else
-		MailFrame:SetPoint("BOTTOMRIGHT", Minimap, -3, 3)
-		Stat:SetPoint("BOTTOMLEFT", Minimap, -1, -2)
+		--MailFrame:SetPoint("BOTTOMRIGHT", Minimap, -3, 3)
+		Stat:SetPoint("BOTTOMLEFT", Minimap, -4, -3)
 		Diff:SetPoint("TOPRIGHT", Minimap,  5, 5)
+		
+		local function updateMapAnchor(frame, _, _, _, _, _, force)
+			if force then return end
+			frame:ClearAllPoints()
+			frame:SetPoint("BOTTOMRIGHT", Minimap, "BOTTOMRIGHT", -3, 3, true)
+		end
+		hooksecurefunc(MailFrame, "SetPoint", updateMapAnchor)
 	end
 end
 
@@ -503,3 +516,8 @@ local function OnEvent(self, event, addon)
 		return
 	end
 end
+
+local frame = CreateFrame("FRAME")
+	frame:RegisterEvent("PLAYER_LOGIN")
+	frame:RegisterEvent("ADDON_LOADED")
+	frame:SetScript("OnEvent", OnEvent)
