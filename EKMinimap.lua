@@ -1,7 +1,7 @@
 local addon, ns = ...
 local C, F, G, L = unpack(ns)
 local Minimap, MinimapCluster, sub, floor, CreateFrame = Minimap, MinimapCluster, string.sub, math.floor, CreateFrame
-local MailFrame = MinimapCluster.MailFrame
+local MailFrame = MinimapCluster.IndicatorFrame.MailFrame
 
 --====================================================--
 -----------------    [[ Function ]]    -----------------
@@ -177,7 +177,7 @@ end
 
 local Stat = CreateFrame("Button", "EKMinimapTooltipButton", Minimap)
 	Stat:SetHitRectInsets(-5, -5, -5, 5)
-	Stat:SetSize(36, 36)
+	Stat:SetSize(46, 46
 	Stat:ClearAllPoints()
 	Stat:SetFrameLevel(Minimap:GetFrameLevel()+2)
 	Stat:SetNormalTexture(G.Report)
@@ -360,18 +360,21 @@ local function HoverClock()
 		hour, minute = GetGameTime()
 	end
 
-	local Clock = CreateFrame("Frame", nil, Minimap)
-	Clock:SetSize(80, 20)
-	Clock.Text = F.CreateFS(Clock, "",  G.fontSize+4, "CENTER")
+	local Clock = CreateFrame("Frame", "EKMinimapTimeIcon", Minimap)
+	Clock:SetFrameLevel(Minimap:GetFrameLevel()+2)
+	Clock:SetSize(Minimap:GetWidth(), 20)
+	Clock:EnableMouse(false)
+	Clock:ClearAllPoints()
 	Clock:SetPoint("TOP", Minimap, 0, -2)
+	Clock.Text = F.CreateFS(Clock, "",  G.fontSize+4, "CENTER")
 	Clock.Text:SetText(updateTimerFormat(hour, minute))
-	Clock:Hide()
+	Clock:SetAlpha(0)
 	
-	Minimap:SetScript("OnEnter", function()
-		Clock:Show()
+	Clock:SetScript("OnEnter", function(self)
+		securecall(UIFrameFadeIn, Clock, .2, 0, 1)
 	end)
-	Minimap:SetScript("OnLeave", function()
-		Clock:Hide()
+	Clock:SetScript("OnLeave", function(self)
+		securecall(UIFrameFadeOut, Clock, .8, 1, 0)
 	end)
 end
 
@@ -500,22 +503,3 @@ local function OnEvent(self, event, addon)
 		return
 	end
 end
-
-local frame = CreateFrame("FRAME")
-	frame:RegisterEvent("PLAYER_LOGIN")
-	frame:RegisterEvent("ADDON_LOADED")
-	frame:SetScript("OnEvent", OnEvent)
-
-local HideOH = CreateFrame("Frame")
-	HideOH:SetScript("OnUpdate", function(self,...)
-		local OrderHallCommandBar = OrderHallCommandBar
-		
-		if OrderHallCommandBar then
-			OrderHallCommandBar.Show = F.Dummy
-			OrderHallCommandBar:Hide()
-			OrderHallCommandBar:UnregisterAllEvents()
-		end
-		
-		OrderHall_CheckCommandBar = F.Dummy
-		self:SetScript("OnUpdate", nil)
-	end)

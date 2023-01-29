@@ -13,7 +13,7 @@ if GetLocale() == "zhTW" then
 	L.ClickMenuOpt = "啟用點擊選單"
 	L.TrackingOpt = "完整追蹤選單"
 	L.IconOpt = "角色資訊提示"
-	L.HoverClockOpt = "指向顯示時間"
+	L.HoverClockOpt = "指向頂部顯示時間"
 	L.QueueOpt = "移動隊列按鈕"
 	
 	L.SizeOpt = "縮放"
@@ -54,7 +54,7 @@ elseif GetLocale() == "zhCN" then
 	L.ObjectiveStarOpt = "使用 ★ 标记追踪项目"
 	L.ObjectiveStyleOpt = "启用追踪框美化"
 	L.IconOpt = "角色信息提示"
-	L.HoverClockOpt = "指向显示时间"
+	L.HoverClockOpt = "指向顶部显示时间"
 	L.QueueOpt = "移动队列按钮"
 	
 	L.Calendar = "行事历"
@@ -78,7 +78,7 @@ else
 	L.ClickMenuOpt = "Enable click menu"
 	L.TrackingOpt = "Full tracking list"
 	L.IconOpt = "Character icon tooltip"
-	L.HoverClockOpt = "Show hover clock"
+	L.HoverClockOpt = "Hover clock at top"
 	L.QueueOpt = "QueueStatus on Minimap"
 	
 	L.SizeOpt = "Scale"
