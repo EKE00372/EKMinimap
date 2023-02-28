@@ -193,7 +193,7 @@ local function createGarrisonTooltip(self)
 	GameTooltip:AddLine(CHARACTER_BUTTON, .6,.8, 1)
 
 	-- Experience
-	if UnitLevel("player") < MAX_PLAYER_LEVEL and not IsXPUserDisabled() then
+	if not IsPlayerAtEffectiveMaxLevel() then
 		local cur, max = UnitXP("player"), UnitXPMax("player")
 		local lvl = UnitLevel("player")
 		local rested = GetXPExhaustion()
@@ -208,8 +208,7 @@ local function createGarrisonTooltip(self)
 	
 	-- Honor
 	do
-		local cur, max = UnitHonor("player"), UnitHonorMax("player")
-		local lvl = UnitHonorLevel("player")
+		local lvl, cur, max = UnitHonorLevel("player"), UnitHonor("player"), UnitHonorMax("player")
 		
 		GameTooltip:AddLine(" ")
 		GameTooltip:AddDoubleLine(HONOR, LEVEL.." "..lvl, 0, 1, .5, 0, 1, .5)
@@ -219,11 +218,30 @@ local function createGarrisonTooltip(self)
 		
 	-- Reputation
 	do
-		local name, standing, min, max, cur = GetWatchedFactionInfo()
+		if not GetWatchedFactionInfo() then return end
+		local name, standing, min, max, cur, factionID = GetWatchedFactionInfo()
 		
-		if name then
-			GameTooltip:AddLine(" ")
+		GameTooltip:AddLine(" ")
+		
+		local repInfo = C_GossipInfo.GetFriendshipReputation(factionID)
+		local friendID =  repInfo.friendshipFactionID
+
+		if friendID and friendID ~= 0 then
+			-- 新式聲望，親密度
+			
+			-- 當前值, 當前階段, 當前階段最小值, 當前階段最大值
+			local curRep, curReaction, curThreshold, nextThreshold = repInfo.standing, repInfo.reaction, repInfo.reactionThreshold, repInfo.nextThreshold
+			GameTooltip:AddDoubleLine(name, curReaction, 0, 1, 0.5, 0, 1, 0.5)
+			
+			if nextThreshold then
+				cur, min, max = curRep, curThreshold, nextThreshold
+				GameTooltip:AddDoubleLine(REFORGE_CURRENT..HEADER_COLON, cur - min.."/"..max - min.." ("..floor((cur - min)/(max - min)*100).."%)", 1, 1, 1, 1, 1, 1)
+				GameTooltip:AddDoubleLine(NEXT_RANK_COLON, (max-cur), 1, 1, 1, 1, 1, 1)
+			end
+		else
+			-- 傳統聲望
 			GameTooltip:AddDoubleLine(name, _G["FACTION_STANDING_LABEL"..standing], 0, 1, 0.5, 0, 1, 0.5)
+			
 			if standing == MAX_REPUTATION_REACTION then
 				max = min + 1e3
 				cur = max - 1
