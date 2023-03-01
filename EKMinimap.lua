@@ -226,7 +226,15 @@ local function createGarrisonTooltip(self)
 		local repInfo = C_GossipInfo.GetFriendshipReputation(factionID)
 		local friendID =  repInfo.friendshipFactionID
 
-		if friendID and friendID ~= 0 then
+		if factionID and C_Reputation.IsMajorFaction(factionID) then
+			-- 10.0 四大陣營
+			local majorFactionData = C_MajorFactions.GetMajorFactionData(factionID)
+			local renownLevel, cur, min, max = majorFactionData.renownLevel, majorFactionData.renownReputationEarned, 0, majorFactionData.renownLevelThreshold
+			
+			GameTooltip:AddDoubleLine(name, RENOWN_LEVEL_LABEL..renownLevel, 0, 1, 0.5, 0, 1, 0.5)
+			GameTooltip:AddDoubleLine(REFORGE_CURRENT..HEADER_COLON, cur.."/"..max.." ("..floor(cur/max*100).."%)", 1, 1, 1, 1, 1, 1)
+			GameTooltip:AddDoubleLine(NEXT_RANK_COLON, (max-cur), 1, 1, 1, 1, 1, 1)
+		elseif friendID and friendID ~= 0 then
 			-- 新式聲望，親密度
 			
 			-- 當前值, 當前階段, 當前階段最小值, 當前階段最大值
