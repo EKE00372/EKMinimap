@@ -1,6 +1,6 @@
-## Interface: 100005
+## Interface: 100007
 ## Title: |cff00ffffEK|rMinimap
-## Version: R3.7a
+## Version: R3.8
 ## Author: EK
 ## Notes: A square minimap.
 ## SavedVariables: EKMinimapDB
