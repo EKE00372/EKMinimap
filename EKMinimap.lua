@@ -215,7 +215,7 @@ local function HoverClock()
 	local Clock = CreateFrame("Frame", nil, Minimap)
 	Clock:SetSize(80, 20)
 	Clock.Text = F.CreateFS(Clock, "", "CENTER")
-	Clock:SetPoint("BOTTOM", Minimap, 0, 0)
+	Clock:SetPoint("TOP", Minimap, 0, 0)
 	Clock.Text:SetText(updateTimerFormat(hour, minute))
 	Clock:Hide()
 	
