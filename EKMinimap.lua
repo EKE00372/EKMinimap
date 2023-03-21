@@ -61,9 +61,6 @@ local function updateMinimapSize()
 	-- default size is ≈ 140
 	-- We use SetScale() instead SetSize() because there's an issue happened on load order and addon icons.
 	-- addon minimap icon may put themself to strange place because this addon load after then icons been created.
-	--Minimap:SetSize(140, 140)
-	--MinimapCluster:SetSize(140, 140)
-	--Minimap:SetScale(EKMinimapDB["MinimapScale"])
 	MinimapCluster:SetScale(EKMinimapDB["MinimapScale"])
 end
 
@@ -217,8 +214,7 @@ local function createGarrisonTooltip(self)
 	end
 		
 	-- Reputation
-	do
-		if not GetWatchedFactionInfo() then return end
+	if GetWatchedFactionInfo() then
 		local name, standing, min, max, cur, factionID = GetWatchedFactionInfo()
 		
 		GameTooltip:AddLine(" ")
@@ -518,19 +514,6 @@ F.ResetM = function()
 	updateMiniimapTracking()
 end
 
-
-local ignoredFrames = {
-	["MinimapCluster"] = function() return true end,
-}
-
-local shutdownMode = {
-	"OnEditModeEnter",
-	"OnEditModeExit",
-	"HasActiveChanges",
-	"HighlightSystem",
-	"SelectSystem",
-}
-
 local function OnEvent(self, event, addon)
 	-- Hide Clock / 隱藏時鐘
 	if event == "ADDON_LOADED" and addon == "Blizzard_TimeManager" then
@@ -545,20 +528,6 @@ local function OnEvent(self, event, addon)
 			tinsert(MBB_Ignore, "EKMinimapTooltipButton")
 		end
 		
-		-- remove the initial registers
-		local editMode = _G.EditModeManagerFrame
-		local registered = editMode.registeredSystemFrames
-		for i = #registered, 1, -1 do
-			local frame = registered[i]
-			local ignore = ignoredFrames[frame:GetName()]
-
-			if ignore and ignore() then
-				for _, key in next, shutdownMode do
-					frame[key] = F.Dummy
-				end
-			end
-		end
-			
 		QueueStatus()
 		HoverClock()
 		whoPing()
