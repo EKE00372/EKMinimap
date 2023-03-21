@@ -86,8 +86,8 @@ local function setMinimap()
 		frame:SetPoint("TOPRIGHT", Minimap, "TOPRIGHT", 0, 0, true)
 	end)]]--
 	
-	MinimapCluster:ClearAllPoints()
-	MinimapCluster:SetAllPoints(Minimap)
+	--MinimapCluster:ClearAllPoints()
+	--MinimapCluster:SetAllPoints(Minimap)
 	MinimapCluster:EnableMouse(false)
 	Minimap.bg = F.CreateBG(Minimap, 5, 5, 1)
 	
@@ -514,6 +514,18 @@ F.ResetM = function()
 	updateMiniimapTracking()
 end
 
+local ignoredFrames = {
+	["MinimapCluster"] = function() return true end,
+}
+
+local shutdownMode = {
+	"OnEditModeEnter",
+	"OnEditModeExit",
+	"HasActiveChanges",
+	"HighlightSystem",
+	"SelectSystem",
+}
+
 local function OnEvent(self, event, addon)
 	-- Hide Clock / 隱藏時鐘
 	if event == "ADDON_LOADED" and addon == "Blizzard_TimeManager" then
@@ -526,6 +538,20 @@ local function OnEvent(self, event, addon)
 		-- make sure MBB dont take my icon 益rz
 		if MBB_Ignore then
 			tinsert(MBB_Ignore, "EKMinimapTooltipButton")
+		end
+		
+		-- remove the initial registers
+		local editMode = _G.EditModeManagerFrame
+		local registered = editMode.registeredSystemFrames
+		for i = #registered, 1, -1 do
+			local frame = registered[i]
+			local ignore = ignoredFrames[frame:GetName()]
+
+			if ignore and ignore() then
+				for _, key in next, shutdownMode do
+					frame[key] = F.Dummy
+				end
+			end
 		end
 		
 		QueueStatus()
