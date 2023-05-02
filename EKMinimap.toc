@@ -1,8 +1,9 @@
-## Interface: 100007
+## Interface: 100010
 ## Title: |cff00ffffEK|rMinimap
 ## Version: R3.8a
 ## Author: EK
 ## Notes: A square minimap.
+## IconTexture: "Interface\\Buttons\\WHITE8x8"
 ## SavedVariables: EKMinimapDB
 ## X-Credits: Ooglogput, Chiril, ape47, sakaras, Siweia, Paopao, HopeASD
 
