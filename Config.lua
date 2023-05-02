@@ -236,7 +236,7 @@ local function CreateBar(self, name, width, height, min, max, step, value, text,
 end
 
 -- tooltip
-local function CreateTooltip(self, tex, anchor, title, text)
+local function CreateTooltip(self, tex, anchor, text)
 	local i = CreateFrame("Button", nil, self)
 	--local f = i:GetParent()
 	i:SetSize(G.fontSize+2, G.fontSize+2)
@@ -249,7 +249,6 @@ local function CreateTooltip(self, tex, anchor, title, text)
 	i:SetScript("OnEnter", function(self)
 		GameTooltip:ClearLines()
 		GameTooltip:SetOwner(self, anchor, 0, 0)
-		--GameTooltip:AddLine(title)
 		GameTooltip:AddLine(text, 1, 1, 1, true)
 		GameTooltip:Show()
 	end)
@@ -317,7 +316,7 @@ F.CreateEKMOptions = function()
 	local mapXBox = CreateEditBox(MainFrame, 100, 20, "MinimapX")
 	mapXBox:SetPoint("LEFT", mapXText, "RIGHT", 4, 0)
 	
-	local mapYText = F.CreateFS(MainFrame, L.YOpt,  G.fontSize+2, "LEFT")
+	local mapYText = F.CreateFS(MainFrame, L.YOpt,  G.fontSize, "LEFT")
 	mapYText:SetPoint("LEFT", mapXText, 0, -30)
 	
 	local mapYBox = CreateEditBox(MainFrame, 100, 20, "MinimapY")
@@ -339,7 +338,7 @@ F.CreateEKMOptions = function()
 	-- infos
 	
 	local info = F.CreateFS(MainFrame, INFO,  G.fontSize+2, "LEFT", "TOPLEFT", 260, -210)
-	local q = CreateTooltip(MainFrame, G.Question, "ANCHOR_LEFT", INFO, L.tempTip1.."\n\n"..L.tempTip2)
+	local q = CreateTooltip(MainFrame, G.Question, "ANCHOR_LEFT", L.tempTip1.."\n\n"..L.tempTip2)
 	q:SetPoint("TOPLEFT", MainFrame, 260, -230)
 	q:SetSize(G.fontSize*3, G.fontSize*3)
 	
@@ -365,7 +364,7 @@ F.CreateEKMOptions = function()
 	reposButton:SetPoint("BOTTOMRIGHT", MainFrame, -20, 60)
 	reposButton:SetScript("OnClick", function() F.ResetM() end)
 	
-	local i = CreateTooltip(reposButton, G.Info,  G.fontSize+2, "ANCHOR_RIGHT", INFO, L.tempTip3)
+	local i = CreateTooltip(reposButton, G.Info, "ANCHOR_RIGHT", L.tempTip3)
 	i:SetPoint("TOPRIGHT", reposButton, 8, 8)
 
 	local resetButton = CreateButton(MainFrame, 80, 30, RESET)
