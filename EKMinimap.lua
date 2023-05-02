@@ -172,7 +172,7 @@ end
 -----------------    [[ Tooltip ]]    -----------------
 --===================================================--
 
-local Stat = CreateFrame("Button", "EKMinimapTooltipButton", MinimapCluster)
+local Stat = CreateFrame("Button", "EKMinimapTooltipButton", Minimap)
 	Stat:SetHitRectInsets(-5, -5, -5, 5)
 	Stat:SetSize(46, 46)
 	Stat:ClearAllPoints()
@@ -270,7 +270,7 @@ end
 -----------------    [[ Difficulty ]]    -----------------
 --======================================================--
 
-local Diff = CreateFrame("Frame", "EKMinimapDungeonIcon", MinimapCluster)
+local Diff = CreateFrame("Frame", "EKMinimapDungeonIcon", Minimap)
 	Diff:SetSize(46, 46)
 	Diff:SetFrameLevel(Minimap:GetFrameLevel()+2)
 	Diff.Texture = Diff:CreateTexture(nil, "OVERLAY")
