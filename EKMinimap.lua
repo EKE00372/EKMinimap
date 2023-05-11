@@ -2,6 +2,7 @@ local addon, ns = ...
 local C, F, G, L = unpack(ns)
 local Minimap, MinimapCluster, sub, floor, CreateFrame = Minimap, MinimapCluster, string.sub, math.floor, CreateFrame
 local MailFrame = MinimapCluster.IndicatorFrame.MailFrame
+local AddonCompartmentFrame = AddonCompartmentFrame
 
 --====================================================--
 -----------------    [[ Function ]]    -----------------
@@ -150,23 +151,29 @@ end
 
 local function QueueStatus()
 	if not EKMinimapDB["QueueStatus"] then return end
-		
+	
 	QueueStatusButton:SetFrameLevel(999)
 	QueueStatusButton:SetParent(Minimap)
 	QueueStatusButton:SetScale(.8)
-	QueueStatusButton:ClearAllPoints()
-
-	if findAnchor("MinimapAnchor") then
-		QueueStatusButton:SetPoint("TOPRIGHT", Minimap, -5, -5)
-		QueueStatusFrame:ClearAllPoints()
-		QueueStatusFrame:SetPoint("TOPLEFT", Minimap, "TOPRIGHT", 10, -2)
-	else
-		QueueStatusButton:SetPoint("TOPLEFT", Minimap, 5, -5)
-		QueueStatusFrame:ClearAllPoints()
-		QueueStatusFrame:SetPoint("TOPRIGHT", Minimap, "TOPLEFT", -10, -2)
+	
+	local function hookAnchor()
+		if findAnchor("MinimapAnchor") then
+			QueueStatusButton:ClearAllPoints()
+			QueueStatusButton:SetPoint("TOPRIGHT", Minimap, -5, -5)
+			QueueStatusFrame:ClearAllPoints()
+			QueueStatusFrame:SetPoint("TOPLEFT", Minimap, "TOPRIGHT", 10, -2)
+		else
+			QueueStatusButton:ClearAllPoints()
+			QueueStatusButton:SetPoint("TOPLEFT", Minimap, 5, -5)
+			QueueStatusFrame:ClearAllPoints()
+			QueueStatusFrame:SetPoint("TOPRIGHT", Minimap, "TOPLEFT", -10, -2)
+		end
 	end
+	-- init
+	hookAnchor()
+	-- update
+	QueueStatusButton:HookScript("OnShow", hookAnchor)
 end
-
 
 --===================================================--
 -----------------    [[ Tooltip ]]    -----------------
@@ -182,6 +189,11 @@ local Stat = CreateFrame("Button", "EKMinimapTooltipButton", Minimap)
 	Stat:SetHighlightTexture(G.Report)
 	Stat:SetAlpha(0)
 	Stat:SetScale(1)
+	AddonCompartmentFrame:ClearAllPoints()
+	AddonCompartmentFrame:SetAllPoints(Minimap)
+	AddonCompartmentFrame:SetPoint("CENTER", Stat)
+	AddonCompartmentFrame:SetAlpha(0)
+	AddonCompartmentFrame:EnableMouse(false)
 
 local function createGarrisonTooltip(self)
 	if not EKMinimapDB["CharacterIcon"] then return end
@@ -257,6 +269,9 @@ local function createGarrisonTooltip(self)
 		end
 	end
 	
+	GameTooltip:AddLine(" ")
+	GameTooltip:AddDoubleLine(" ", "|TInterface\\TUTORIALFRAME\\UI-TUTORIAL-FRAME:13:11:0:-1:512:512:12:66:333:411|t "..L.AddonCompartment, 1,1,1,1,1,1)
+
 	GameTooltip:Show()
 end
 
@@ -460,8 +475,14 @@ end
 		securecall(UIFrameFadeOut, Stat, .8, 1, 0)
 		GameTooltip:Hide()
 	end)
-	Stat:SetScript("OnMouseDown", function(self, button)
-		ExpansionLandingPageMinimapButton:Click()
+	Stat:SetScript("OnMouseUp", function(self, button)
+		if button == "RightButton" then
+			AddonCompartmentFrame:OnClick()
+			--ToggleDropDownMenu(1, nil, AddonCompartmentDropDown_OnLoad, self, findAnchor("MinimapAnchor") and (Minimap:GetWidth()*.7) or -(Minimap:GetWidth()*.7), -10, nil, nil, 2)
+			--UIDropDownMenu_Initialize(self, AddonCompartmentDropDown_Initialize, "MENU")
+		else
+			ExpansionLandingPageMinimapButton:Click()
+		end
 	end)
 	
 	Diff:RegisterEvent("PLAYER_ENTERING_WORLD")

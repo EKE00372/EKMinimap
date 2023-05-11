@@ -15,6 +15,7 @@ if GetLocale() == "zhTW" then
 	L.IconOpt = "角色資訊提示"
 	L.HoverClockOpt = "指向頂部顯示時間"
 	L.QueueOpt = "移動隊列按鈕"
+	L.AddonCompartment = "插件收納"
 	
 	L.SizeOpt = "縮放"
 	L.AnchorOpt = "錨點"
@@ -56,6 +57,7 @@ elseif GetLocale() == "zhCN" then
 	L.IconOpt = "角色信息提示"
 	L.HoverClockOpt = "指向顶部显示时间"
 	L.QueueOpt = "移动队列按钮"
+	L.AddonCompartment = "插件收纳"
 	
 	L.Calendar = "行事历"
 	L.Left = "左"
@@ -80,6 +82,7 @@ else
 	L.IconOpt = "Character icon tooltip"
 	L.HoverClockOpt = "Hover clock at top"
 	L.QueueOpt = "QueueStatus on Minimap"
+	L.AddonCompartment = "Addon Compartment"
 	
 	L.SizeOpt = "Scale"
 	L.AnchorOpt = "Anchor"
