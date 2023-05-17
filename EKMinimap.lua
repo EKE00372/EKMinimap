@@ -157,22 +157,19 @@ local function QueueStatus()
 	QueueStatusButton:SetScale(.8)
 	
 	local function hookAnchor()
+		QueueStatusButton:ClearAllPoints()
+		QueueStatusFrame:ClearAllPoints()
+		
 		if findAnchor("MinimapAnchor") then
-			QueueStatusButton:ClearAllPoints()
 			QueueStatusButton:SetPoint("TOPRIGHT", Minimap, -5, -5)
-			QueueStatusFrame:ClearAllPoints()
 			QueueStatusFrame:SetPoint("TOPLEFT", Minimap, "TOPRIGHT", 10, -2)
 		else
-			QueueStatusButton:ClearAllPoints()
 			QueueStatusButton:SetPoint("TOPLEFT", Minimap, 5, -5)
-			QueueStatusFrame:ClearAllPoints()
 			QueueStatusFrame:SetPoint("TOPRIGHT", Minimap, "TOPLEFT", -10, -2)
 		end
 	end
-	-- init
-	hookAnchor()
-	-- update
-	QueueStatusButton:HookScript("OnShow", hookAnchor)
+	
+	hooksecurefunc(QueueStatusFrame, "Update", hookAnchor)
 end
 
 --===================================================--
