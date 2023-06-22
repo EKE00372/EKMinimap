@@ -204,27 +204,29 @@ end
 
 local function HoverClock()
 	if not EKMinimapDB["HoverClock"] then return end
-	
-	local hour, minute
-	if GetCVarBool("timeMgrUseLocalTime") then
-		hour, minute = tonumber(date("%H")), tonumber(date("%M"))
-	else
-		hour, minute = GetGameTime()
-	end
 
 	local Clock = CreateFrame("Frame", nil, Minimap)
 	Clock:SetSize(80, 20)
 	Clock.Text = F.CreateFS(Clock, "", "CENTER")
+	Clock:ClearAllPoints()
 	Clock:SetPoint("TOP", Minimap, 0, 0)
-	Clock.Text:SetText(updateTimerFormat(hour, minute))
-	Clock:Hide()
+	Clock.Text:SetText("")
+	Clock:SetAlpha(0)
 	
 	-- Alt+right click to drag frame
 	Minimap:SetScript("OnEnter", function()
-		Clock:Show()
+		local hour, minute
+		if GetCVarBool("timeMgrUseLocalTime") then
+			hour, minute = tonumber(date("%H")), tonumber(date("%M"))
+		else
+			hour, minute = GetGameTime()
+		end
+		
+		Clock.Text:SetText(updateTimerFormat(hour, minute))
+		securecall(UIFrameFadeIn, Clock, .2, 0, 1)
 	end)
 	Minimap:SetScript("OnLeave", function()
-		Clock:Hide()
+		securecall(UIFrameFadeOut, Clock, .8, 1, 0)
 	end)
 end
 

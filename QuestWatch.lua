@@ -4,18 +4,6 @@ local C, F, G, L = unpack(ns)
 local WatchFrame, gsub = WatchFrame, string.gsub
 local GetNumQuestWatches = GetNumQuestWatches
 
---================================----================--
------------------    [[ Function ]]    -----------------
---======================================----==========--
-
--- Block text outline
---[[local function ReskinFont(font, size)
-	local oldSize = select(2, font:GetFont())
-	size = size or oldSize
-	local fontSize = G.fontSize
-	font:SetFont(G.font, G.fontSize, G.fontFlag)
-	font:SetShadowColor(0, 0, 0, 0)
-end]]--
 
 --================================================--
 -----------------    [[ Core ]]    -----------------
@@ -132,10 +120,12 @@ local function setWatchFrame()
 	end
 
 	-- Outline
-	local nextline = 1
+	--[[local nextline = 1
 	hooksecurefunc("WatchFrame_Update", function()
+		--SetFontObject(SystemFont_Shadow_Med1_Outline)
+		
 		for i = nextline, 50 do
-			local line = _G["WatchFrameLine"..i]
+			local line = _G["WatchFrameLines."..i]
 			if line then
 				--if not line then break end
 				line.text:SetFont(G.font, G.fontSize, G.fontFlag)
@@ -148,11 +138,21 @@ local function setWatchFrame()
 				break
 			end
 		end
-	end)
+	end)]]--
 	
+	
+	-- Block text outline
+	local function ReskinFont(font, size)
+		local oldSize = select(2, font:GetFont())
+		size = size or oldSize
+		local fontSize = G.fontSize
+		font:SetFont(G.font, G.fontSize, G.fontFlag)
+		font:SetShadowColor(0, 0, 0, 0)
+	end
 	--if EKMinimapDB["QuestOutline"] then
-		--ReskinFont(SystemFont_Shadow_Med1)
+		ReskinFont(SystemFont_Shadow_Med1)
 	--end
+	
 	-- Drag tooltip
 	local function WatchFrame_Tooltip(self)
 		if GetNumQuestWatches() == 0 then return end
