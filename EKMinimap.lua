@@ -13,6 +13,7 @@ function GetMinimapShape()
 	return "SQUARE"
 end
 
+-- [[ Custom API for anchor ]] --							 
 local function findAnchor(value)
 	local anchor = EKMinimapDB[value]
 	local myAnchor = sub(anchor, -4)				-- get minimap anchor left or rignt
@@ -21,6 +22,23 @@ local function findAnchor(value)
 	return iconAnchor
 end
 
+--[[ Format 24/12 hour clock ]]--
+
+local function updateTimerFormat(hour, minute)
+	if not EKMinimapDB["HoverClock"] then return end
+	
+	if GetCVarBool("timeMgrUseMilitaryTime") then
+		return format(TIMEMANAGER_TICKER_24HOUR, hour, minute)
+	else
+		local timerUnit = hour < 12 and " AM" or " PM"
+		
+		if hour > 12 then
+			hour = hour - 12
+		end
+		
+		return format(TIMEMANAGER_TICKER_12HOUR..timerUnit, hour, minute)
+	end
+end
 --================================================--
 -----------------    [[ Core ]]    -----------------
 --================================================--
@@ -197,6 +215,37 @@ local function whoPing()
 	end)
 end
 
+--=================================================--
+-----------------    [[ Clock ]]    -----------------
+--=================================================--
+
+local function HoverClock()
+	if not EKMinimapDB["HoverClock"] then return end
+
+	local Clock = CreateFrame("Frame", nil, Minimap)
+	Clock:SetSize(80, 20)
+	Clock.Text = F.CreateFS(Clock, "", "CENTER")
+	Clock:ClearAllPoints()
+	Clock:SetPoint("TOP", Minimap, 0, 0)
+	Clock.Text:SetText("")
+	Clock:SetAlpha(0)
+	
+	-- Alt+right click to drag frame
+	Minimap:SetScript("OnEnter", function()
+		local hour, minute
+		if GetCVarBool("timeMgrUseLocalTime") then
+			hour, minute = tonumber(date("%H")), tonumber(date("%M"))
+		else
+			hour, minute = GetGameTime()
+		end
+		
+		Clock.Text:SetText(updateTimerFormat(hour, minute))
+		securecall(UIFrameFadeIn, Clock, .2, 0, 1)
+	end)
+	Minimap:SetScript("OnLeave", function()
+		securecall(UIFrameFadeOut, Clock, .8, 1, 0)
+	end)
+end
 --==================================================--
 -----------------    [[ Script ]]    -----------------
 --==================================================--
@@ -272,6 +321,7 @@ local function OnEvent(self, event, addon)
 		whoPing()
 		setMinimap()
 		updateIconPos()
+		HoverClock()
 	else
 		return
 	end

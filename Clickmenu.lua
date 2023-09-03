@@ -1,7 +1,10 @@
 local addon, ns = ...
 local C, F, G, L = unpack(ns)
-local Minimap, InCombatLockdown = Minimap, InCombatLockdown
-local EasyMenu, ToggleDropDownMenu = EasyMenu, ToggleDropDownMenu
+local Minimap, EasyMenu, ToggleDropDownMenu = Minimap, EasyMenu, ToggleDropDownMenu
+local LibShowUIPanel = LibStub("LibShowUIPanel-1.0")
+local ShowUIPanel = LibShowUIPanel.ShowUIPanel
+local HideUIPanel = LibShowUIPanel.HideUIPanel
+
 
 local function OnEvent()
 	if not EKMinimapDB["ClickMenu"] then return end
@@ -18,7 +21,7 @@ local function OnEvent()
 			text = CHARACTER_BUTTON,
 			icon = "Interface\\PaperDollInfoFrame\\UI-EquipmentManager-Toggle",
 			func = function()
-				securecall(ToggleCharacter, "PaperDollFrame") 
+				if not CharacterFrame:IsShown() then ShowUIPanel(CharacterFrame) else HideUIPanel(CharacterFrame) end
 			end,
 			notCheckable = true,
 		},
@@ -26,51 +29,42 @@ local function OnEvent()
 			text = SPELLBOOK_ABILITIES_BUTTON,
 			icon = "Interface\\MINIMAP\\TRACKING\\Class",
 			func = function() 
-				--securecall(ToggleSpellBook, SpellBookFrame)
-				if not SpellBookFrame:IsShown() then
-					ShowUIPanel(SpellBookFrame)
-				else
-					HideUIPanel(SpellBookFrame)
-				end
+				if not SpellBookFrame:IsShown() then ShowUIPanel(SpellBookFrame) else HideUIPanel(SpellBookFrame) end
 			end,
 			notCheckable = true,
 		},
 		{	--天賦
 			text = TALENTS,
 			icon = "Interface\\MINIMAP\\TRACKING\\Ammunition",
-			func = function() 
-				if (not PlayerTalentFrame) then
-					LoadAddOn("Blizzard_TalentUI")
+			func = function()
+				if UnitLevel("player") > 10 then
+					if not PlayerTalentFrame then LoadAddOn("Blizzard_TalentUI") end
+					if not TalentFrame:IsShown() then ShowUIPanel(TalentFrame) else HideUIPanel(TalentFrame) end
 				end
-				if (not GlyphFrame) then
-					LoadAddOn("Blizzard_GlyphUI")
-				end
-				securecall(ToggleFrame, TalentFrame)
 			end,
 			notCheckable = true,
 		},
 		{	-- 任務日誌
-			text = QUESTLOG_BUTTON,	-- OLD: QUESTLOG_BUTTON
+			text = QUESTLOG_BUTTON,
 			icon = "Interface\\GossipFrame\\ActiveQuestIcon",
 			func = function()
-				securecall(ToggleFrame, QuestLogFrame)
+				if not QuestLogFrame:IsShown() then ShowUIPanel(QuestLogFrame) else HideUIPanel(QuestLogFrame) end
 			end,
 			notCheckable = true,
 		},
 		{	-- 地圖
-			text = WORLD_MAP,	-- OLD: QUESTLOG_BUTTON
-			--icon = "Interface\\GossipFrame\\ActiveQuestIcon",
+			text = WORLD_MAP,
 			icon = "Interface\\WorldMap\\UI-World-Icon",
-			func = function() 
-				securecall(ToggleFrame, WorldMapFrame)
-				MaximizeUIPanel(WorldMapFrame)
+			func = function()
+				if not WorldMapFrame:IsShown() then ShowUIPanel(WorldMapFrame) else HideUIPanel(WorldMapFrame) end
 			end,
 			notCheckable = true,
 		},
 		{	-- 好友
 			text = SOCIAL_BUTTON,
 			icon = "Interface\\FriendsFrame\\UI-Toast-ChatInviteIcon",
-			func = function() 
+			func = function()
+				if not FriendsFrame:IsShown() then ShowUIPanel(FriendsFrame) else HideUIPanel(FriendsFrame) end
 				securecall(ToggleFriendsFrame, 1) 
 			end,
 			notCheckable = true,
@@ -79,11 +73,9 @@ local function OnEvent()
 			text = GUILD,
 			icon = "Interface\\GossipFrame\\TabardGossipIcon",
 			arg1 = IsInGuild("player"),
-			func = function() 
-				if (not GuildFrame) then
-					LoadAddOn("Blizzard_GuildUI")
-				end
-				--GuildFrame_Toggle()
+			func = function()
+				if not GuildFrame then LoadAddOn("Blizzard_GuildUI") end
+				if not FriendsFrame:IsShown() then ShowUIPanel(FriendsFrame) else HideUIPanel(FriendsFrame) end
 				securecall(ToggleFriendsFrame, 3)
 			end,
 			notCheckable = true,
@@ -109,9 +101,10 @@ local function OnEvent()
 		{	-- PVP
 			text = PLAYER_V_PLAYER,
 			icon = "Interface\\MINIMAP\\TRACKING\\BattleMaster",
-			func = function() 
-				--securecall(ToggleHonorFrame)
-				securecall(ToggleCharacter, "HonorFrame")
+			func = function()
+				if UnitLevel("player") > 10 then
+					securecall(ToggleCharacter, "HonorFrame")
+				end
 			end,
 			notCheckable = true,
 		},
@@ -127,7 +120,7 @@ local function OnEvent()
 			text = GM_EMAIL_NAME,
 			icon = "Interface\\CHATFRAME\\UI-ChatIcon-Blizz",
 			func = function() 
-				securecall(ToggleHelpFrame) 
+				if not HelpFrame:IsShown() then ShowUIPanel(HelpFrame) else HideUIPanel(HelpFrame) end
 			end,
 			notCheckable = true,
 		},
@@ -135,7 +128,7 @@ local function OnEvent()
 			text = CHANNEL,
 			icon = "Interface\\CHATFRAME\\UI-ChatIcon-ArmoryChat-AwayMobile",
 			func = function()
-				ToggleChannelFrame()
+				if not ChannelFrame:IsShown() then ShowUIPanel(ChannelFrame) else HideUIPanel(ChannelFrame) end
 			end,
 			notCheckable = true
 		},
@@ -143,7 +136,7 @@ local function OnEvent()
 			text = STOPWATCH_TITLE,
 			icon = "Interface\\Icons\\INV_Misc_PocketWatch_01",
 			func = function()
-				ToggleFrame(TimeManagerFrame)
+				if not TimeManagerFrame:IsShown() then ShowUIPanel(TimeManagerFrame) else HideUIPanel(TimeManagerFrame) end
 			end,
 			notCheckable = true
 		},
@@ -152,16 +145,27 @@ local function OnEvent()
 			text = BATTLEFIELD_MINIMAP,
 			colorCode = "|cff999999",
 			func = function()
-				if not BattlefieldMapFrame then 
-					LoadAddOn("Blizzard_BattlefieldMap") 
-				end
-				BattlefieldMapFrame:Toggle()
+				if not BattlefieldMapFrame then LoadAddOn("Blizzard_BattlefieldMap") end
+				if not BattlefieldMapFrame:IsShown() then ShowUIPanel(BattlefieldMapFrame) else HideUIPanel(BattlefieldMapFrame) end
 			end,
 			notCheckable = true,
 		},
 		{	-- 空行
 			text = "",
 			isTitle = true,
+			notCheckable = true,
+		},
+		{	-- 插件標題
+			text = ADDONS,
+			isTitle = true,
+			notCheckable = true,
+		},
+		{
+			text = L.ToggleConfig,
+			colorCode = "|cff00FFFF",
+			func = function()
+				F.CreateEKMOptions()
+			end,
 			notCheckable = true,
 		},
 		{	-- 重載
