@@ -1,4 +1,4 @@
-## Interface: 11405
+## Interface: 11404
 ## Title: |cff00ffffEK|rMinimap_Classic
 ## Version: C2.7
 ## Author: EK
