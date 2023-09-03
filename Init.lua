@@ -47,6 +47,7 @@ local MediaFolder = "Interface\\AddOns\\EKMinimap\\Media\\"
 		["MinimapX"] = -10,
 		["ClickMenu"] = true,
 		["CharacterIcon"] = true,
+		["HoverClock"] = true,
 		
 		["WorldMapStyle"] = true,
 		["WorldMapScale"] = 0.6,
@@ -81,7 +82,7 @@ F.CreateBG = function(parent, size, offset, a)
 	end
 	local lvl = frame:GetFrameLevel()
 
-	local bg = CreateFrame("Frame", nil, frame)
+	local bg = CreateFrame("Frame", nil, frame, BackdropTemplateMixin and "BackdropTemplate")
 	bg:ClearAllPoints()
 	bg:SetPoint("TOPLEFT", parent, -size, size)
 	bg:SetPoint("BOTTOMRIGHT", parent, size, -size)
@@ -108,7 +109,7 @@ F.Dummy = function() end
 	-- Felix S., sakaras, ape47
 	-- iMinimap by Chiril, ooMinimap by Ooglogput, intMinimap by Int0xMonkey
 	-- NeavUI by Neal
-	-- https://www.wowinterface.com/downloads/info13981-NeavUI.html#info
+	-- https://www.wowinterface.com/downloads/info13981-NeavUI.html
 	-- ClickMenu by 10leej
 	-- https://www.wowinterface.com/downloads/info22660-ClickMenu.html
 	-- rQuestWatchTracker by zork

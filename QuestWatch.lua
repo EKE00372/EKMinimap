@@ -6,6 +6,8 @@ local GetNumQuestWatches = GetNumQuestWatches
 local ClickFrames = {}
 local frame
 
+if IsAddOnLoaded("Questie") then return end
+
 --================================================--
 -----------------    [[ Core ]]    -----------------
 --================================================--

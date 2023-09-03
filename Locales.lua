@@ -8,6 +8,8 @@ local GetLocale = GetLocale
 
 if GetLocale() == "zhTW" then
 
+	L.ToggleConfig = "開啟設定選項"
+	
 	L.QuestWatchOpt = "追蹤框"
 	L.SizeOpt = "縮放"
 	L.AlphaOpt = "淡出透明度"
@@ -17,6 +19,7 @@ if GetLocale() == "zhTW" then
 	
 	L.ClickMenuOpt = "啟用點擊選單"
 	L.IconOpt = "角色資訊提示"
+	L.HoverClockOpt = "指向顯示時間"
 	
 	L.QuestWatchStyleOpt = "啟用追蹤框美化"
 	L.QuestWatchStarOpt = "使用 ★ 標記追蹤項目"
@@ -37,6 +40,8 @@ if GetLocale() == "zhTW" then
 	
 elseif GetLocale() == "zhCN" then
 	
+	L.ToggleConfig = "开启设置选项"
+	
 	L.QuestWatchOpt = "追踪框"
 	L.SizeOpt = "缩放"
 	L.AlphaOpt = "淡出透明度"
@@ -46,6 +51,7 @@ elseif GetLocale() == "zhCN" then
 	
 	L.ClickMenuOpt = "启用点击菜单"
 	L.IconOpt = "角色信息提示"
+	L.HoverClockOpt = "指向显示时间"
 	
 	L.QuestWatchStarOpt = "使用 ★ 标记追踪项目"
 	L.QuestWatchClickOpt = "使任务标题可点击"
@@ -66,6 +72,8 @@ elseif GetLocale() == "zhCN" then
 	
 else
 
+	L.ToggleConfig = "EkMinimap Options"
+	
 	L.QuestWatchOpt = "QuestWatch"
 	L.SizeOpt = "Scale"
 	L.AlphaOpt = "Fade out alpha"
@@ -75,6 +83,7 @@ else
 	
 	L.ClickMenuOpt = "Enable click menu"
 	L.IconOpt = "Character icon tooltip"
+	L.HoverClockOpt = "Hover clock"
 
 	L.QuestWatchStarOpt = "Mark object as ★ star"
 	L.QuestWatchClickOpt = "Click-able quest title"

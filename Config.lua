@@ -3,7 +3,7 @@ local C, F, G, L = unpack(ns)
 
 local v = GetAddOnMetadata("EKMinimap", "Version")
 local CreateFrame, tonumber, pairs, tinsert = CreateFrame, tonumber, pairs, table.insert
-
+local MainFrame = MainFrame
 
 ------
 	
@@ -262,7 +262,7 @@ end
 -----------------    [[ GUI ]]    -----------------
 --===============================================--
 
-local function CreateOptions()
+F.CreateEKMOptions = function()
 	if MainFrame ~= nil then
 		MainFrame:Show()
 		return
@@ -273,7 +273,7 @@ local function CreateOptions()
 	
 	MainFrame:SetFrameStrata("DIALOG")
 	MainFrame:SetWidth(500)
-	MainFrame:SetHeight(420)
+	MainFrame:SetHeight(450)
 	MainFrame:SetPoint("CENTER", UIParent)
 	MainFrame:SetMovable(true)
 	MainFrame:EnableMouse(true)
@@ -296,8 +296,11 @@ local function CreateOptions()
 	local IconBox = CreateCheckBox(MainFrame, L.IconOpt, "CharacterIcon")
 	IconBox:SetPoint("BOTTOM", ClickMenuBox, 0, -30)
 	
+	local HoverClockBox = CreateCheckBox(MainFrame, L.HoverClockOpt, "HoverClock")
+	HoverClockBox:SetPoint("BOTTOM", IconBox, 0, -30)
+	
 	local mapPosText = F.CreateFS(MainFrame, L.AnchorOpt, "LEFT")
-	mapPosText:SetPoint("TOPLEFT", IconBox, "BOTTOMLEFT", 10, -10)
+	mapPosText:SetPoint("TOPLEFT", HoverClockBox, "BOTTOMLEFT", 10, -10)
 	
 	local mapAnchor = CreateDropDown(MainFrame, 120, 20, optList, "MinimapAnchor")
 	mapAnchor:SetPoint("LEFT", mapPosText, "RIGHT", 4, 0)
@@ -319,10 +322,10 @@ local function CreateOptions()
 	
 	-- QuestWatch tracker
 	
-	local QWFTitle = F.CreateFS(MainFrame, L.QuestWatchOpt, "LEFT", "LEFT", 24, -30)
+	local QWFTitle = F.CreateFS(MainFrame, L.QuestWatchOpt, "LEFT", "LEFT", 24, -45)
 	
 	local QWFBox = CreateCheckBox(MainFrame, L.QuestWatchStyleOpt, "QuestWatchStyle")
-	QWFBox:SetPoint("LEFT", MainFrame, 24, -60)
+	QWFBox:SetPoint("LEFT", MainFrame, 24, -75)
 	
 	local StarBox = CreateCheckBox(MainFrame, L.QuestWatchStarOpt, "QuestWatchStar")
 	StarBox:SetPoint("BOTTOM", QWFBox, 0, -30)
@@ -369,11 +372,11 @@ local function CreateOptions()
 	
 	-- infos
 	
-	local info = F.CreateFS(MainFrame, INFO, "LEFT", "LEFT", 260, -30)
+	local info = F.CreateFS(MainFrame, INFO, "LEFT", "LEFT", 260, -45)
 	
 	local q = CreateTooltip(MainFrame, G.Question, "ANCHOR_RIGHT", INFO, L.tempTip1.."\n\n"..L.tempTip2)
 	q:SetSize(G.fontSize*3, G.fontSize*3)
-	q:SetPoint("LEFT", MainFrame, 250, -60)
+	q:SetPoint("LEFT", MainFrame, 250, -75)
 
 	local infoDrag1 = F.CreateFS(MainFrame, L.dragInfo, "LEFT")
 	infoDrag1:SetPoint("LEFT", q, "RIGHT", 0, 8)
