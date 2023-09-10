@@ -535,6 +535,7 @@ end
 
 local ignoredFrames = {
 	["MinimapCluster"] = function() return true end,
+	["VehicleSeatIndicator"] = function() return true end,
 }
 
 local shutdownMode = {
