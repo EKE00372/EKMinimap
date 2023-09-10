@@ -1,6 +1,6 @@
-## Interface: 100100
+## Interface: 100107
 ## Title: |cff00ffffEK|rMinimap
-## Version: R4.0b
+## Version: R4.1
 ## Author: EK
 ## Notes: A square minimap.
 ## IconTexture: "Interface\\Buttons\\WHITE8x8"

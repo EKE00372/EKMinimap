@@ -243,7 +243,7 @@ local function mythicCollapse()
 	end
 end
 
-local function test(_, event)
+local function doMythicCollapse(_, event)
 	if event == "PLAYER_ENTERING_WORLD" then
 		C_Timer.After(1, function()
 			if ObjectiveTrackerFrame.initialized and not InCombatLockdown() then mythicCollapse() end
@@ -257,7 +257,7 @@ local mcol = CreateFrame("FRAME")
 	mcol:RegisterEvent("PLAYER_ENTERING_WORLD")
 	mcol:RegisterEvent("CHALLENGE_MODE_START")
 	mcol:RegisterEvent("ZONE_CHANGED_NEW_AREA")
-	mcol:SetScript("OnEvent", test)
+	mcol:SetScript("OnEvent", doMythicCollapse)
 
 --================================================--
 -----------------    [[ Load ]]    -----------------
