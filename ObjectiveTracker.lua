@@ -10,19 +10,20 @@ local OTF = ObjectiveTrackerFrame
 local function styleQuestBlock()
 	if not EKMinimapDB["ObjectiveStyle"] then return end
 	
+	-- [[ main title / 分類標題 ]] --
+	
 	local headers = {
-		ObjectiveTrackerBlocksFrame.QuestHeader,
-		ObjectiveTrackerBlocksFrame.AchievementHeader,
-		ObjectiveTrackerBlocksFrame.ScenarioHeader,
-		ObjectiveTrackerBlocksFrame.CampaignQuestHeader,
-		ObjectiveTrackerBlocksFrame.ProfessionHeader,
-		BONUS_OBJECTIVE_TRACKER_MODULE.Header,
-		WORLD_QUEST_TRACKER_MODULE.Header,
-		ObjectiveTrackerFrame.BlocksFrame.UIWidgetsHeader,
+		SCENARIO_CONTENT_TRACKER_MODULE.Header,	-- 場景和副本
+		BONUS_OBJECTIVE_TRACKER_MODULE.Header,	-- 區域獎勵任務
+		UI_WIDGET_TRACKER_MODULE.Header,		-- 本體
+		CAMPAIGN_QUEST_TRACKER_MODULE.Header,	-- 戰役
+		QUEST_TRACKER_MODULE.Header,			-- 任務
+		ACHIEVEMENT_TRACKER_MODULE.Header,		-- 成就
+		WORLD_QUEST_TRACKER_MODULE.Header,		-- 世界任務
+		PROFESSION_RECIPE_TRACKER_MODULE.Header,-- 專業
+		MONTHLY_ACTIVITIES_TRACKER_MODULE.Header,-- 旅行者日誌
 	}
 	
-	-- [[ main title / 大標題 ]] --
-
 	local function reskinHeader(header)
 		header.Background:SetAtlas(nil)
 		header.Background:Hide()
@@ -43,6 +44,7 @@ local function styleQuestBlock()
 		reskinHeader(header)
 	end
 	
+	-- 大標題
 	local collapsedTitle = OTF.HeaderMenu.Title
 		collapsedTitle:SetFont(G.font, G.obfontSize, G.obfontFlag)
 		collapsedTitle:SetTextColor(1, .75, 0)
@@ -118,7 +120,7 @@ local function styleQuestBlock()
 	hooksecurefunc(CAMPAIGN_QUEST_TRACKER_MODULE, "AddObjective", reskinQuestIcons)
 	hooksecurefunc(BONUS_OBJECTIVE_TRACKER_MODULE, "AddObjective", reskinQuestIcons)
 
-	-- [[ Title ]] --
+	-- [[ Title / 追蹤項目標題 ]] --
 
 	local function skinTitle(_, block)
 		block.HeaderText:SetFont(G.font, G.obfontSize - 2, G.obfontFlag)
@@ -133,31 +135,20 @@ local function styleQuestBlock()
 		block.HeaderText:SetTextColor(G.Ccolors.r, G.Ccolors.g, G.Ccolors.b)
 	end
 	
-	-- [[ campaign title / 戰役標題 ]] --
-	
 	hooksecurefunc(CAMPAIGN_QUEST_TRACKER_MODULE, "OnBlockHeaderLeave", hoverTitle)
 	hooksecurefunc(CAMPAIGN_QUEST_TRACKER_MODULE, "SetBlockHeader", skinTitle)
-
-	-- [[ quest title / 任務標題 ]] --
 
 	hooksecurefunc(QUEST_TRACKER_MODULE, "SetBlockHeader", skinTitle)
 	hooksecurefunc(QUEST_TRACKER_MODULE, "OnBlockHeaderLeave", hoverTitle)
 
-	-- [[ achievement title / 成就標題 ]] --
-
-	hooksecurefunc(ACHIEVEMENT_TRACKER_MODULE, "SetBlockHeader", function(_, block)
-		local trackedAchievements = {GetTrackedAchievements()}
-
-		for i = 1, #trackedAchievements do
-			local achieveID = trackedAchievements[i]
-			local _, achievementName, _, completed, _, _, _, description, _, icon, _, _, wasEarnedByMe = GetAchievementInfo(achieveID)
-
-			if not wasEarnedByMe then
-				skinTitle(_, block)
-			end
-		end
-	end)
+	hooksecurefunc(ACHIEVEMENT_TRACKER_MODULE, "SetBlockHeader", skinTitle)
 	hooksecurefunc(ACHIEVEMENT_TRACKER_MODULE, "OnBlockHeaderLeave", hoverTitle)
+	
+	hooksecurefunc(PROFESSION_RECIPE_TRACKER_MODULE, "SetBlockHeader", skinTitle)
+	hooksecurefunc(PROFESSION_RECIPE_TRACKER_MODULE, "OnBlockHeaderLeave", hoverTitle)
+	
+	hooksecurefunc(MONTHLY_ACTIVITIES_TRACKER_MODULE, "SetBlockHeader", skinTitle)
+	hooksecurefunc(MONTHLY_ACTIVITIES_TRACKER_MODULE, "OnBlockHeaderLeave", hoverTitle)
 
 	-- [[ 細項與內文 ]] --
 	
@@ -189,6 +180,9 @@ local function styleQuestBlock()
 	hooksecurefunc(WORLD_QUEST_TRACKER_MODULE, "AddObjective", skinText)
 	hooksecurefunc(BONUS_OBJECTIVE_TRACKER_MODULE, "AddObjective", skinText)
 	hooksecurefunc(SCENARIO_TRACKER_MODULE, "AddObjective", skinText)
+	hooksecurefunc(PROFESSION_RECIPE_TRACKER_MODULE, "AddObjective", skinText)
+	hooksecurefunc(UI_WIDGET_TRACKER_MODULE, "AddObjective", skinText)
+	hooksecurefunc(MONTHLY_ACTIVITIES_TRACKER_MODULE, "AddObjective", skinText)
 	
 	-- [[ Quick Click: Alt to Share, Ctrl to Abandon / 快速按鍵：alt分享ctrl放棄 ]]--
 
@@ -248,6 +242,7 @@ local function doMythicCollapse(_, event)
 		C_Timer.After(1, function()
 			if ObjectiveTrackerFrame.initialized and not InCombatLockdown() then mythicCollapse() end
 		end)
+	--elseif event == "CHALLENGE_MODE_COMPLETED" then
 	else
 		mythicCollapse()
 	end
@@ -257,6 +252,7 @@ local mcol = CreateFrame("FRAME")
 	mcol:RegisterEvent("PLAYER_ENTERING_WORLD")
 	mcol:RegisterEvent("CHALLENGE_MODE_START")
 	mcol:RegisterEvent("ZONE_CHANGED_NEW_AREA")
+	--mcol:RegisterEvent("CHALLENGE_MODE_COMPLETED")
 	mcol:SetScript("OnEvent", doMythicCollapse)
 
 --================================================--
