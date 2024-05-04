@@ -272,7 +272,7 @@ F.CreateEKMOptions = function()
 	
 	MainFrame:SetFrameStrata("DIALOG")
 	MainFrame:SetWidth(500)
-	MainFrame:SetHeight(420)
+	MainFrame:SetHeight(360)
 	MainFrame:SetPoint("CENTER", UIParent)
 	MainFrame:SetMovable(true)
 	MainFrame:EnableMouse(true)
@@ -318,10 +318,10 @@ F.CreateEKMOptions = function()
 	
 	-- QuestWatch tracker
 	
-	local QWFTitle = F.CreateFS(MainFrame, L.QuestWatchOpt, "LEFT", "LEFT", 24, -30)
+	local QWFTitle = F.CreateFS(MainFrame, L.QuestWatchOpt, "LEFT", "TOPLEFT", 260, -20)
 	
 	local QWFBox = CreateCheckBox(MainFrame, L.QuestWatchStyleOpt, "QuestWatchStyle")
-	QWFBox:SetPoint("LEFT", MainFrame, 24, -60)
+	QWFBox:SetPoint("TOP", MainFrame, 24, -44)
 	
 	local StarBox = CreateCheckBox(MainFrame, L.QuestWatchStarOpt, "QuestWatchStar")
 	StarBox:SetPoint("BOTTOM", QWFBox, 0, -30)
@@ -346,30 +346,24 @@ F.CreateEKMOptions = function()
 
 	-- world map
 	
-	local WMFTitle = F.CreateFS(MainFrame, WORLDMAP_BUTTON, "LEFT", "TOPLEFT", 260, -20)
-	
-	local WMFBox = CreateCheckBox(MainFrame, L.WorldMapStyleOpt, "WorldMapStyle")
-	WMFBox:SetPoint("TOP", MainFrame, 24, -44)
-	
+	local WMFTitle = F.CreateFS(MainFrame, WORLDMAP_BUTTON, "LEFT", "LEFT", 24, -60)
+		
 	local fadeBox = CreateCheckBox(MainFrame, L.fadeOpt, "WorldMapFade")
-	fadeBox:SetPoint("BOTTOM", WMFBox, 0, -30)
-	
-	local WMFScaleBar = CreateBar(MainFrame, "WMFScale", 160, 20, 0, 10, 1, "WorldMapScale", L.SizeOpt)
-	WMFScaleBar:SetPoint("TOPLEFT", fadeBox, "BOTTOMRIGHT", 0, -24)
-	
+	fadeBox:SetPoint("LEFT", MainFrame, 24, -90)
+		
 	local WMFFadeBar = CreateBar(MainFrame, "WMFFade", 160, 20, 0, 10, 1, "WorldMapAlpha", L.AlphaOpt)
-	WMFFadeBar:SetPoint("TOP", WMFScaleBar, "BOTTOM", 0, -30)
+	WMFFadeBar:SetPoint("TOPLEFT", fadeBox, "BOTTOMRIGHT", 0, -24)
 	
 	local WMFi = CreateTooltip(MainFrame, G.Info, "ANCHOR_RIGHT", INFO, L.WMFTip)
 	WMFi:SetPoint("RIGHT", WMFTitle, G.fontSize+2, 0)
 	
 	-- infos
 	
-	local info = F.CreateFS(MainFrame, INFO, "LEFT", "LEFT", 260, -30)
+	local info = F.CreateFS(MainFrame, INFO, "LEFT", "LEFT", 260, -10)
 	
 	local q = CreateTooltip(MainFrame, G.Question, "ANCHOR_RIGHT", INFO, L.tempTip1.."\n\n"..L.tempTip2)
 	q:SetSize(G.fontSize*3, G.fontSize*3)
-	q:SetPoint("LEFT", MainFrame, 250, -60)
+	q:SetPoint("LEFT", MainFrame, 250, -40)
 
 	local infoDrag1 = F.CreateFS(MainFrame, L.dragInfo, "LEFT")
 	infoDrag1:SetPoint("LEFT", q, "RIGHT", 0, 8)
@@ -387,11 +381,11 @@ F.CreateEKMOptions = function()
 	closeButton:SetScript("OnClick", function() MainFrame:Hide() end)
 	
 	local reloadButton = CreateButton(MainFrame, 80, 30, APPLY)
-	reloadButton:SetPoint("BOTTOMRIGHT", MainFrame, -20, 20)
+	reloadButton:SetPoint("BOTTOMRIGHT", MainFrame, -8, 8)
 	reloadButton:SetScript("OnClick", function() ReloadUI() end)
 	
 	local reposButton = CreateButton(MainFrame, 170, 30, L.posApply)
-	reposButton:SetPoint("BOTTOMRIGHT", MainFrame, -20, 60)
+	reposButton:SetPoint("BOTTOMRIGHT", MainFrame, -8, 46)
 	reposButton:SetScript("OnClick", function() F.ResetM() F.ResetO() end)
 	
 	local i = CreateTooltip(reposButton, G.Info, "ANCHOR_RIGHT", INFO, L.tempTip3)
