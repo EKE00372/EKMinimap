@@ -47,8 +47,6 @@ local MediaFolder = "Interface\\AddOns\\EKMinimap\\Media\\"
 		["ClickMenu"] = true,
 		["HoverClock"] = true,
 		
-		["WorldMapStyle"] = true,
-		["WorldMapScale"] = 0.6,
 		["WorldMapFade"] = true,
 		["WorldMapAlpha"] = 0.5,
 	}
