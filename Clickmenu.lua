@@ -285,9 +285,7 @@ local function OnEvent()
 	Minimap:SetScript("OnMouseUp", function(self, button)
 		if button == "RightButton" then
 			EasyMenu(menuList, menuFrame, self, (Minimap:GetWidth() * .7), -3, "MENU", 2)
-		elseif button == "MiddleButton" then
-			--ToggleDropDownMenu(1, nil, MiniMapTrackingDropDown, self, (Minimap:GetWidth() * .7), -3, nil, nil, 2)
-			ToggleDropDownMenu(1, nil, MinimapCluster.TrackingFrame.DropDown, self, (Minimap:GetWidth() * .7), -3, nil, nil, 2)
+		--elseif button == "MiddleButton" then
 		else
 			Minimap:OnClick()
 		end

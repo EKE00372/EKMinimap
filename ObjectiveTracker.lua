@@ -13,15 +13,16 @@ local function styleQuestBlock()
 	-- [[ main title / 分類標題 ]] --
 	
 	local headers = {
-		SCENARIO_CONTENT_TRACKER_MODULE.Header,	-- 場景和副本
-		BONUS_OBJECTIVE_TRACKER_MODULE.Header,	-- 區域獎勵任務
-		UI_WIDGET_TRACKER_MODULE.Header,		-- 本體
-		CAMPAIGN_QUEST_TRACKER_MODULE.Header,	-- 戰役
-		QUEST_TRACKER_MODULE.Header,			-- 任務
-		ACHIEVEMENT_TRACKER_MODULE.Header,		-- 成就
-		WORLD_QUEST_TRACKER_MODULE.Header,		-- 世界任務
-		PROFESSION_RECIPE_TRACKER_MODULE.Header,-- 專業
-		MONTHLY_ACTIVITIES_TRACKER_MODULE.Header,-- 旅行者日誌
+		ScenarioObjectiveTracker.Header,	-- 場景和副本
+		UIWidgetObjectiveTracker.Header,	-- 本體
+		CampaignQuestObjectiveTracker.Header,-- 戰役
+		QuestObjectiveTracker.Header,		-- 任務
+		AdventureObjectiveTracker.Header,
+		AchievementObjectiveTracker.Header,	-- 成就
+		MonthlyActivitiesObjectiveTracker.Header,-- 旅行者日誌
+		ProfessionsRecipeTracker.Header,	-- 專業
+		BonusObjectiveTracker.Header,		-- 區域獎勵任務
+		WorldQuestObjectiveTracker.Header,	-- 世界任務
 	}
 	
 	local function reskinHeader(header)
@@ -45,49 +46,17 @@ local function styleQuestBlock()
 	end
 	
 	-- 大標題
-	local collapsedTitle = OTF.HeaderMenu.Title
+	local collapsedTitle = OTF.Header.Text
 		collapsedTitle:SetFont(G.font, G.obfontSize, G.obfontFlag)
 		collapsedTitle:SetTextColor(1, .75, 0)
 		collapsedTitle:SetShadowOffset(0, 0)
 		collapsedTitle:SetShadowColor(0, 0, 0, 1)
-		--collapsedTitle:ClearAllPoints()
-		--collapsedTitle:SetPoint("RIGHT", Minimize, "LEFT", 0, 0)	
 	
 	-- [[ minimize button ]] --
 	
-	--[[local Minimize = OTF.HeaderMenu.MinimizeButton
-		Minimize:SetNormalTexture("")
-		Minimize:GetNormalTexture():SetAlpha(0)
-		Minimize:SetHighlightTexture("")
-		Minimize:GetHighlightTexture():SetAlpha(0)
-		Minimize:SetPushedTexture("")
-		Minimize:GetPushedTexture():SetAlpha(0)
-		Minimize.bg = F.CreateBG(Minimize, 3, 3, .5)
-		
-	for _, header in pairs(headers) do
-		local minimize = header.MinimizeButton
-		if minimize then
-			minimize:SetNormalTexture("")
-			minimize:GetNormalTexture():SetAlpha(0)
-			minimize:SetHighlightTexture("")
-			minimize:GetHighlightTexture():SetAlpha(0)
-			minimize:SetPushedTexture("")
-			minimize:GetPushedTexture():SetAlpha(0)
-			F.CreateBG(minimize, 3, 3, .5)
-		end
-	end
-
-	Minimize:SetScript("OnEnter", function(self)
-		Minimize.bg:SetBackdropBorderColor(1, .8, 0, 1)
-	end)
-	
-	Minimize:SetScript("OnLeave", function(self)
-		Minimize.bg:SetBackdropBorderColor(0, 0, 0, 1)
-	end)
-	]]--
 	-- [[ skin quest item icon ]] --
 	
-	local function reskinQuestIcon(button)
+	--[[local function reskinQuestIcon(button)
 		if not button then return end
 		if not button.SetNormalTexture then return end
 
@@ -114,45 +83,15 @@ local function styleQuestBlock()
 		reskinQuestIcon(block.itemButton)
 		reskinQuestIcon(block.groupFinderButton)
 	end
-	
-	hooksecurefunc(QUEST_TRACKER_MODULE, "SetBlockHeader", reskinQuestIcons)
-	hooksecurefunc(WORLD_QUEST_TRACKER_MODULE, "AddObjective", reskinQuestIcons)
-	hooksecurefunc(CAMPAIGN_QUEST_TRACKER_MODULE, "AddObjective", reskinQuestIcons)
-	hooksecurefunc(BONUS_OBJECTIVE_TRACKER_MODULE, "AddObjective", reskinQuestIcons)
 
-	-- [[ Title / 追蹤項目標題 ]] --
-
-	local function skinTitle(_, block)
-		block.HeaderText:SetFont(G.font, G.obfontSize - 2, G.obfontFlag)
-		block.HeaderText:SetShadowColor(0, 0, 0, 1)
-		block.HeaderText:SetShadowOffset(0, 0)
-		block.HeaderText:SetWordWrap(false)
-		block.HeaderText:SetTextColor(G.Ccolors.r, G.Ccolors.g, G.Ccolors.b)
-		block.HeaderText:SetJustifyH("LEFT")
-	end
-	
-	local function hoverTitle(_, block)
-		block.HeaderText:SetTextColor(G.Ccolors.r, G.Ccolors.g, G.Ccolors.b)
-	end
-	
-	hooksecurefunc(CAMPAIGN_QUEST_TRACKER_MODULE, "OnBlockHeaderLeave", hoverTitle)
-	hooksecurefunc(CAMPAIGN_QUEST_TRACKER_MODULE, "SetBlockHeader", skinTitle)
-
-	hooksecurefunc(QUEST_TRACKER_MODULE, "SetBlockHeader", skinTitle)
-	hooksecurefunc(QUEST_TRACKER_MODULE, "OnBlockHeaderLeave", hoverTitle)
-
-	hooksecurefunc(ACHIEVEMENT_TRACKER_MODULE, "SetBlockHeader", skinTitle)
-	hooksecurefunc(ACHIEVEMENT_TRACKER_MODULE, "OnBlockHeaderLeave", hoverTitle)
-	
-	hooksecurefunc(PROFESSION_RECIPE_TRACKER_MODULE, "SetBlockHeader", skinTitle)
-	hooksecurefunc(PROFESSION_RECIPE_TRACKER_MODULE, "OnBlockHeaderLeave", hoverTitle)
-	
-	hooksecurefunc(MONTHLY_ACTIVITIES_TRACKER_MODULE, "SetBlockHeader", skinTitle)
-	hooksecurefunc(MONTHLY_ACTIVITIES_TRACKER_MODULE, "OnBlockHeaderLeave", hoverTitle)
+	hooksecurefunc(QuestObjectiveTracke, "SetBlockHeader", reskinQuestIcons)
+	hooksecurefunc(WorldQuestObjectiveTracker, "AddObjective", reskinQuestIcons)
+	hooksecurefunc(CampaignQuestObjectiveTracker, "AddObjective", reskinQuestIcons)
+	hooksecurefunc(BonusObjectiveTracker, "AddObjective", reskinQuestIcons)]]--
 
 	-- [[ 細項與內文 ]] --
 	
-	local function skinText(self, block, objectiveKey, _, lineType)
+	--[[local function skinText(self, block, objectiveKey, _, lineType)
 		local line = self:GetLine(block, objectiveKey, lineType)
 		
 		line.Text:SetFont(G.font, G.obfontSize - 4, G.obfontFlag)
@@ -174,19 +113,19 @@ local function styleQuestBlock()
 		end
 	end
 	
-	hooksecurefunc(QUEST_TRACKER_MODULE, "AddObjective", skinText)
-	hooksecurefunc(ACHIEVEMENT_TRACKER_MODULE, "AddObjective", skinText)
-	hooksecurefunc(CAMPAIGN_QUEST_TRACKER_MODULE, "AddObjective", skinText)
-	hooksecurefunc(WORLD_QUEST_TRACKER_MODULE, "AddObjective", skinText)
-	hooksecurefunc(BONUS_OBJECTIVE_TRACKER_MODULE, "AddObjective", skinText)
-	hooksecurefunc(SCENARIO_TRACKER_MODULE, "AddObjective", skinText)
-	hooksecurefunc(PROFESSION_RECIPE_TRACKER_MODULE, "AddObjective", skinText)
-	hooksecurefunc(UI_WIDGET_TRACKER_MODULE, "AddObjective", skinText)
-	hooksecurefunc(MONTHLY_ACTIVITIES_TRACKER_MODULE, "AddObjective", skinText)
+	hooksecurefunc(QuestObjectiveTracker, "AddObjective", skinText)
+	hooksecurefunc(AchievementObjectiveTracker, "AddObjective", skinText)
+	hooksecurefunc(CampaignQuestObjectiveTracker, "AddObjective", skinText)
+	hooksecurefunc(WorldQuestObjectiveTracker, "AddObjective", skinText)
+	hooksecurefunc(BonusObjectiveTracker, "AddObjective", skinText)
+	hooksecurefunc(ScenarioObjectiveTracker, "AddObjective", skinText)
+	hooksecurefunc(ProfessionsRecipeTracker, "AddObjective", skinText)
+	hooksecurefunc(UIWidgetObjectiveTracker, "AddObjective", skinText)
+	hooksecurefunc(MonthlyActivitiesObjectiveTracker, "AddObjective", skinText)]]--
 	
 	-- [[ Quick Click: Alt to Share, Ctrl to Abandon / 快速按鍵：alt分享ctrl放棄 ]]--
 
-	hooksecurefunc(QUEST_TRACKER_MODULE, "OnBlockHeaderClick", function(self, block, mouseButton)
+	hooksecurefunc(QuestObjectiveTracker, "OnBlockHeaderClick", function(self, block, mouseButton)
 		local questLogIndex = C_QuestLog.GetLogIndexForQuestID(block.id)
 		
 		if mouseButton == "RightButton" and IsModifiedClick() then
@@ -220,8 +159,8 @@ local function mythicCollapse()
 	local difficulty = select(3, GetInstanceInfo())
 	
 	local whitelist = {
-	   ["SCENARIO_CONTENT_TRACKER_MODULE"] = true,
-	   ["UI_WIDGET_TRACKER_MODULE"] = true,
+	   ["ScenarioObjectiveTracker"] = true,
+	   ["UIWidgetObjectiveTracker"] = true,
 	}
 
 	if difficulty == 8 then

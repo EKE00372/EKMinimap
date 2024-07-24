@@ -110,8 +110,7 @@ local function setMinimap()
 		MinimapCluster.ZoneTextButton,
 		Minimap.ZoomIn,
 		Minimap.ZoomOut,
-		MinimapCluster.TrackingFrame,
-		--MinimapCluster.TrackingFrame.Button,
+		MinimapCluster.Tracking,
 		MinimapCluster.InstanceDifficulty,
 		GameTimeFrame,
 		DurabilityFrame,
@@ -224,8 +223,14 @@ local function createGarrisonTooltip(self)
 	end
 		
 	-- Reputation
-	if GetWatchedFactionInfo() then
-		local name, standing, min, max, cur, factionID = GetWatchedFactionInfo()
+	if C_Reputation.GetWatchedFactionData() then
+		local GetWatchedFactionData = C_Reputation.GetWatchedFactionData()
+		local name = GetWatchedFactionData.name
+		local standing = GetWatchedFactionData.reaction
+		local min = GetWatchedFactionData.currentReactionThreshold
+		local max = GetWatchedFactionData.nextReactionThreshold
+		local cur = GetWatchedFactionData.currentStanding
+		local factionID = GetWatchedFactionData.factionID
 		
 		GameTooltip:AddLine(" ")
 		
@@ -300,7 +305,8 @@ local function styleDifficulty(self)
 	local difficulty = select(3, GetInstanceInfo())
 	local num = select(9, GetInstanceInfo())
 	local mplus = select(1, C_ChallengeMode.GetActiveKeystoneInfo()) or ""
-			
+	
+	-- https://warcraft.wiki.gg/wiki/DifficultyID
 	if instanceType == "party" or instanceType == "raid" or instanceType == "scenario" then
 		if difficulty == 1 then
 			DiffText:SetText("5N")
@@ -350,7 +356,7 @@ local function styleDifficulty(self)
 		elseif difficulty == 23	then
 			DiffText:SetText("5M")
 		-- 24 Timewalking(地城時光) 33 Timewalking(團隊時光) 151 隨機團隊時光
-		elseif difficulty == 24 or difficulty == 33 then
+		elseif difficulty == 24 or difficulty == 33 or difficulty == 151 then
 			DiffText:SetText("T")
 		-- 25 World PvP Scenario 32 World PvP Scenario 34 PVP 45 PVP
 		elseif difficulty == 25 or difficulty == 32 or difficulty == 34 or difficulty == 45 then
@@ -476,7 +482,7 @@ end
 	end)
 	Stat:SetScript("OnMouseUp", function(self, button)
 		if button == "RightButton" then
-			AddonCompartmentFrame:OnClick()
+			--AddonCompartmentFrame:Click()
 			--ToggleDropDownMenu(1, nil, AddonCompartmentDropDown_OnLoad, self, findAnchor("MinimapAnchor") and (Minimap:GetWidth()*.7) or -(Minimap:GetWidth()*.7), -10, nil, nil, 2)
 			--UIDropDownMenu_Initialize(self, AddonCompartmentDropDown_Initialize, "MENU")
 		else
