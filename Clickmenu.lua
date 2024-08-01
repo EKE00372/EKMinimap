@@ -1,6 +1,7 @@
 local addon, ns = ...
 local C, F, G, L = unpack(ns)
 local Minimap, EasyMenu, ToggleDropDownMenu = Minimap, EasyMenu, ToggleDropDownMenu
+local LibEasyMenu = LibStub:GetLibrary("LibEasyMenu")
 local LibShowUIPanel = LibStub("LibShowUIPanel-1.0")
 local ShowUIPanel = LibShowUIPanel.ShowUIPanel
 local HideUIPanel = LibShowUIPanel.HideUIPanel
@@ -21,16 +22,16 @@ local function OnEvent()
 			text = CHARACTER_BUTTON,
 			icon = "Interface\\PVPFrame\\PVP-Banner-Emblem-3",
 			func = function()
-				if not CharacterFrame:IsShown() then ShowUIPanel(CharacterFrame) else HideUIPanel(CharacterFrame) end
+				securecall(ToggleCharacter, "PaperDollFrame")
 			end,
 			notCheckable = true,
 		},
 	
 		{	-- 法術書
-			text = SPELLBOOK_ABILITIES_BUTTON,
+			text = SPELLBOOK,
 			icon = "Interface\\MINIMAP\\TRACKING\\Class",
 			func = function()
-				if not SpellBookFrame:IsShown() then ShowUIPanel(SpellBookFrame) else HideUIPanel(SpellBookFrame) end
+				securecall(TogglePlayerSpellsFrame, 3)
 			end,
 			notCheckable = true,
 		},
@@ -40,8 +41,7 @@ local function OnEvent()
 			text = TALENTS_BUTTON,
 			icon = "Interface\\HELPFRAME\\HelpIcon-CharacterStuck",
 			func = function() 
-				if not ClassTalentFrame then LoadAddOn("Blizzard_ClassTalentUI") end
-				if not ClassTalentFrame:IsShown() then ShowUIPanel(ClassTalentFrame) else HideUIPanel(ClassTalentFrame) end
+				securecall(TogglePlayerSpellsFrame, 2)
 			end,
 			notCheckable = true,
 		},
@@ -55,7 +55,7 @@ local function OnEvent()
 			end,
 			notCheckable = true,
 		},
-		
+
 		{	-- 地圖與任務日誌
 			text = MAP_AND_QUEST_LOG,	-- OLD: QUESTLOG_BUTTON
 			icon = "Interface\\GossipFrame\\ActiveQuestIcon",
@@ -284,8 +284,16 @@ local function OnEvent()
 	-- Right Click for Game Menu, Left Click for Track Menu / 右鍵遊戲選單，中鍵追蹤選單
 	Minimap:SetScript("OnMouseUp", function(self, button)
 		if button == "RightButton" then
-			EasyMenu(menuList, menuFrame, self, (Minimap:GetWidth() * .7), -3, "MENU", 2)
-		--elseif button == "MiddleButton" then
+			LibEasyMenu:EasyMenu(menuList, menuFrame, self, (Minimap:GetWidth() * .7), -3, "MENU", 2)
+		elseif button == "MiddleButton" then
+			local button = MinimapCluster.Tracking.Button
+			if button then
+				button:OpenMenu()
+				if button.menu then
+					button.menu:ClearAllPoints()
+					button.menu:SetPoint("CENTER", self, (Minimap:GetWidth() * .7), -(Minimap:GetHeight()/2))
+				end
+			end
 		else
 			Minimap:OnClick()
 		end
@@ -299,7 +307,8 @@ frame:SetScript("OnEvent", OnEvent)
 -- avoid spellbook taint / 避免taint
 local initialize = CreateFrame("Frame")
 	initialize:SetScript("OnEvent", function()
-		ShowUIPanel(SpellBookFrame)
-		HideUIPanel(SpellBookFrame)
+		C_AddOns.LoadAddOn("Blizzard_PlayerSpells")
+		ShowUIPanel(PlayerSpellsFrame)
+		HideUIPanel(PlayerSpellsFrame)
 	end)
 	initialize:RegisterEvent("PLAYER_ENTERING_WORLD")

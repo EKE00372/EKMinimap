@@ -110,7 +110,7 @@ local function setMinimap()
 		MinimapCluster.ZoneTextButton,
 		Minimap.ZoomIn,
 		Minimap.ZoomOut,
-		MinimapCluster.Tracking,
+		--MinimapCluster.Tracking,
 		MinimapCluster.InstanceDifficulty,
 		GameTimeFrame,
 		DurabilityFrame,
@@ -126,14 +126,17 @@ local function setMinimap()
 	-- Mail Frame / 信件提示
 	MailFrame:SetFrameLevel(11)
 	MailFrame:SetScale(1.2)
+	-- Tracking menu / 追蹤選單
+	_G.MinimapCluster.Tracking:SetAlpha(0)
+	_G.MinimapCluster.Tracking:SetScale(0.0001)
 end
 
 local function OnMouseWheel(self, delta)
 	if IsAltKeyDown() then
 		local i = Minimap:GetScale()
-		 if delta > 0 and i < 4 then
+		if delta > 0 and i < 4 then
 			Minimap:SetScale(i+0.1)
-		 elseif delta < 0 and i > 0.5 then
+		elseif delta < 0 and i > 0.5 then
 			Minimap:SetScale(i-0.1)
 		end
 	else
@@ -377,6 +380,7 @@ local function styleDifficulty(self)
 		DiffText:SetText("PVP")
 	else
 		-- just notice you are in dungeon
+		-- PS. 探索/地下堡= delve id 208 就用D吧
 		DiffText:SetText("D")
 	end
 
@@ -482,9 +486,12 @@ end
 	end)
 	Stat:SetScript("OnMouseUp", function(self, button)
 		if button == "RightButton" then
-			--AddonCompartmentFrame:Click()
-			--ToggleDropDownMenu(1, nil, AddonCompartmentDropDown_OnLoad, self, findAnchor("MinimapAnchor") and (Minimap:GetWidth()*.7) or -(Minimap:GetWidth()*.7), -10, nil, nil, 2)
-			--UIDropDownMenu_Initialize(self, AddonCompartmentDropDown_Initialize, "MENU")
+			local button = AddonCompartmentFrame
+			button:OpenMenu()
+			if button.menu then
+				button.menu:ClearAllPoints()
+				button.menu:SetPoint("TOP", self, "BOTTOM", findAnchor("MinimapAnchor") and (Minimap:GetWidth() * .5) or -(Minimap:GetWidth() * .5), -3)
+			end
 		else
 			ExpansionLandingPageMinimapButton:Click()
 		end
