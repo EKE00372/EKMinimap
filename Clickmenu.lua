@@ -22,7 +22,9 @@ local function OnEvent()
 			text = CHARACTER_BUTTON,
 			icon = "Interface\\PVPFrame\\PVP-Banner-Emblem-3",
 			func = function()
-				securecall(ToggleCharacter, "PaperDollFrame")
+				--ToggleCharacter("PaperDollFrame")
+				--securecall(ToggleCharacter, "PaperDollFrame")
+				if not CharacterFrame:IsShown() then ShowUIPanel(CharacterFrame) CharacterFrameTab2:Click() CharacterFrameTab1:Click() else HideUIPanel(CharacterFrame) end
 			end,
 			notCheckable = true,
 		},
@@ -31,26 +33,30 @@ local function OnEvent()
 			text = PROFESSIONS_BUTTON,
 			icon = "Interface\\MINIMAP\\TRACKING\\Class",
 			func = function()
-				securecall(ToggleProfessionsBook)
+				if InCombatLockdown() then
+					print("|cffffff00"..ERR_NOT_IN_COMBAT.."|r") return
+				end
+				ToggleProfessionsBook()
 			end,
 			notCheckable = true,
 		},
-
+		--[[
 		{	-- 法術書
 			text = SPELLBOOK,
 			icon = "Interface\\MINIMAP\\TRACKING\\Class",
 			func = function()
-				securecall(TogglePlayerSpellsFrame, 3)
+				-- edit mode error when toggle in combat
+				--securecall(TogglePlayerSpellsFrame, 3)
 			end,
 			notCheckable = true,
 		},
-		
-		
-		{	--天賦
-			text = TALENTS_BUTTON,
+		]]--
+		{	--天賦與法術書
+			text = PLAYERSPELLS_BUTTON,	-- TALENTS_BUTTON
 			icon = "Interface\\HELPFRAME\\HelpIcon-CharacterStuck",
 			func = function() 
-				securecall(TogglePlayerSpellsFrame, 2)
+				--securecall(TogglePlayerSpellsFrame, 2)
+				if not PlayerSpellsFrame:IsShown() then ShowUIPanel(PlayerSpellsFrame) else HideUIPanel(PlayerSpellsFrame) end
 			end,
 			notCheckable = true,
 		},
@@ -59,7 +65,7 @@ local function OnEvent()
 			text = ACHIEVEMENT_BUTTON,
 			icon = "Interface\\MINIMAP\\TRACKING\\QuestBlob",
 			func = function() 
-				if not AchievementFrame then LoadAddOn("Blizzard_AchievementUI") end
+				if not AchievementFrame then C_AddOns.LoadAddOn("Blizzard_AchievementUI") end
 				if not AchievementFrame:IsShown() then ShowUIPanel(AchievementFrame) else HideUIPanel(AchievementFrame) end
 			end,
 			notCheckable = true,
@@ -79,7 +85,7 @@ local function OnEvent()
 			icon = "Interface\\FriendsFrame\\UI-Toast-ChatInviteIcon",
 			arg1 = IsInGuild("player"),
 			func = function()
-				if not CommunitiesFrame then LoadAddOn("Blizzard_Communities") end
+				if not CommunitiesFrame then C_AddOns.LoadAddOn("Blizzard_Communities") end
 				if not CommunitiesFrame:IsShown() then ShowUIPanel(CommunitiesFrame) else HideUIPanel(CommunitiesFrame) end
 			end,
 			notCheckable = true,
@@ -98,8 +104,8 @@ local function OnEvent()
 			text = GROUP_FINDER,	-- DUNGEONS_BUTTON
 			icon = "Interface\\TUTORIALFRAME\\UI-TutorialFrame-AttackCursor",
 			func = function()
-				securecall(ToggleLFDParentFrame)
-				--if not LFDParentFrame:IsShown() then ShowUIPanel(LFDParentFrame) else HideUIPanel(LFDParentFrame) end
+				--securecall(ToggleLFDParentFrame)
+				if not PVEFrame:IsShown() then ShowUIPanel(PVEFrame) PVEFrameTab1:Click() else HideUIPanel(PVEFrame) end
 			end,
 			notCheckable = true,
 		},
@@ -205,7 +211,7 @@ local function OnEvent()
 		{	-- 行事曆
 			text = L.Calendar,
 			func = function()
-				if not CalendarFrame then LoadAddOn("Blizzard_Calendar") end
+				if not CalendarFrame then C_AddOns.LoadAddOn("Blizzard_Calendar") end
 				if not CalendarFrame:IsShown() then ShowUIPanel(CalendarFrame) else HideUIPanel(CalendarFrame) end
 			end,
 			notCheckable = true,
@@ -215,7 +221,7 @@ local function OnEvent()
 			text = BATTLEFIELD_MINIMAP,
 			colorCode = "|cff999999",
 			func = function()
-				if not BattlefieldMapFrame then LoadAddOn("Blizzard_BattlefieldMap") end
+				if not BattlefieldMapFrame then C_AddOns.LoadAddOn("Blizzard_BattlefieldMap") end
 				if not BattlefieldMapFrame:IsShown() then ShowUIPanel(BattlefieldMapFrame) else HideUIPanel(BattlefieldMapFrame) end
 			end,
 			notCheckable = true,
@@ -317,6 +323,7 @@ frame:SetScript("OnEvent", OnEvent)
 local initialize = CreateFrame("Frame")
 	initialize:SetScript("OnEvent", function()
 		C_AddOns.LoadAddOn("Blizzard_PlayerSpells")
+		C_AddOns.LoadAddOn("Blizzard_ProfessionsBook")
 		ShowUIPanel(PlayerSpellsFrame)
 		HideUIPanel(PlayerSpellsFrame)
 	end)
