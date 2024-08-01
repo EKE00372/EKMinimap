@@ -67,10 +67,10 @@ local function CreateButton(self, width, height, text)
 	bu:SetSize(width, height)
 	bu.bg = F.CreateBG(bu, 3, 3, .5)
 	
-	bu:SetNormalTexture("")
-	bu:SetHighlightTexture("")
-	bu:SetPushedTexture("")
-	bu:SetDisabledTexture("")
+	bu:SetNormalTexture(0)
+	bu:SetHighlightTexture(0)
+	bu:SetPushedTexture(0)
+	bu:SetDisabledTexture(0)
 	
 	bu.Text = F.CreateFS(bu, text, G.fontSize, "CENTER", "CENTER", 0, 0)
 	
@@ -324,7 +324,7 @@ F.CreateEKMOptions = function()
 
 	local mapSizeBar = CreateBar(MainFrame, "Size", 160, 20, 5, 20, 1, "MinimapScale", L.SizeOpt, .1)
 	mapSizeBar:SetPoint("TOP", mapYText, "BOTTOM", 75, -34)
-	
+
 	-- infos
 	
 	local info = F.CreateFS(MainFrame, INFO,  G.fontSize+2, "LEFT", "TOPLEFT", 260, -210)
