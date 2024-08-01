@@ -22,10 +22,6 @@ if GetLocale() == "zhTW" then
 	L.XOpt = "X 座標"
 	L.YOpt = "Y 座標"
 	
-	L.ObjectiveOpt = "追蹤框"
-	L.ObjectiveStarOpt = "使用 ★ 標記追蹤項目"
-	L.ObjectiveStyleOpt = "啟用追蹤框美化"
-	
 	L.Calendar = SLASH_CALENDAR2:gsub("/(.*)","%1")
 	L.Left = "左"
 	L.Right = "右"
@@ -51,9 +47,7 @@ elseif GetLocale() == "zhCN" then
 	L.AnchorOpt = "锚点"
 	L.XOpt = "X 座标"
 	L.YOpt = "Y 座标"
-	L.ObjectiveOpt = "追踪框"
-	L.ObjectiveStarOpt = "使用 ★ 标记追踪项目"
-	L.ObjectiveStyleOpt = "启用追踪框美化"
+
 	L.IconOpt = "角色信息提示"
 	L.HoverClockOpt = "指向顶部显示时间"
 	L.QueueOpt = "移动队列按钮"
@@ -88,9 +82,6 @@ else
 	L.AnchorOpt = "Anchor"
 	L.XOpt = "X"
 	L.YOpt = "Y"
-	L.ObjectiveOpt = "Objective tracker"
-	L.ObjectiveStarOpt = "Mark object as ★ star"
-	L.ObjectiveStyleOpt = "Enable tracker style"
 
 	L.Calendar = SLASH_CALENDAR1:gsub("/(.*)","%1")
 	L.Left = "Left"

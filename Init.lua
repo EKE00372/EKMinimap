@@ -39,9 +39,6 @@ local MediaFolder = "Interface\\AddOns\\EKMinimap\\Media\\"
 -------------------------
 
 	C.defaultSettings = {
-		["ObjectiveStyle"] = true,
-		["ObjectiveStar"] = true,
-		
 		["MinimapScale"] = 1,
 		["MinimapAnchor"] = "TOPLEFT",
 		["MinimapY"] = -10,

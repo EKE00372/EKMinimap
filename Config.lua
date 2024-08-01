@@ -325,16 +325,6 @@ F.CreateEKMOptions = function()
 	local mapSizeBar = CreateBar(MainFrame, "Size", 160, 20, 5, 20, 1, "MinimapScale", L.SizeOpt, .1)
 	mapSizeBar:SetPoint("TOP", mapYText, "BOTTOM", 75, -34)
 	
-	-- objective tracker
-	
-	local otfTitle = F.CreateFS(MainFrame, L.ObjectiveOpt,  G.fontSize+2, "LEFT", "TOPLEFT", 260, -30)
-	
-	local OTFBox = CreateCheckBox(MainFrame, L.ObjectiveStyleOpt, "ObjectiveStyle")
-	OTFBox:SetPoint("TOP", MainFrame, 20, -60)
-	
-	local StarBox = CreateCheckBox(MainFrame, L.ObjectiveStarOpt, "ObjectiveStar")
-	StarBox:SetPoint("BOTTOM", OTFBox, 0, -30)
-
 	-- infos
 	
 	local info = F.CreateFS(MainFrame, INFO,  G.fontSize+2, "LEFT", "TOPLEFT", 260, -210)
