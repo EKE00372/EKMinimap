@@ -26,7 +26,16 @@ local function OnEvent()
 			end,
 			notCheckable = true,
 		},
-	
+		
+		{	-- 專業技能
+			text = PROFESSIONS_BUTTON,
+			icon = "Interface\\MINIMAP\\TRACKING\\Class",
+			func = function()
+				securecall(ToggleProfessionsBook)
+			end,
+			notCheckable = true,
+		},
+
 		{	-- 法術書
 			text = SPELLBOOK,
 			icon = "Interface\\MINIMAP\\TRACKING\\Class",
