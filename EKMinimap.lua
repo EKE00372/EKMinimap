@@ -300,6 +300,7 @@ local Diff = CreateFrame("Frame", "EKMinimapDungeonIcon", Minimap)
 	Diff.Texture:SetVertexColor(G.Ccolors.r, G.Ccolors.g, G.Ccolors.b)
 	Diff.Text = F.CreateFS(Diff, "",  G.fontSize+4, "CENTER")
 
+
 local function styleDifficulty(self)
 	-- Difficulty Text / 難度文字
 	local DiffText = self.Text
@@ -308,79 +309,55 @@ local function styleDifficulty(self)
 	local difficulty = select(3, GetInstanceInfo())
 	local num = select(9, GetInstanceInfo())
 	local mplus = select(1, C_ChallengeMode.GetActiveKeystoneInfo()) or ""
+	local DifficultyTAG = {
+		-- https://warcraft.wiki.gg/wiki/DifficultyID
+		[1] = "5N",
+		[2] = "5H",
+		[3] = "10N",
+		[4] = "25N",
+		[5] = "10H",		-- 5 普通十人
+		[6] = "25H",
+		[7] = "L",			-- Old LFR (before SOO)
+		[8] = "M" .. mplus,	-- Challenge Mode and Mythic+
+		[9] = "40",
+		[11] = "3H",		-- 11 MOP英雄事件
+		[12] = "3N",		-- 12 MOP普通事件
+		[14] = num .. "N",	-- Flex normal raid
+		[15] = num .. "H",	-- Flex heroic raid
+		[16] = "M",			-- Mythic raid since WOD
+		[17] = num .. "L",	-- Flex LFR raid
+		[18] = "E",			-- 18 Event(raid)
+		[19] = "E",			-- 19 Event(party)
+		[20] = "E",			-- 20 Event(scenario)
 	
-	-- https://warcraft.wiki.gg/wiki/DifficultyID
+		[23] = "5M",
+		[24] = "T",			-- 24 Timewalking(地城時光)
+		[25] = "PVP",
+		[29] = "PEP",
+		[30] = "E",			-- 30 Event(scenario)
+		[32] = "PVP",
+		[33] = "T",			-- 33 Timewalking(團隊時光)
+		[34] = "PVP",
+		[38] = "3N",		-- 38 BFA普通海嶼
+		[39] = "3H",		-- 39 BFA英雄海嶼
+		[40] = "3M",		-- 40 BFA傳奇海嶼
+		[45] = "PVP",		-- 45 PVP海嶼?
+		
+		[147] = "WF",		-- 147 戰爭前線
+		[149] = "HWF",		-- 147 英雄戰爭前線
+		[151] = "T",		-- 151 Timewalking(隨機團隊時光)
+		[152] = "E",		-- 152 幻象
+		[153] = "10",		-- 153 十人海島
+		-- 168/169/170/171 晉升之路
+		[167] = "TOR",		-- 167 托加斯特
+		--[208] = "D"			-- 208 探索/地下堡 delve
+	}
+	
 	if instanceType == "party" or instanceType == "raid" or instanceType == "scenario" then
-		if difficulty == 1 then
-			DiffText:SetText("5N")
-		elseif difficulty == 2 then
-			DiffText:SetText("5H")
-		elseif difficulty == 3 then
-			DiffText:SetText("10N")
-		elseif difficulty == 4 then
-			DiffText:SetText("25N")
-		-- 5 普通十人 153 十人海島
-		elseif difficulty == 5 then
-			DiffText:SetText("10H")
-		elseif difficulty == 6 then
-			DiffText:SetText("25H")
-		-- Old LFR (before SOO)
-		elseif difficulty == 7 then
-			DiffText:SetText("L")
-		-- Challenge Mode and Mythic+
-		elseif difficulty == 8 then
-			DiffText:SetText("M"..mplus)
-		elseif difficulty == 9 then
-			DiffText:SetText("40")
-		-- 11 MOP英雄事件 39 BFA英雄海嶼
-		elseif difficulty == 11	or difficulty == 39 then
-			DiffText:SetText("3H")
-		-- 12 MOP普通事件 38 BFA普通海嶼
-		elseif difficulty == 12 and difficulty == 38 then 
-			DiffText:SetText("3N")
-		-- 40 BFA傳奇海嶼
-		elseif difficulty == 40 then 
-			DiffText:SetText("3M")
-		-- Flex normal raid
-		elseif difficulty == 14	then
-			DiffText:SetText(num .. "N")
-		-- Flex heroic raid
-		elseif difficulty == 15	then
-			DiffText:SetText(num .. "H")
-		-- Mythic raid since WOD
-		elseif difficulty == 16	then
-			DiffText:SetText("M")
-		-- LFR
-		elseif difficulty == 17	then
-			DiffText:SetText(num .. "L")
-		-- 18 Event 19 Event 20 Event Scenario(劇情事件) 30 Event 152 幻象
-		elseif difficulty == 18 or difficulty == 19 or difficulty == 20 or difficulty == 30 then
-			DiffText:SetText("E")
-		elseif difficulty == 23	then
-			DiffText:SetText("5M")
-		-- 24 Timewalking(地城時光) 33 Timewalking(團隊時光) 151 隨機團隊時光
-		elseif difficulty == 24 or difficulty == 33 or difficulty == 151 then
-			DiffText:SetText("T")
-		-- 25 World PvP Scenario 32 World PvP Scenario 34 PVP 45 PVP
-		elseif difficulty == 25 or difficulty == 32 or difficulty == 34 or difficulty == 45 then
-			DiffText:SetText("PVP")
-		-- 29 pvevp事件(這什麼玩意?)
-		elseif difficulty == 29 then
-			DiffText:SetText("PEP")
-		-- 147 普通戰爭前線
-		elseif difficulty == 147 then
-			DiffText:SetText("WF")
-		-- 147 英雄戰爭前線
-		elseif difficulty == 149 then
-			DiffText:SetText("HWF")
-		elseif difficulty == 167 then
-			DiffText:SetText("TOR")
-		end
+		DiffText:SetText(DifficultyTAG[difficulty] or "D")
 	elseif instanceType == "pvp" or instanceType == "arena" then
 		DiffText:SetText("PVP")
 	else
-		-- just notice you are in dungeon
-		-- PS. 探索/地下堡= delve id 208 就用D吧
 		DiffText:SetText("D")
 	end
 
