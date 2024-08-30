@@ -25,7 +25,6 @@ if GetLocale() == "zhTW" then
 	L.Calendar = SLASH_CALENDAR2:gsub("/(.*)","%1")
 	L.Left = "左"
 	L.Right = "右"
-	L.BFAReport = "任務指揮桌"
 	
 	L.Apply = "更改後點擊「"..APPLY.."」立即重載生效。"
 	L.posApply = APPLY..L.SizeOpt.."座標"
@@ -56,7 +55,6 @@ elseif GetLocale() == "zhCN" then
 	L.Calendar = "行事历"
 	L.Left = "左"
 	L.Right = "右"
-	L.BFAReport = "任务安官桌"
 
 	L.Apply = "更改后点击＂"..APPLY.."＂立即重载生效。"
 	L.posApply = APPLY..L.SizeOpt.."座标"
@@ -86,7 +84,6 @@ else
 	L.Calendar = SLASH_CALENDAR1:gsub("/(.*)","%1")
 	L.Left = "Left"
 	L.Right = "Right"
-	L.BFAReport = "BFA Report"
 
 	L.Apply = "Click "..APPLY.." to active changes."
 	L.posApply = APPLY.." Size and Pos"

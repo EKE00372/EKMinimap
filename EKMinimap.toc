@@ -1,6 +1,6 @@
-## Interface: 110000, 110002
+## Interface: 110002
 ## Title: |cff00ffffEK|rMinimap
-## Version: R4.3a
+## Version: R4.4
 ## Author: EK
 ## Notes: A square minimap.
 ## IconTexture: "Interface\\Buttons\\WHITE8x8"
@@ -18,4 +18,3 @@ Config.lua
 
 EKMinimap.lua
 Clickmenu.lua
-ObjectiveTracker.lua

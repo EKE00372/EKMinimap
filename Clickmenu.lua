@@ -162,7 +162,16 @@ local function OnEvent()
 			end,
 			notCheckable = true,
 		},
-		
+		--[[
+		{	-- 要塞報告 海軍行動
+			text = GARRISON_LANDING_PAGE_TITLE.." "..GARRISON_SHIPYARD_TITLE,
+			icon = "Interface\\HELPFRAME\\OpenTicketIcon",
+			func = function()
+				if not ExpansionLandingPage:IsShown() then ShowUIPanel(GarrisonShipyardFrame) else ShowUIPanel(GarrisonShipyardFrame) end
+			end,
+			notCheckable = true,
+		},
+		]]--
 		{	-- 職業大廳報告
 			text = ORDER_HALL_LANDING_PAGE_TITLE,
 			icon = "Interface\\GossipFrame\\WorkOrderGossipIcon",
@@ -173,7 +182,7 @@ local function OnEvent()
 		},
 		
 		{	-- 任務指揮桌
-			text = L.BFAReport,
+			text = EXPANSION_NAME7.." "..GARRISON_TYPE_8_0_LANDING_PAGE_TITLE,
 			icon = "Interface\\HELPFRAME\\OpenTicketIcon",
 			func = function()			
 				securecall(ShowGarrisonLandingPage, 9)
@@ -189,7 +198,16 @@ local function OnEvent()
 			end,
 			notCheckable = true,
 		},
-		
+		--[[
+		{	-- 巨龍時代
+			text = DRAGONFLIGHT_LANDING_PAGE_TITLE,
+			icon = "Interface\\HELPFRAME\\OpenTicketIcon",
+			func = function()			
+				if not ExpansionLandingPage:IsShown() then ShowUIPanel(GenericTraitFrame) else HideUIPanel(GenericTraitFrame) end
+			end,
+			notCheckable = true,
+		},
+		]]--
 		{	-- 客服支援
 			text = GM_EMAIL_NAME,
 			icon = "Interface\\CHATFRAME\\UI-ChatIcon-Blizz",
