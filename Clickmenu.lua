@@ -1,10 +1,7 @@
 local addon, ns = ...
 local C, F, G, L = unpack(ns)
 local Minimap, EasyMenu, ToggleDropDownMenu = Minimap, EasyMenu, ToggleDropDownMenu
-local LibEasyMenu = LibStub:GetLibrary("LibEasyMenu")
-local LibShowUIPanel = LibStub("LibShowUIPanel-1.0")
-local ShowUIPanel = LibShowUIPanel.ShowUIPanel
-local HideUIPanel = LibShowUIPanel.HideUIPanel
+local LibEasyMenu = LibStub("LibEasyMenu")
 
 local function OnEvent()
 	if not EKMinimapDB["ClickMenu"] then return end
@@ -22,9 +19,7 @@ local function OnEvent()
 			text = CHARACTER_BUTTON,
 			icon = "Interface\\PVPFrame\\PVP-Banner-Emblem-3",
 			func = function()
-				--ToggleCharacter("PaperDollFrame")
-				--securecall(ToggleCharacter, "PaperDollFrame")
-				if not CharacterFrame:IsShown() then ShowUIPanel(CharacterFrame) CharacterFrameTab2:Click() CharacterFrameTab1:Click() else HideUIPanel(CharacterFrame) end
+				if InCombatLockdown() then UIErrorsFrame:AddMessage(G.ErrColor..ERR_NOT_IN_COMBAT) else securecall(ToggleCharacter, "PaperDollFrame") end
 			end,
 			notCheckable = true,
 		},
@@ -33,30 +28,17 @@ local function OnEvent()
 			text = PROFESSIONS_BUTTON,
 			icon = "Interface\\MINIMAP\\TRACKING\\Class",
 			func = function()
-				if InCombatLockdown() then
-					print("|cffffff00"..ERR_NOT_IN_COMBAT.."|r") return
-				end
-				ToggleProfessionsBook()
+				if InCombatLockdown() then UIErrorsFrame:AddMessage(G.ErrColor..ERR_NOT_IN_COMBAT) else ToggleProfessionsBook() end
+				
 			end,
 			notCheckable = true,
 		},
-		--[[
-		{	-- 法術書
-			text = SPELLBOOK,
-			icon = "Interface\\MINIMAP\\TRACKING\\Class",
-			func = function()
-				-- edit mode error when toggle in combat
-				--securecall(TogglePlayerSpellsFrame, 3)
-			end,
-			notCheckable = true,
-		},
-		]]--
+
 		{	--天賦與法術書
 			text = PLAYERSPELLS_BUTTON,	-- TALENTS_BUTTON
 			icon = "Interface\\HELPFRAME\\HelpIcon-CharacterStuck",
 			func = function() 
-				--securecall(TogglePlayerSpellsFrame, 2)
-				if not PlayerSpellsFrame:IsShown() then ShowUIPanel(PlayerSpellsFrame) else HideUIPanel(PlayerSpellsFrame) end
+				if InCombatLockdown() then UIErrorsFrame:AddMessage(G.ErrColor..ERR_NOT_IN_COMBAT) else securecall(TogglePlayerSpellsFrame, 2) end
 			end,
 			notCheckable = true,
 		},
@@ -65,8 +47,9 @@ local function OnEvent()
 			text = ACHIEVEMENT_BUTTON,
 			icon = "Interface\\MINIMAP\\TRACKING\\QuestBlob",
 			func = function() 
+				if InCombatLockdown() then UIErrorsFrame:AddMessage(G.ErrColor..ERR_NOT_IN_COMBAT) return end
 				if not AchievementFrame then C_AddOns.LoadAddOn("Blizzard_AchievementUI") end
-				if not AchievementFrame:IsShown() then ShowUIPanel(AchievementFrame) else HideUIPanel(AchievementFrame) end
+				securecall(ToggleAchievementFrame)
 			end,
 			notCheckable = true,
 		},
@@ -75,7 +58,7 @@ local function OnEvent()
 			text = MAP_AND_QUEST_LOG,	-- OLD: QUESTLOG_BUTTON
 			icon = "Interface\\GossipFrame\\ActiveQuestIcon",
 			func = function()
-				if not WorldMapFrame:IsShown() then ShowUIPanel(WorldMapFrame) else HideUIPanel(WorldMapFrame) end
+				if InCombatLockdown() then UIErrorsFrame:AddMessage(G.ErrColor..ERR_NOT_IN_COMBAT) else securecall(ToggleFrame, WorldMapFrame) end
 			end,
 			notCheckable = true,
 		},
@@ -85,8 +68,9 @@ local function OnEvent()
 			icon = "Interface\\FriendsFrame\\UI-Toast-ChatInviteIcon",
 			arg1 = IsInGuild("player"),
 			func = function()
+				if InCombatLockdown() then UIErrorsFrame:AddMessage(G.ErrColor..ERR_NOT_IN_COMBAT) return end
 				if not CommunitiesFrame then C_AddOns.LoadAddOn("Blizzard_Communities") end
-				if not CommunitiesFrame:IsShown() then ShowUIPanel(CommunitiesFrame) else HideUIPanel(CommunitiesFrame) end
+				securecall(ToggleCommunitiesFrame)
 			end,
 			notCheckable = true,
 		},
@@ -95,7 +79,7 @@ local function OnEvent()
 			text = SOCIAL_BUTTON,
 			icon = "Interface\\CHATFRAME\\UI-ChatWhisperIcon",
 			func = function() 
-				if not FriendsFrame:IsShown() then ShowUIPanel(FriendsFrame) else HideUIPanel(FriendsFrame) end
+				if InCombatLockdown() then UIErrorsFrame:AddMessage(G.ErrColor..ERR_NOT_IN_COMBAT) else securecall(ToggleFriendsFrame, 1) end
 			end,
 			notCheckable = true,
 		},
@@ -104,8 +88,7 @@ local function OnEvent()
 			text = GROUP_FINDER,	-- DUNGEONS_BUTTON
 			icon = "Interface\\TUTORIALFRAME\\UI-TutorialFrame-AttackCursor",
 			func = function()
-				--securecall(ToggleLFDParentFrame)
-				if not PVEFrame:IsShown() then ShowUIPanel(PVEFrame) PVEFrameTab1:Click() else HideUIPanel(PVEFrame) end
+				if InCombatLockdown() then UIErrorsFrame:AddMessage(G.ErrColor..ERR_NOT_IN_COMBAT) else securecall(ToggleLFDParentFrame) end
 			end,
 			notCheckable = true,
 		},
@@ -114,8 +97,9 @@ local function OnEvent()
 			text = COLLECTIONS,
 			icon = "Interface\\CURSOR\\Crosshair\\WildPetCapturable",
 			func = function()
+				if InCombatLockdown() then UIErrorsFrame:AddMessage(G.ErrColor..ERR_NOT_IN_COMBAT) return end
 				if not CollectionsJournal then LoadAddOn("Blizzard_Collections") end
-				if not CollectionsJournal:IsShown() then ShowUIPanel(CollectionsJournal) else HideUIPanel(CollectionsJournal) end
+				securecall(ToggleCollectionsJournal, 1)
 			end,
 			notCheckable = true,
 		},
@@ -124,8 +108,9 @@ local function OnEvent()
 			text = ADVENTURE_JOURNAL,	-- OLD: ENCOUNTER_JOURNAL
 			icon = "Interface\\ENCOUNTERJOURNAL\\UI-EJ-HeroicTextIcon",
 			func = function()
+				if InCombatLockdown() then UIErrorsFrame:AddMessage(G.ErrColor..ERR_NOT_IN_COMBAT) return end
 				if not EncounterJournal then LoadAddOn("Blizzard_EncounterJournal") end
-				if not EncounterJournal:IsShown() then ShowUIPanel(EncounterJournal) else HideUIPanel(EncounterJournal) end
+				securecall(ToggleEncounterJournal)
 			end,
 			notCheckable = true,
 		},
@@ -136,7 +121,6 @@ local function OnEvent()
 			func = function()
 				if not StoreFrame then LoadAddOn("Blizzard_StoreUI") end
 				securecall(ToggleStoreUI)
-				--if not StoreFrame:IsShown() then ShowUIPanel(StoreFrame) else HideUIPanel(StoreFrame) end
 			end,
 			notCheckable = true,
 		},
@@ -157,8 +141,7 @@ local function OnEvent()
 			text = GARRISON_LANDING_PAGE_TITLE,
 			icon = "Interface\\HELPFRAME\\OpenTicketIcon",
 			func = function()
-				--if not ExpansionLandingPage:IsShown() then ShowUIPanel(ExpansionLandingPage) else HideUIPanel(ExpansionLandingPage) end
-				securecall(ShowGarrisonLandingPage, 2)
+				if InCombatLockdown() then UIErrorsFrame:AddMessage(G.ErrColor..ERR_NOT_IN_COMBAT) else securecall(ShowGarrisonLandingPage, 2) end
 			end,
 			notCheckable = true,
 		},
@@ -176,7 +159,7 @@ local function OnEvent()
 			text = ORDER_HALL_LANDING_PAGE_TITLE,
 			icon = "Interface\\GossipFrame\\WorkOrderGossipIcon",
 			func = function()			
-				securecall(ShowGarrisonLandingPage, 3)
+				if InCombatLockdown() then UIErrorsFrame:AddMessage(G.ErrColor..ERR_NOT_IN_COMBAT) else securecall(ShowGarrisonLandingPage, 3) end
 			end,
 			notCheckable = true,
 		},
@@ -185,7 +168,7 @@ local function OnEvent()
 			text = EXPANSION_NAME7.." "..GARRISON_TYPE_8_0_LANDING_PAGE_TITLE,
 			icon = "Interface\\HELPFRAME\\OpenTicketIcon",
 			func = function()			
-				securecall(ShowGarrisonLandingPage, 9)
+				if InCombatLockdown() then UIErrorsFrame:AddMessage(G.ErrColor..ERR_NOT_IN_COMBAT) else securecall(ShowGarrisonLandingPage, 9) end
 			end,
 			notCheckable = true,
 		},
@@ -194,7 +177,7 @@ local function OnEvent()
 			text = GARRISON_TYPE_9_0_LANDING_PAGE_TITLE,
 			icon = "Interface\\GossipFrame\\WorkOrderGossipIcon",
 			func = function()
-				securecall(ShowGarrisonLandingPage, LE_GARRISON_TYPE_9_0)
+				if InCombatLockdown() then UIErrorsFrame:AddMessage(G.ErrColor..ERR_NOT_IN_COMBAT) else securecall(ShowGarrisonLandingPage,  LE_GARRISON_TYPE_9_0) end
 			end,
 			notCheckable = true,
 		},
@@ -212,16 +195,16 @@ local function OnEvent()
 			text = GM_EMAIL_NAME,
 			icon = "Interface\\CHATFRAME\\UI-ChatIcon-Blizz",
 			func = function() 
-				if not HelpFrame:IsShown() then ShowUIPanel(HelpFrame) else HideUIPanel(HelpFrame) end
+				if InCombatLockdown() then UIErrorsFrame:AddMessage(G.ErrColor..ERR_NOT_IN_COMBAT) else securecall(ToggleHelpFrame) end
 			end,
 			notCheckable = true,
 		},
 		
-		{	-- 語音
+		{	-- 對話頻道
 			text = CHANNEL,
 			icon = "Interface\\CHATFRAME\\UI-ChatIcon-ArmoryChat-AwayMobile",
 			func = function()
-				if not ChannelFrame:IsShown() then ShowUIPanel(ChannelFrame) else HideUIPanel(ChannelFrame) end
+				if InCombatLockdown() then UIErrorsFrame:AddMessage(G.ErrColor..ERR_NOT_IN_COMBAT) else securecall(ToggleChannelFrame) end
 			end,
 			notCheckable = true
 		},
@@ -229,8 +212,9 @@ local function OnEvent()
 		{	-- 行事曆
 			text = L.Calendar,
 			func = function()
+				if InCombatLockdown() then UIErrorsFrame:AddMessage(G.ErrColor..ERR_NOT_IN_COMBAT) return end
 				if not CalendarFrame then C_AddOns.LoadAddOn("Blizzard_Calendar") end
-				if not CalendarFrame:IsShown() then ShowUIPanel(CalendarFrame) else HideUIPanel(CalendarFrame) end
+				securecall(ToggleCalendar)
 			end,
 			notCheckable = true,
 		},
@@ -239,8 +223,9 @@ local function OnEvent()
 			text = BATTLEFIELD_MINIMAP,
 			colorCode = "|cff999999",
 			func = function()
+				if InCombatLockdown() then UIErrorsFrame:AddMessage(G.ErrColor..ERR_NOT_IN_COMBAT) return end
 				if not BattlefieldMapFrame then C_AddOns.LoadAddOn("Blizzard_BattlefieldMap") end
-				if not BattlefieldMapFrame:IsShown() then ShowUIPanel(BattlefieldMapFrame) else HideUIPanel(BattlefieldMapFrame) end
+				securecall(ToggleFrame, BattlefieldMapFrame)
 			end,
 			notCheckable = true,
 		},
@@ -336,13 +321,3 @@ end
 local frame = CreateFrame("FRAME")
 frame:RegisterEvent("PLAYER_LOGIN")
 frame:SetScript("OnEvent", OnEvent)
-
--- avoid spellbook taint / 避免taint
-local initialize = CreateFrame("Frame")
-	initialize:SetScript("OnEvent", function()
-		C_AddOns.LoadAddOn("Blizzard_PlayerSpells")
-		C_AddOns.LoadAddOn("Blizzard_ProfessionsBook")
-		ShowUIPanel(PlayerSpellsFrame)
-		HideUIPanel(PlayerSpellsFrame)
-	end)
-	initialize:RegisterEvent("PLAYER_ENTERING_WORLD")
