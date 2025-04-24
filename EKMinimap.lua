@@ -68,7 +68,7 @@ end
 local function setMinimap()
 	
 	--MinimapCluster.SetPoint = F.Dummy
-    --MinimapCluster.ClearAllPoints = F.Dummy
+	--MinimapCluster.ClearAllPoints = F.Dummy
 	updateMinimapPos()
 	
 	Minimap:SetClampedToScreen(true)
@@ -320,8 +320,8 @@ local function styleDifficulty(self)
 		[7] = "L",			-- Old LFR (before SOO)
 		[8] = "M" .. mplus,	-- Challenge Mode and Mythic+
 		[9] = "40",
-		[11] = "3H",		-- 11 MOP英雄事件
-		[12] = "3N",		-- 12 MOP普通事件
+		[11] = "E",		-- 11 MOP英雄事件
+		[12] = "E",		-- 12 MOP普通事件
 		[14] = num .. "N",	-- Flex normal raid
 		[15] = num .. "H",	-- Flex heroic raid
 		[16] = "M",			-- Mythic raid since WOD

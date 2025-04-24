@@ -16,6 +16,7 @@ local MediaFolder = "Interface\\AddOns\\EKMinimap\\Media\\"
 -------------------
 
 	G.Ccolors = (CUSTOM_CLASS_COLORS or RAID_CLASS_COLORS)[select(2, UnitClass("player"))] -- Class color / 職業顏色
+	G.ErrColor = "|cffffff00"
 	G.Tex = "Interface\\Buttons\\WHITE8x8"
 	G.Glow = MediaFolder.."glow.tga"
 	G.Diff = MediaFolder.."difficulty.tga"
