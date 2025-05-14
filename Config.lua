@@ -61,6 +61,17 @@ local function GLOBEVARIABLE(value, newValue)
 	end
 end
 
+-- 取 InterfaceOptionsCheckButtonTemplate 的預設高度，通常是 26
+local function GetBlizzardButtonHeight()
+    if not F._CHECKBOX_ROW_H then
+        local dummy = CreateFrame("CheckButton", nil, UIParent, "InterfaceOptionsCheckButtonTemplate")
+        F._CHECKBOX_ROW_H = dummy:GetHeight()
+        dummy:Hide() -- 取完扔掉，節省開銷
+    end
+    return F._CHECKBOX_ROW_H
+end
+
+
 -- click buttons
 local function CreateButton(self, width, height, text)
 	local bu = CreateFrame("Button", nil, self)
@@ -115,14 +126,22 @@ local function CreateCheckBox(self, text, value)
 end
 
 -- edit box
-local function CreateEditBox(self, width, height, value)
-	local eb = CreateFrame("EditBox", nil, self)
+local function CreateEditBox(self, text, width, height, value)
+	-- 建立容器，打包選項名字和輸入框
+	local container = CreateFrame("Frame", nil, self)
+    container:SetSize(1, GetBlizzardButtonHeight())
+	-- 選項名字
+    container.text = F.CreateFS(container, text, G.fontSize, "LEFT")
+    container.text:SetPoint("LEFT", container, "LEFT", 0, 0)
+	-- 輸入框
+    local eb = CreateFrame("EditBox", nil, container)
 	eb:SetSize(width, height)
+	eb:SetPoint("LEFT", container.text, "RIGHT", 4, 0) 
 	eb.bg = F.CreateBG(eb, 3, 3, .5)
 	eb:SetAutoFocus(false)
 	
 	eb:SetTextInsets(5, 5, 0, 0)
-	eb:SetMaxLetters(500)
+	eb:SetMaxLetters(10)
 	eb:SetFont(G.font, G.fontSize, G.fontFlag)
 	eb:SetText(GLOBEVARIABLE(value))
 	
@@ -139,7 +158,9 @@ local function CreateEditBox(self, width, height, value)
 	eb:SetScript("OnEnter", function() eb.bg:SetBackdropColor(0, 1, 1, .5) end)
 	eb:SetScript("OnLeave", function() eb.bg:SetBackdropColor(0, 0, 0, .5) end)
 	
-	return eb
+	-- 對齊 container，取值用 container.editBox:GetText()
+	container.editBox = eb
+	return container
 end
 
 -- drop down menu arrow icon
@@ -155,9 +176,17 @@ local function CreateGear(name)
 end
 
 -- custom drop down menu
-local function CreateDropDown(self, width, height, data, value)
-	local dd = CreateFrame("Frame", nil, self)
+local function CreateDropDown(self, text, width, height, data, value)
+	-- 建立容器，打包選項名字和選單
+	local container = CreateFrame("Frame", nil, self)
+	container:SetSize(1, GetBlizzardButtonHeight())
+	-- 選項名字
+	container.text = F.CreateFS(container, text, G.fontSize, "LEFT")
+	container.text:SetPoint("LEFT", container, "LEFT", 0, 0)
+	-- 選單
+	local dd = CreateFrame("Frame", nil, container)
 	dd:SetSize(width, height)
+	dd:SetPoint("LEFT", container.text, "RIGHT", 4, 0) 
 	dd.bg = F.CreateBG(dd, 3, 3, .5)
 	dd.options = {}
 	
@@ -204,7 +233,8 @@ local function CreateDropDown(self, width, height, data, value)
 	end
 	list:SetSize(width, index*(height+2) + 6)
 
-	return dd
+	container.dd = dd
+	return container
 end
 
 -- slider bar
@@ -284,46 +314,55 @@ F.CreateEKMOptions = function()
 	
 	-- Main title
 	local Title = F.CreateFS(MainFrame, "|cff00ffffEK|rMinimap "..v,  G.fontSize+6, "CENTER", "TOP", 0, 14)
-	
+
 	-- minimap / 小地圖
-	
 	local mapTitle = F.CreateFS(MainFrame,  MINIMAP_LABEL, G.fontSize+2, "LEFT", "TOPLEFT", 30, -30)
 
-	local ClickMenuBox = CreateCheckBox(MainFrame, L.ClickMenuOpt, "ClickMenu")
-	ClickMenuBox:SetPoint("TOPLEFT", MainFrame, 40, -60)
-	
-	local HoverClockBox = CreateCheckBox(MainFrame, L.HoverClockOpt, "HoverClock")
-	HoverClockBox:SetPoint("BOTTOM", ClickMenuBox, 0, -30)
-	
-	local IconBox = CreateCheckBox(MainFrame, L.IconOpt, "CharacterIcon")
-	IconBox:SetPoint("BOTTOM", HoverClockBox, 0, -30)
-	
-	local TrackingBox = CreateCheckBox(MainFrame, L.TrackingOpt, "Tracking")
-	TrackingBox:SetPoint("BOTTOM", IconBox, 0, -30)
-	
-	local QueueBox = CreateCheckBox(MainFrame, L.QueueOpt, "QueueStatus")
-	QueueBox:SetPoint("BOTTOM", TrackingBox, 0, -30)
-	
-	local mapPosText = F.CreateFS(MainFrame, L.AnchorOpt, G.fontSize, "LEFT")
-	mapPosText:SetPoint("TOPLEFT", QueueBox, "BOTTOMLEFT", 10, -20)
-	
-	local mapAnchor = CreateDropDown(MainFrame, 120, 20, optList, "MinimapAnchor")
-	mapAnchor:SetPoint("LEFT", mapPosText, "RIGHT", 4, 0)
-	
-	local mapXText = F.CreateFS(MainFrame, L.XOpt, G.fontSize, "LEFT")
-	mapXText:SetPoint("LEFT", mapPosText, 0, -30)
-	
-	local mapXBox = CreateEditBox(MainFrame, 100, 20, "MinimapX")
-	mapXBox:SetPoint("LEFT", mapXText, "RIGHT", 4, 0)
-	
-	local mapYText = F.CreateFS(MainFrame, L.YOpt,  G.fontSize, "LEFT")
-	mapYText:SetPoint("LEFT", mapXText, 0, -30)
-	
-	local mapYBox = CreateEditBox(MainFrame, 100, 20, "MinimapY")
-	mapYBox:SetPoint("LEFT", mapYText, "RIGHT", 4, 0)
+	-- 選項表
+	local optionData = {
+		-- CheckBox
+		{ type = "check", text = L.ClickMenuOpt,  key = "ClickMenu"      },
+		{ type = "check", text = L.HoverClockOpt, key = "HoverClock"     },
+		{ type = "check", text = L.IconOpt,       key = "CharacterIcon"  },
+		{ type = "check", text = L.TrackingOpt,   key = "Tracking"       },
+		{ type = "check", text = L.QueueOpt,      key = "QueueStatus"    },
+		-- DropDown
+		{ type = "dropdown", text = L.AnchorOpt,  key = "MinimapAnchor", width = 120, height = 20, data = optList },
+		-- EditBox
+		{ type = "edit", text = L.XOpt, key = "MinimapX", width = 100, height = 20 },
+		{ type = "edit", text = L.YOpt, key = "MinimapY", width = 100, height = 20 },
+	}
+
+	local function CreateOption(parent, cfg)
+		if cfg.type == "check" then
+			return CreateCheckBox(parent, cfg.text, cfg.key)
+		elseif cfg.type == "dropdown" then
+			return CreateDropDown(parent, cfg.text, cfg.width, cfg.height, cfg.data, cfg.key)
+		elseif cfg.type == "edit" then
+			return CreateEditBox(parent, cfg.text, cfg.width, cfg.height, cfg.key)
+		end
+	end
+
+	-- 建立選項
+	local prevWidget, QueueBox -- 前一個選項元件用來決定錨點，最後一個選項元件給之後的選項定位用
+	local padding = 4   -- 間距
+
+	for i, cfg in ipairs(optionData) do
+		local w = CreateOption(MainFrame, cfg)
+
+		if i == 1 then
+			w:SetPoint("TOPLEFT", MainFrame, 40, -60)
+		else
+			local offset = -(prevWidget:GetHeight() + padding)
+			w:SetPoint("TOPLEFT", prevWidget, "TOPLEFT", 0, offset)
+		end
+
+		prevWidget = w
+		if cfg.key == "QueueStatus" then QueueBox = w end
+	end
 
 	local mapSizeBar = CreateBar(MainFrame, "Size", 160, 20, 5, 20, 1, "MinimapScale", L.SizeOpt, .1)
-	mapSizeBar:SetPoint("TOP", mapYText, "BOTTOM", 75, -34)
+	mapSizeBar:SetPoint("TOP", prevWidget, "BOTTOM", 75, -34)
 
 	-- infos
 	
