@@ -571,6 +571,7 @@ local function OnEvent(self, event, addon)
 		setMinimap()
 		updateIconPos()
 		hideExpBar()
+		updateMiniimapTracking()
 	else
 		return
 	end
