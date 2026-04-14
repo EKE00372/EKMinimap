@@ -64,7 +64,7 @@ end
 -- 取 InterfaceOptionsCheckButtonTemplate 的預設高度，通常是 26
 local function GetBlizzardButtonHeight()
     if not F._CHECKBOX_ROW_H then
-        local dummy = CreateFrame("CheckButton", nil, UIParent, "InterfaceOptionsCheckButtonTemplate")
+        local dummy = CreateFrame("CheckButton", nil, UIParent, "UICheckButtonTemplate")
         F._CHECKBOX_ROW_H = dummy:GetHeight()
         dummy:Hide() -- 取完扔掉，節省開銷
     end
@@ -99,7 +99,7 @@ end
 
 -- check box
 local function CreateCheckBox(self, text, value)
-	local cb = CreateFrame("CheckButton", nil, self, "InterfaceOptionsCheckButtonTemplate")
+	local cb = CreateFrame("CheckButton", nil, self, "UICheckButtonTemplate")
 	cb:SetHighlightTexture("Interface\\ChatFrame\\ChatFrameBackground")
 	cb:SetHitRectInsets(-5, -5, -5, -5)
 	
