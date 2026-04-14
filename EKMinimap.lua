@@ -58,75 +58,72 @@ local function updateMinimapPos()
 	Minimap:SetPoint(EKMinimapDB["MinimapAnchor"], UIParent, EKMinimapDB["MinimapX"], EKMinimapDB["MinimapY"])
 end
 
-local function updateMinimapSize()
-	-- default size is ≈ 140
-	-- We use SetScale() instead SetSize() because there's an issue happened on load order and addon icons.
-	-- addon minimap icon may put themself to strange place because this addon load after then icons been created.
-	MinimapCluster:SetScale(EKMinimapDB["MinimapScale"])
+local function updateMinimapScale()
+	-- Default size is ~≈ 140
+	-- Use SetScale() instead SetSize() because there's an issue happened on load order and addon icons.
+	-- addon minimap icon may put themself to strange place because icon was created before EKMinimap addon loaded.
+	
+	-- To ignore editmode size config, we don't use MinimapCluster
+	--MinimapCluster:SetScale(EKMinimapDB["MinimapScale"])
+
+	Minimap:SetIgnoreParentScale(true)
+	Minimap:SetScale(EKMinimapDB["MinimapScale"])
 end
 
 local function setMinimap()
-	
-	--MinimapCluster.SetPoint = F.Dummy
-	--MinimapCluster.ClearAllPoints = F.Dummy
+
 	updateMinimapPos()
-	
 	Minimap:SetClampedToScreen(true)
 	Minimap:SetMovable(true)
 	Minimap:EnableMouse(true)
 	Minimap:RegisterForDrag("RightButton")
-	
-	updateMinimapSize()
+
+	updateMinimapScale()
 	Minimap:SetMaskTexture(G.Tex)
 	Minimap:SetFrameStrata("LOW")
 	Minimap:SetFrameLevel(3)
 
-	--[[hooksecurefunc(Minimap, "SetPoint", function(frame, _, _, _, _, _, force)
-		if force then return end
-		frame:ClearAllPoints()
-		frame:SetPoint("TOPRIGHT", Minimap, "TOPRIGHT", 0, 0, true)
-	end)]]--
-	
-	--MinimapCluster:ClearAllPoints()
-	--MinimapCluster:SetAllPoints(Minimap)
+		-- Where to test:  Queen Azshara, The Eternal Palace
+		hooksecurefunc(UIWidgetBelowMinimapContainerFrame, "SetPoint", function(self, _, parent)
+			if parent == "MinimapCluster" or parent == MinimapCluster then
+				self:ClearAllPoints()
+				self:SetClampedToScreen(true)
+				self:SetPoint("TOP", Minimap, "BOTTOM")
+			end
+		end)
+
 	MinimapCluster:EnableMouse(false)
 	Minimap.bg = F.CreateBG(Minimap, 5, 5, 1)
-	
-	hooksecurefunc(UIWidgetBelowMinimapContainerFrame, "SetPoint", function(self, _, parent)
-		if parent == "MinimapCluster" or parent == MinimapCluster then
-			self:ClearAllPoints()
-			self:SetClampedToScreen(true)
-			self:SetPoint("TOP", Minimap, "BOTTOM", 0, -20)
-		end
-	end)
-	
+
 	Minimap:SetArchBlobRingScalar(0)
 	Minimap:SetQuestBlobRingScalar(0)
+	MinimapCluster.BorderTop:Hide()
+	MinimapCluster.ZoneTextButton:Hide()
 	
 	-- Hide Blizzard
 	local hideAll = {
 		MinimapBackdrop,
-		MinimapCluster.BorderTop,
-		MinimapCluster.ZoneTextButton,
 		Minimap.ZoomIn,
 		Minimap.ZoomOut,
-		--MinimapCluster.Tracking,
 		MinimapCluster.InstanceDifficulty,
 		GameTimeFrame,
-		DurabilityFrame,
-		VehicleSeatIndicator,
 		ExpansionLandingPageMinimapButton,
 	}
 	
 	for _, f in ipairs(hideAll) do
-		f.Show = F.Dummy
 		f:Hide()
+		if not f.__isHooked then
+			hooksecurefunc(f, "Show", function(self) self:Hide() end)
+			f.__isHooked = true
+		end
 	end
 	
 	-- Mail Frame / 信件提示
 	MailFrame:SetFrameLevel(11)
 	MailFrame:SetScale(1.2)
+
 	-- Tracking menu / 追蹤選單
+	-- To keep menu, don't hide the icon
 	_G.MinimapCluster.Tracking:SetAlpha(0)
 	_G.MinimapCluster.Tracking:SetScale(0.0001)
 end
@@ -224,7 +221,7 @@ local function createGarrisonTooltip(self)
 		GameTooltip:AddDoubleLine(REFORGE_CURRENT..HEADER_COLON, cur.."/"..max.." ("..floor(cur/max*100).."%)", 1, 1, 1, 1, 1, 1)
 		GameTooltip:AddDoubleLine(NEXT_RANK_COLON, (max-cur), 1, 1, 1, 1, 1, 1)
 	end
-		
+	
 	-- Reputation
 	if C_Reputation.GetWatchedFactionData() then
 		local GetWatchedFactionData = C_Reputation.GetWatchedFactionData()
@@ -241,11 +238,11 @@ local function createGarrisonTooltip(self)
 		local friendID =  repInfo.friendshipFactionID
 
 		if factionID and C_Reputation.IsMajorFaction(factionID) then
-			-- 10.0 四大陣營
+			-- 10.0 以後的四大陣營
 			local majorFactionData = C_MajorFactions.GetMajorFactionData(factionID)
 			local renownLevel, cur, min, max = majorFactionData.renownLevel, majorFactionData.renownReputationEarned, 0, majorFactionData.renownLevelThreshold
 			
-			GameTooltip:AddDoubleLine(name, RENOWN_LEVEL_LABEL..renownLevel, 0, 1, 0.5, 0, 1, 0.5)
+			GameTooltip:AddDoubleLine(name, JOURNEYS_RENOWN_LABEL.." "..renownLevel, 0, 1, 0.5, 0, 1, 0.5)
 			GameTooltip:AddDoubleLine(REFORGE_CURRENT..HEADER_COLON, cur.."/"..max.." ("..floor(cur/max*100).."%)", 1, 1, 1, 1, 1, 1)
 			GameTooltip:AddDoubleLine(NEXT_RANK_COLON, (max-cur), 1, 1, 1, 1, 1, 1)
 		elseif friendID and friendID ~= 0 then
@@ -283,7 +280,7 @@ end
 
 local function hideExpBar()
 	if EKMinimapDB["CharacterIcon"] then
-		StatusTrackingBarManager.Show = F.Dummy
+		StatusTrackingBarManager:UnregisterAllEvents()
 		StatusTrackingBarManager:Hide()
 	end
 end
@@ -299,7 +296,6 @@ local Diff = CreateFrame("Frame", "EKMinimapDungeonIcon", Minimap)
 	Diff.Texture:SetTexture(G.Diff)
 	Diff.Texture:SetVertexColor(G.Ccolors.r, G.Ccolors.g, G.Ccolors.b)
 	Diff.Text = F.CreateFS(Diff, "",  G.fontSize+4, "CENTER")
-
 
 local function styleDifficulty(self)
 	-- Difficulty Text / 難度文字
@@ -487,23 +483,10 @@ end
 
 F.ResetM = function()
 	updateMinimapPos()
-	updateMinimapSize()
+	updateMinimapScale()
 	updateIconPos()
 	updateMiniimapTracking()
 end
-
-local ignoredFrames = {
-	["MinimapCluster"] = function() return true end,
-	["VehicleSeatIndicator"] = function() return true end,
-}
-
-local shutdownMode = {
-	"OnEditModeEnter",
-	"OnEditModeExit",
-	"HasActiveChanges",
-	"HighlightSystem",
-	"SelectSystem",
-}
 
 local function OnEvent(self, event, addon)
 	-- Hide Clock / 隱藏時鐘
@@ -517,20 +500,6 @@ local function OnEvent(self, event, addon)
 		-- make sure MBB dont take my icon 益rz
 		if MBB_Ignore then
 			tinsert(MBB_Ignore, "EKMinimapTooltipButton")
-		end
-		
-		-- remove the initial registers
-		local editMode = _G.EditModeManagerFrame
-		local registered = editMode.registeredSystemFrames
-		for i = #registered, 1, -1 do
-			local frame = registered[i]
-			local ignore = ignoredFrames[frame:GetName()]
-
-			if ignore and ignore() then
-				for _, key in next, shutdownMode do
-					frame[key] = F.Dummy
-				end
-			end
 		end
 		
 		QueueStatus()
