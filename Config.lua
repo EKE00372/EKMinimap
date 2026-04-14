@@ -323,7 +323,7 @@ F.CreateEKMOptions = function()
 		-- CheckBox
 		{ type = "check", text = L.ClickMenuOpt,  key = "ClickMenu"      },
 		{ type = "check", text = L.HoverClockOpt, key = "HoverClock"     },
-		{ type = "check", text = L.IconOpt,       key = "CharacterIcon"  },
+		{ type = "check", text = L.IconOpt,       key = "CharacterIcon"  , tooltip = L.IconTip},
 		{ type = "check", text = L.TrackingOpt,   key = "Tracking"       },
 		{ type = "check", text = L.QueueOpt,      key = "QueueStatus"    },
 		-- DropDown
@@ -355,6 +355,11 @@ F.CreateEKMOptions = function()
 		else
 			local offset = -(prevWidget:GetHeight() + padding)
 			w:SetPoint("TOPLEFT", prevWidget, "TOPLEFT", 0, offset)
+		end
+
+		if cfg.tooltip then
+			local tip = CreateTooltip(w, G.Info, "ANCHOR_RIGHT", cfg.tooltip)
+			tip:SetPoint("LEFT", w.text, "RIGHT", 4, 0)
 		end
 
 		prevWidget = w
