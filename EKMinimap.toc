@@ -1,6 +1,6 @@
-## Interface: 110105, 110107, 110200
+## Interface: 120000, 120005
 ## Title: |cff00ffffEK|rMinimap
-## Version: R4.6
+## Version: R4.7
 ## Author: EK
 ## Notes: A square minimap.
 ## IconTexture: "Interface\\Buttons\\WHITE8x8"
@@ -21,7 +21,6 @@
 
 
 Libs\LibStub.lua
-Libs\TaintLess.xml
 Libs\LibEasyMenu.lua
 
 Init.lua
