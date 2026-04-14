@@ -58,6 +58,13 @@ local function headerStyle()
 	for _, header in pairs(headers) do
 		reskinHeader(header)
 	end
+
+    for _, header in pairs(headers) do
+        local minimize = header.MinimizeButton
+        if minimize and header ~= ObjectiveTrackerFrame.Header then
+            F.CreateBG(minimize, 2, 2, .5)
+        end
+    end
 end
 
 --===================================================--
@@ -121,3 +128,5 @@ local frame = CreateFrame("FRAME")
     frame:RegisterEvent("ZONE_CHANGED_NEW_AREA")
 	frame:RegisterEvent("CHALLENGE_MODE_START")
 	frame:SetScript("OnEvent", OnEvent)
+
+    
