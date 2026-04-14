@@ -49,6 +49,8 @@ local MediaFolder = "Interface\\AddOns\\EKMinimap\\Media\\"
 		["CharacterIcon"] = true,
 		["Tracking"] = true,
 		["QueueStatus"] = true,
+		["VehicleSeat"] = true,
+		["Durability"] = true,
 	}
 
 ----------------------

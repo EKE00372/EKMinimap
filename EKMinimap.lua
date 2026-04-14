@@ -110,6 +110,12 @@ local function setMinimap()
 		ExpansionLandingPageMinimapButton,
 	}
 	
+	-- Optional hide frame
+	local hideOptional = {
+		["VehicleSeat"] = VehicleSeatIndicator,
+		["Durability"] = DurabilityFrame,
+	}
+
 	for _, f in ipairs(hideAll) do
 		f:Hide()
 		if not f.__isHooked then
@@ -117,6 +123,16 @@ local function setMinimap()
 			f.__isHooked = true
 		end
 	end
+	
+    for key, f in pairs(hideOptional) do
+        if f and EKMinimapDB[key] then
+            f:Hide()
+            if not f.__isHooked then
+                hooksecurefunc(f, "Show", function(self) self:Hide() end)
+                f.__isHooked = true
+            end
+        end
+    end
 	
 	-- Mail Frame / 信件提示
 	MailFrame:SetFrameLevel(11)

@@ -315,15 +315,15 @@ F.CreateEKMOptions = function()
 	-- Main title
 	local Title = F.CreateFS(MainFrame, "|cff00ffffEK|rMinimap "..v,  G.fontSize+6, "CENTER", "TOP", 0, 14)
 
-	-- minimap / 小地圖
+	-- Left: minimap / 小地圖
 	local mapTitle = F.CreateFS(MainFrame,  MINIMAP_LABEL, G.fontSize+2, "LEFT", "TOPLEFT", 30, -30)
 
 	-- 選項表
 	local optionData = {
 		-- CheckBox
-		{ type = "check", text = L.ClickMenuOpt,  key = "ClickMenu"      },
+		{ type = "check", text = L.ClickMenuOpt,  key = "ClickMenu"		, tooltip = L.MenuTip},
 		{ type = "check", text = L.HoverClockOpt, key = "HoverClock"     },
-		{ type = "check", text = L.IconOpt,       key = "CharacterIcon"  , tooltip = L.IconTip},
+		{ type = "check", text = L.IconOpt,       key = "CharacterIcon"	, tooltip = L.IconTip},
 		{ type = "check", text = L.TrackingOpt,   key = "Tracking"       },
 		{ type = "check", text = L.QueueOpt,      key = "QueueStatus"    },
 		-- DropDown
@@ -368,6 +368,15 @@ F.CreateEKMOptions = function()
 
 	local mapSizeBar = CreateBar(MainFrame, "Size", 160, 20, 5, 20, 1, "MinimapScale", L.SizeOpt, .1)
 	mapSizeBar:SetPoint("TOP", prevWidget, "BOTTOM", 75, -34)
+
+	-- Right: other
+	local miscTitle = F.CreateFS(MainFrame,  OTHER, G.fontSize+2, "LEFT", "TOPLEFT", 260, -30)
+
+    local vehicleBox = CreateCheckBox(MainFrame, L.VehicleSeatOpt, "VehicleSeat")
+    vehicleBox:SetPoint("TOPLEFT", MainFrame, 260, -60)
+
+    local durabilityBox = CreateCheckBox(MainFrame, L.DurabilityOpt, "Durability")
+    durabilityBox:SetPoint("TOPLEFT", vehicleBox, "BOTTOMLEFT", 0, -4)
 
 	-- infos
 	

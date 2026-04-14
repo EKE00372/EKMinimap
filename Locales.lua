@@ -8,21 +8,24 @@ local GetLocale = GetLocale
 
 if GetLocale() == "zhTW" then
 
-	L.ToggleConfig = "開啟設定選項"
-	
 	L.ClickMenuOpt = "啟用點擊選單"
+	L.MenuTip = "中鍵：追蹤選單\n右鍵：遊戲選項"
 	L.TrackingOpt = "完整追蹤選單"
 	L.IconOpt = "角色資訊提示"
 	L.IconTip = "啟用時將一併隱藏內建的經驗聲望條。"
 	L.HoverClockOpt = "指向頂部顯示時間"
 	L.QueueOpt = "移動隊列按鈕"
-	L.AddonCompartment = "插件收納"
+
+	L.VehicleSeatOpt = "隱藏載具框體"
+	L.DurabilityOpt = "隱藏裝備耐久"
 	
 	L.SizeOpt = "縮放"
 	L.AnchorOpt = "錨點"
 	L.XOpt = "X 座標"
 	L.YOpt = "Y 座標"
 	
+	L.ToggleConfig = "開啟設定選項"
+	L.AddonCompartment = "插件收納"
 	L.Calendar = SLASH_CALENDAR2:gsub("/(.*)","%1")
 	L.Left = "左"
 	L.Right = "右"
@@ -38,22 +41,24 @@ if GetLocale() == "zhTW" then
 	
 elseif GetLocale() == "zhCN" then
 
-	L.ToggleConfig = "开启设置选项"
-	
 	L.ClickMenuOpt = "启用点击菜单"
+	L.MenuTip = "中键：追踪清单\n右键：游戏菜单"
 	L.TrackingOpt = "完整追踪清单"
+	L.IconOpt = "角色信息提示"
+	L.IconTip = "同时会隐藏原生经验条。"
+	L.HoverClockOpt = "指向顶部显示时间"
+	L.QueueOpt = "移动队列按钮"
+
+	L.VehicleSeatOpt = "隐藏载具框体"
+	L.DurabilityOpt = "隐藏装备耐久"
 
 	L.SizeOpt = "缩放"
 	L.AnchorOpt = "锚点"
 	L.XOpt = "X 座标"
 	L.YOpt = "Y 座标"
 
-	L.IconOpt = "角色信息提示"
-	L.IconTip = "同时将会隐藏原生经验条。"
-	L.HoverClockOpt = "指向顶部显示时间"
-	L.QueueOpt = "移动队列按钮"
+	L.ToggleConfig = "开启设置选项"
 	L.AddonCompartment = "插件收纳"
-	
 	L.Calendar = "行事历"
 	L.Left = "左"
 	L.Right = "右"
@@ -69,21 +74,24 @@ elseif GetLocale() == "zhCN" then
 	
 else
 	
-	L.ToggleConfig = "EkMinimap Options"
-
 	L.ClickMenuOpt = "Enable click menu"
+	L.MenuTip = "Middle: tracker menu\nRight: Game menu"
 	L.TrackingOpt = "Full tracking list"
 	L.IconOpt = "Character icon tooltip"
 	L.IconTip = "Enable will also hide blizzard experience bar."
 	L.HoverClockOpt = "Hover clock at top"
 	L.QueueOpt = "QueueStatus on Minimap"
-	L.AddonCompartment = "Addon Compartment"
 	
+	L.VehicleSeatOpt = "Hide Vehicle Seat"
+	L.DurabilityOpt = "Hide Durability"
+
 	L.SizeOpt = "Scale"
 	L.AnchorOpt = "Anchor"
 	L.XOpt = "X"
 	L.YOpt = "Y"
 
+	L.ToggleConfig = "EkMinimap Options"
+	L.AddonCompartment = "Addon Compartment"
 	L.Calendar = SLASH_CALENDAR1:gsub("/(.*)","%1")
 	L.Left = "Left"
 	L.Right = "Right"
