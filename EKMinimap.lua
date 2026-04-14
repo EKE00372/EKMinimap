@@ -400,38 +400,6 @@ local function HoverClock()
 		securecall(UIFrameFadeOut, Clock, .8, 1, 0)
 	end)
 end
---================================================--
------------------    [[ Ping ]]    -----------------
---=================================================--
-
-local function whoPing()
-	local ping = CreateFrame("Frame", nil, Minimap)
-	ping:SetSize(100, 20)
-	ping:SetPoint("BOTTOM", Minimap, 0, 2)
-	ping:RegisterEvent("MINIMAP_PING")
-	ping.text = F.CreateFS(ping, "",  G.fontSize+4, "CENTER")
-
-	local anim = ping:CreateAnimationGroup()
-	anim:SetScript("OnPlay", function() ping:SetAlpha(1) end)
-	anim:SetScript("OnFinished", function() ping:SetAlpha(0) end)
-	anim.fader = anim:CreateAnimation("Alpha")
-	anim.fader:SetFromAlpha(1)
-	anim.fader:SetToAlpha(0)
-	anim.fader:SetDuration(4)
-	anim.fader:SetSmoothing("OUT")
-	anim.fader:SetStartDelay(3)
-
-	ping:SetScript("OnEvent", function(_, _, unit)
-		local class = select(2, UnitClass(unit))
-		local name = GetUnitName(unit)
-		local classcolor = 	(CUSTOM_CLASS_COLORS or RAID_CLASS_COLORS)[class]
-
-		anim:Stop()
-		ping.text:SetText(name)
-		ping.text:SetTextColor(classcolor.r, classcolor.g, classcolor.b)
-		anim:Play()
-	end)
-end
 
 --==================================================--
 -----------------    [[ Script ]]    -----------------
@@ -567,7 +535,6 @@ local function OnEvent(self, event, addon)
 		
 		QueueStatus()
 		HoverClock()
-		whoPing()
 		setMinimap()
 		updateIconPos()
 		hideExpBar()
