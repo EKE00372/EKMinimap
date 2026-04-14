@@ -13,6 +13,7 @@ if GetLocale() == "zhTW" then
 	L.ClickMenuOpt = "啟用點擊選單"
 	L.TrackingOpt = "完整追蹤選單"
 	L.IconOpt = "角色資訊提示"
+	L.IconTip = "啟用時將一併隱藏內建的經驗聲望條。"
 	L.HoverClockOpt = "指向頂部顯示時間"
 	L.QueueOpt = "移動隊列按鈕"
 	L.AddonCompartment = "插件收納"
@@ -48,6 +49,7 @@ elseif GetLocale() == "zhCN" then
 	L.YOpt = "Y 座标"
 
 	L.IconOpt = "角色信息提示"
+	L.IconTip = "同时将会隐藏原生经验条。"
 	L.HoverClockOpt = "指向顶部显示时间"
 	L.QueueOpt = "移动队列按钮"
 	L.AddonCompartment = "插件收纳"
@@ -72,6 +74,7 @@ else
 	L.ClickMenuOpt = "Enable click menu"
 	L.TrackingOpt = "Full tracking list"
 	L.IconOpt = "Character icon tooltip"
+	L.IconTip = "Enable will also hide blizzard experience bar."
 	L.HoverClockOpt = "Hover clock at top"
 	L.QueueOpt = "QueueStatus on Minimap"
 	L.AddonCompartment = "Addon Compartment"
