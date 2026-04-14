@@ -29,3 +29,4 @@ Config.lua
 
 EKMinimap.lua
 Clickmenu.lua
+ObjectiveTracker.lua

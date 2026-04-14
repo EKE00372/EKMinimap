@@ -362,7 +362,7 @@ local function styleDifficulty(self)
 		[153] = "10",		-- 153 十人海島
 		-- 168/169/170/171 晉升之路
 		[167] = "TOR",		-- 167 托加斯特
-		--[208] = "D"			-- 208 探索/地下堡 delve
+		[208] = "D"			-- 208 探索/地下堡 delve
 	}
 	
 	if instanceType == "party" or instanceType == "raid" or instanceType == "scenario" then
@@ -373,7 +373,7 @@ local function styleDifficulty(self)
 		DiffText:SetText("D")
 	end
 
-	if not inInstance then
+	if not inInstance and instanceType == "none" then
 		Diff:SetAlpha(0)
 	else
 		Diff:SetAlpha(1)
