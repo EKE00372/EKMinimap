@@ -315,22 +315,32 @@ F.CreateEKMOptions = function()
 	-- Main title
 	local Title = F.CreateFS(MainFrame, "|cff00ffffEK|rMinimap "..v,  G.fontSize+6, "CENTER", "TOP", 0, 14)
 
-	-- Left: minimap / 小地圖
+	-- Left title: minimap / 小地圖
 	local mapTitle = F.CreateFS(MainFrame,  MINIMAP_LABEL, G.fontSize+2, "LEFT", "TOPLEFT", 30, -30)
+	-- Right title: other
+	local miscTitle = F.CreateFS(MainFrame,  OTHER, G.fontSize+2, "LEFT", "TOPLEFT", 260, -30)
 
 	-- 選項表
-	local optionData = {
+	local optionDataLeft = {
 		-- CheckBox
-		{ type = "check", text = L.ClickMenuOpt,  key = "ClickMenu"		, tooltip = L.MenuTip},
-		{ type = "check", text = L.HoverClockOpt, key = "HoverClock"     },
-		{ type = "check", text = L.IconOpt,       key = "CharacterIcon"	, tooltip = L.IconTip},
-		{ type = "check", text = L.TrackingOpt,   key = "Tracking"       },
-		{ type = "check", text = L.QueueOpt,      key = "QueueStatus"    },
+		{ type = "check", text = L.ClickMenuOpt,	key = "ClickMenu",		tooltip = L.MenuTip},
+		{ type = "check", text = L.HoverClockOpt,	key = "HoverClock"},
+		{ type = "check", text = L.IconOpt,			key = "CharacterIcon",	tooltip = L.IconTip},
+		{ type = "check", text = L.TrackingOpt,		key = "Tracking"},
+		{ type = "check", text = L.QueueOpt,		key = "QueueStatus"},
 		-- DropDown
 		{ type = "dropdown", text = L.AnchorOpt,  key = "MinimapAnchor", width = 120, height = 20, data = optList },
 		-- EditBox
 		{ type = "edit", text = L.XOpt, key = "MinimapX", width = 100, height = 20 },
 		{ type = "edit", text = L.YOpt, key = "MinimapY", width = 100, height = 20 },
+	}
+
+	local optionDataRight = {
+		-- CheckBox
+		{ type = "check", text = L.VehicleSeatOpt,	key = "VehicleSeat"},
+		{ type = "check", text = L.DurabilityOpt,	key = "Durability"},
+		{ type = "check", text = L.TrackerStyleOpt,	key = "TrackerStyle"},
+		{ type = "check", text = L.AutoCollapseOpt,	key = "AutoCollapse",	tooltip = L.CollapseTip},
 	}
 
 	local function CreateOption(parent, cfg)
@@ -346,8 +356,8 @@ F.CreateEKMOptions = function()
 	-- 建立選項
 	local prevWidget, QueueBox -- 前一個選項元件用來決定錨點，最後一個選項元件給之後的選項定位用
 	local padding = 4   -- 間距
-
-	for i, cfg in ipairs(optionData) do
+	-- 左
+	for i, cfg in ipairs(optionDataLeft) do
 		local w = CreateOption(MainFrame, cfg)
 
 		if i == 1 then
@@ -369,14 +379,25 @@ F.CreateEKMOptions = function()
 	local mapSizeBar = CreateBar(MainFrame, "Size", 160, 20, 5, 20, 1, "MinimapScale", L.SizeOpt, .1)
 	mapSizeBar:SetPoint("TOP", prevWidget, "BOTTOM", 75, -34)
 
-	-- Right: other
-	local miscTitle = F.CreateFS(MainFrame,  OTHER, G.fontSize+2, "LEFT", "TOPLEFT", 260, -30)
+	-- 右
+	for i, cfg in ipairs(optionDataRight) do
+		local w = CreateOption(MainFrame, cfg)
 
-    local vehicleBox = CreateCheckBox(MainFrame, L.VehicleSeatOpt, "VehicleSeat")
-    vehicleBox:SetPoint("TOPLEFT", MainFrame, 260, -60)
+		if i == 1 then
+			w:SetPoint("TOPLEFT", MainFrame, 260, -60)
+		else
+			local offset = -(prevWidget:GetHeight() + padding)
+			w:SetPoint("TOPLEFT", prevWidget, "TOPLEFT", 0, offset)
+		end
 
-    local durabilityBox = CreateCheckBox(MainFrame, L.DurabilityOpt, "Durability")
-    durabilityBox:SetPoint("TOPLEFT", vehicleBox, "BOTTOMLEFT", 0, -4)
+		if cfg.tooltip then
+			local tip = CreateTooltip(w, G.Info, "ANCHOR_RIGHT", cfg.tooltip)
+			tip:SetPoint("LEFT", w.text, "RIGHT", 4, 0)
+		end
+
+		prevWidget = w
+		if cfg.key == "AutoCollapse" then QueueBox = w end
+	end
 
 	-- infos
 	

@@ -51,6 +51,8 @@ local MediaFolder = "Interface\\AddOns\\EKMinimap\\Media\\"
 		["QueueStatus"] = true,
 		["VehicleSeat"] = true,
 		["Durability"] = true,
+		["TrackerStyle"] = true,
+		["AutoCollapse"] = true,
 	}
 
 ----------------------
@@ -97,8 +99,6 @@ F.CreateBG = function(parent, size, offset, a)
 	
 	return bg
 end
-
-F.Dummy = function() end
 
 --------------------
 -- Credits / 銘謝 --
