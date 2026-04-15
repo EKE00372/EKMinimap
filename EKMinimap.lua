@@ -332,8 +332,8 @@ local function styleDifficulty(self)
 		[7] = "L",			-- Old LFR (before SOO)
 		[8] = "M" .. mplus,	-- Challenge Mode and Mythic+
 		[9] = "40",
-		[11] = "E",		-- 11 MOP英雄事件
-		[12] = "E",		-- 12 MOP普通事件
+		[11] = "E",			-- 11 MOP英雄事件
+		[12] = "E",			-- 12 MOP普通事件
 		[14] = num .. "N",	-- Flex normal raid
 		[15] = num .. "H",	-- Flex heroic raid
 		[16] = "M",			-- Mythic raid since WOD
@@ -343,40 +343,39 @@ local function styleDifficulty(self)
 		[20] = "E",			-- 20 Event(scenario)
 	
 		[23] = "5M",
-		[24] = "T",			-- 24 Timewalking(地城時光)
-		[25] = "PVP",
-		[29] = "PEP",
+		[24] = "T",			-- 24 Timewalking(party)
+		[25] = "PvP",
+		[29] = "PvP",		-- PvEvP Scenario
 		[30] = "E",			-- 30 Event(scenario)
-		[32] = "PVP",
-		[33] = "T",			-- 33 Timewalking(團隊時光)
-		[34] = "PVP",
-		[38] = "3N",		-- 38 BFA普通海嶼
-		[39] = "3H",		-- 39 BFA英雄海嶼
-		[40] = "3M",		-- 40 BFA傳奇海嶼
-		[45] = "PVP",		-- 45 PVP海嶼?
+		[32] = "PvP",
+		[33] = "T",			-- 33 Timewalking(raid)
+		[34] = "PvP",
+		[38] = "3N",		-- 38 普通海嶼
+		[39] = "3H",		-- 39 英雄海嶼
+		[40] = "3M",		-- 40 傳奇海嶼
+		[45] = "PVP",		-- 45 PVP海嶼
 		
-		[147] = "WF",		-- 147 戰爭前線
+		[147] = "WF",		-- 147 普通戰爭前線
 		[149] = "HWF",		-- 147 英雄戰爭前線
-		[151] = "T",		-- 151 Timewalking(隨機團隊時光)
+		[151] = "T",		-- 151 Timewalking(LFR)
 		[152] = "E",		-- 152 幻象
-		[153] = "10",		-- 153 十人海島
+		--[153] = "10",		-- 153 十人海嶼
 		-- 168/169/170/171 晉升之路
-		[167] = "TOR",		-- 167 托加斯特
-		[208] = "D"			-- 208 探索/地下堡 delve
+		[167] = "Tor",		-- 167 托加斯特
+		[205] = "5",		-- 205 追随者地城
+		--[208] = "D",		-- 208 探究
+		--[220]	= "S"		-- 故事模式(raid)
 	}
 	
 	if instanceType == "party" or instanceType == "raid" or instanceType == "scenario" then
+		Diff:SetAlpha(1)
 		DiffText:SetText(DifficultyTAG[difficulty] or "D")
 	elseif instanceType == "pvp" or instanceType == "arena" then
+		Diff:SetAlpha(1)
 		DiffText:SetText("PVP")
 	else
-		DiffText:SetText("D")
-	end
-
-	if not inInstance and instanceType == "none" then
 		Diff:SetAlpha(0)
-	else
-		Diff:SetAlpha(1)
+		DiffText:SetText("")
 	end
 end
 
@@ -450,7 +449,7 @@ end
 				button.menu:SetPoint("TOP", self, "BOTTOM", findAnchor("MinimapAnchor") and (Minimap:GetWidth() * .5) or -(Minimap:GetWidth() * .5), -3)
 			end
 		else
-			ExpansionLandingPageMinimapButton:Click()
+			return
 		end
 	end)
 	
