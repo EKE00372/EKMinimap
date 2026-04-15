@@ -63,10 +63,23 @@ local function OnEvent()
 			notCheckable = true,
 		},
 		
+		{	-- 房屋資訊看板
+			text = HOUSING_MICRO_BUTTON,
+			icon = 7252953,
+			func = function()
+				if not C_Housing.IsHousingServiceEnabled() then return end
+				if InCombatLockdown() then
+					UIErrorsFrame:AddMessage(G.ErrColor..ERR_NOT_IN_COMBAT)
+				else
+					_G.HousingFramesUtil.ToggleHousingDashboard()
+				end
+			end,
+			notCheckable = true,
+		},
+		
 		{	-- 社群
 			text = COMMUNITIES_FRAME_TITLE,
 			icon = "Interface\\FriendsFrame\\UI-Toast-ChatInviteIcon",
-			arg1 = IsInGuild("player"),
 			func = function()
 				if InCombatLockdown() then UIErrorsFrame:AddMessage(G.ErrColor..ERR_NOT_IN_COMBAT) return end
 				if not CommunitiesFrame then C_AddOns.LoadAddOn("Blizzard_Communities") end
@@ -136,11 +149,12 @@ local function OnEvent()
 			isTitle = true,
 			notCheckable = true,
 		},
-
+		
 		{	-- 要塞報告
 			text = GARRISON_LANDING_PAGE_TITLE,
 			icon = "Interface\\HELPFRAME\\OpenTicketIcon",
 			func = function()
+				if not C_Garrison.HasGarrison(2) then return end
 				if InCombatLockdown() then UIErrorsFrame:AddMessage(G.ErrColor..ERR_NOT_IN_COMBAT) else securecall(ShowGarrisonLandingPage, 2) end
 			end,
 			notCheckable = true,
@@ -150,7 +164,9 @@ local function OnEvent()
 			text = GARRISON_LANDING_PAGE_TITLE.." "..GARRISON_SHIPYARD_TITLE,
 			icon = "Interface\\HELPFRAME\\OpenTicketIcon",
 			func = function()
-				if not ExpansionLandingPage:IsShown() then ShowUIPanel(GarrisonShipyardFrame) else ShowUIPanel(GarrisonShipyardFrame) end
+				if C_Garrison.HasShipyard() then
+
+				end
 			end,
 			notCheckable = true,
 		},
@@ -158,7 +174,8 @@ local function OnEvent()
 		{	-- 職業大廳報告
 			text = ORDER_HALL_LANDING_PAGE_TITLE,
 			icon = "Interface\\GossipFrame\\WorkOrderGossipIcon",
-			func = function()			
+			func = function()
+				if not C_Garrison.HasGarrison(3) then return end
 				if InCombatLockdown() then UIErrorsFrame:AddMessage(G.ErrColor..ERR_NOT_IN_COMBAT) else securecall(ShowGarrisonLandingPage, 3) end
 			end,
 			notCheckable = true,
@@ -167,7 +184,8 @@ local function OnEvent()
 		{	-- 任務指揮桌
 			text = EXPANSION_NAME7.." "..GARRISON_TYPE_8_0_LANDING_PAGE_TITLE,
 			icon = "Interface\\HELPFRAME\\OpenTicketIcon",
-			func = function()			
+			func = function()
+				if not C_Garrison.HasGarrison(9) then return end
 				if InCombatLockdown() then UIErrorsFrame:AddMessage(G.ErrColor..ERR_NOT_IN_COMBAT) else securecall(ShowGarrisonLandingPage, 9) end
 			end,
 			notCheckable = true,
@@ -177,18 +195,14 @@ local function OnEvent()
 			text = GARRISON_TYPE_9_0_LANDING_PAGE_TITLE,
 			icon = "Interface\\GossipFrame\\WorkOrderGossipIcon",
 			func = function()
-				if InCombatLockdown() then UIErrorsFrame:AddMessage(G.ErrColor..ERR_NOT_IN_COMBAT) else securecall(ShowGarrisonLandingPage,  LE_GARRISON_TYPE_9_0) end
+				if not C_Garrison.HasGarrison(111) then return end
+				if InCombatLockdown() then UIErrorsFrame:AddMessage(G.ErrColor..ERR_NOT_IN_COMBAT) else securecall(ShowGarrisonLandingPage,  111) end
 			end,
 			notCheckable = true,
 		},
 		--[[
 		{	-- 巨龍時代
 			text = DRAGONFLIGHT_LANDING_PAGE_TITLE,
-			icon = "Interface\\HELPFRAME\\OpenTicketIcon",
-			func = function()			
-				if not ExpansionLandingPage:IsShown() then ShowUIPanel(GenericTraitFrame) else HideUIPanel(GenericTraitFrame) end
-			end,
-			notCheckable = true,
 		},
 		]]--
 		{	-- 客服支援
