@@ -41,7 +41,9 @@ local function headerStyle()
 		header.Text:SetJustifyH("RIGHT")
         
         -- Header texture
-        local headerTex = header:CreateTexture(nil, "BACKGROUND")
+        local acLoaded = C_AddOns.IsAddOnLoaded("AuroraClassic")
+        if acLoaded == false then
+            local headerTex = header:CreateTexture(nil, "BACKGROUND")
             headerTex:SetSize(OTF:GetWidth()/2, 5)
             headerTex:SetTexture(G.Tex)
             headerTex:SetVertexColor(G.Ccolors.r, G.Ccolors.g, G.Ccolors.b, .8)
@@ -53,6 +55,7 @@ local function headerStyle()
             else
                 headerTex:SetPoint("TOPRIGHT", header, "BOTTOMRIGHT", -40, 6)
             end
+        end
 	end
 
 	for _, header in pairs(headers) do
