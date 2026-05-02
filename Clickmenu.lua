@@ -327,7 +327,7 @@ local function OnEvent()
 				end
 			end
 		else
-			Minimap:OnClick()
+			return
 		end
 	end)
 end
