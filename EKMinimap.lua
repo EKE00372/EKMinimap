@@ -2,6 +2,7 @@ local addon, ns = ...
 local C, F, G, L = unpack(ns)
 local Minimap, MinimapCluster, sub, floor, CreateFrame = Minimap, MinimapCluster, string.sub, math.floor, CreateFrame
 local MailFrame = MinimapCluster.IndicatorFrame.MailFrame
+local IsPlayerAtEffectiveMaxLevel = GameRulesUtil.IsPlayerAtEffectiveMaxLevel or IsPlayerAtEffectiveMaxLevel
 local AddonCompartmentFrame = AddonCompartmentFrame
 
 --====================================================--
@@ -82,6 +83,9 @@ local function setMinimap()
 	Minimap:SetMaskTexture(G.Tex)
 	Minimap:SetFrameStrata("LOW")
 	Minimap:SetFrameLevel(3)
+	if EKMinimapClicker then
+		EKMinimapClicker:SetFrameLevel(Minimap:GetFrameLevel() + 5)
+	end
 
 		-- Where to test:  Queen Azshara, The Eternal Palace
 		hooksecurefunc(UIWidgetBelowMinimapContainerFrame, "SetPoint", function(self, _, parent)
@@ -99,10 +103,17 @@ local function setMinimap()
 	Minimap:SetQuestBlobRingScalar(0)
 	MinimapCluster.BorderTop:Hide()
 	MinimapCluster.ZoneTextButton:Hide()
+
+	-- Keep the housing static overlay available while hiding Blizzard's round border.
+	if MinimapBackdrop and MinimapBackdrop.StaticOverlayTexture then
+		MinimapBackdrop.StaticOverlayTexture:ClearAllPoints()
+		MinimapBackdrop.StaticOverlayTexture:SetAllPoints(Minimap)
+		MinimapBackdrop.StaticOverlayTexture:SetTexCoord(.2, .8, .2, .8)
+	end
 	
 	-- Hide Blizzard
 	local hideAll = {
-		MinimapBackdrop,
+		MinimapCompassTexture,
 		Minimap.ZoomIn,
 		Minimap.ZoomOut,
 		MinimapCluster.InstanceDifficulty,
@@ -117,10 +128,12 @@ local function setMinimap()
 	}
 
 	for _, f in ipairs(hideAll) do
-		f:Hide()
-		if not f.__isHooked then
-			hooksecurefunc(f, "Show", function(self) self:Hide() end)
-			f.__isHooked = true
+		if f then
+			f:Hide()
+			if not f.__isHooked then
+				hooksecurefunc(f, "Show", function(self) self:Hide() end)
+				f.__isHooked = true
+			end
 		end
 	end
 	
@@ -133,7 +146,7 @@ local function setMinimap()
             end
         end
     end
-	
+
 	-- Mail Frame / 信件提示
 	MailFrame:SetFrameLevel(11)
 	MailFrame:SetScale(1.2)
@@ -167,6 +180,7 @@ end
 
 local function QueueStatus()
 	if not EKMinimapDB["QueueStatus"] then return end
+	if not QueueStatusButton or not QueueStatusFrame then return end
 	
 	QueueStatusButton:SetFrameLevel(999)
 	QueueStatusButton:SetParent(Minimap)
@@ -185,7 +199,12 @@ local function QueueStatus()
 		end
 	end
 	
-	hooksecurefunc(QueueStatusFrame, "Update", hookAnchor)
+	if not QueueStatusFrame.__EKMinimapHooked then
+		hooksecurefunc(QueueStatusFrame, "Update", hookAnchor)
+		QueueStatusFrame.__EKMinimapHooked = true
+	end
+
+	hookAnchor()
 end
 
 --===================================================--
@@ -193,6 +212,11 @@ end
 --===================================================--
 
 local Stat = CreateFrame("Button", "EKMinimapTooltipButton", Minimap)
+    Stat:EnableMouse(true)
+    Stat:RegisterForClicks("AnyUp")
+    if Stat.SetPropagateMouseClicks then
+        Stat:SetPropagateMouseClicks(false)
+    end
 	Stat:SetHitRectInsets(-5, -5, -5, 5)
 	Stat:SetSize(46, 46)
 	Stat:ClearAllPoints()
@@ -419,6 +443,23 @@ end
 	-- [[ Minimap ]] --
 	
 	-- Alt+right click to drag frame
+	local Clicker = CreateFrame("Frame", "EKMinimapClicker", Minimap)
+	Clicker:SetAllPoints(Minimap)
+	Clicker:EnableMouse(true)
+	Clicker:EnableMouseWheel(true)
+	Clicker:SetPassThroughButtons("LeftButton")
+	Clicker:SetPropagateMouseMotion(true)
+	Clicker:SetScript("OnMouseWheel", OnMouseWheel)
+	Clicker:RegisterForDrag("RightButton")
+	Clicker:SetScript("OnDragStart", function()
+		if IsAltKeyDown() then
+			Minimap:StartMoving()
+		end
+	end)
+	Clicker:SetScript("OnDragStop", function()
+		Minimap:StopMovingOrSizing()
+	end)
+
 	Minimap:SetScript("OnMouseWheel", OnMouseWheel)
 	Minimap:SetScript("OnDragStart", function(self)
 		if IsAltKeyDown() then
@@ -469,33 +510,33 @@ end
 local function updateIconPos()
 	MailFrame:ClearAllPoints()
 	Stat:ClearAllPoints()
-	Diff:ClearAllPoints()
+    Diff:ClearAllPoints()
+    Stat:SetFrameLevel((EKMinimapClicker and EKMinimapClicker:GetFrameLevel() or Minimap:GetFrameLevel()) + 1)
 
 	if findAnchor("MinimapAnchor") then
-		--MailFrame:SetPoint("BOTTOMLEFT", Minimap, 3, 5)
 		Stat:SetPoint("BOTTOMRIGHT", Minimap, 4, -3)
-		Diff:SetPoint("TOPLEFT", Minimap,  -5, 5)
-		
-		local function updateMapAnchor(frame, _, _, _, _, _, force)
-			if force then return end
-			frame:ClearAllPoints()
-			frame:SetPoint("BOTTOMLEFT", Minimap, "BOTTOMLEFT", 3, 3, true)
-		end
-		hooksecurefunc(MailFrame, "SetPoint", updateMapAnchor)
+		Diff:SetPoint("TOPLEFT", Minimap, -5, 5)
+		MailFrame:SetPoint("BOTTOMLEFT", Minimap, "BOTTOMLEFT", 3, 3, true)
 	else
-		--MailFrame:SetPoint("BOTTOMRIGHT", Minimap, -3, 3)
 		Stat:SetPoint("BOTTOMLEFT", Minimap, -4, -3)
-		Diff:SetPoint("TOPRIGHT", Minimap,  5, 5)
-		
-		local function updateMapAnchor(frame, _, _, _, _, _, force)
+		Diff:SetPoint("TOPRIGHT", Minimap, 5, 5)
+		MailFrame:SetPoint("BOTTOMRIGHT", Minimap, "BOTTOMRIGHT", -3, 3, true)
+	end
+
+	if not MailFrame.__EKMinimapHooked then
+		hooksecurefunc(MailFrame, "SetPoint", function(frame, _, _, _, _, _, force)
 			if force then return end
+
 			frame:ClearAllPoints()
-			frame:SetPoint("BOTTOMRIGHT", Minimap, "BOTTOMRIGHT", -3, 3, true)
-		end
-		hooksecurefunc(MailFrame, "SetPoint", updateMapAnchor)
+			if findAnchor("MinimapAnchor") then
+				frame:SetPoint("BOTTOMLEFT", Minimap, "BOTTOMLEFT", 3, 3, true)
+			else
+				frame:SetPoint("BOTTOMRIGHT", Minimap, "BOTTOMRIGHT", -3, 3, true)
+			end
+		end)
+		MailFrame.__EKMinimapHooked = true
 	end
 end
-
 F.ResetM = function()
 	updateMinimapPos()
 	updateMinimapScale()
