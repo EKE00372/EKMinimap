@@ -1,6 +1,6 @@
-## Interface: 120005
+## Interface: 120100, 120007
 ## Title: |cff00ffffEK|rMinimap
-## Version: R5.0a
+## Version: R5.1
 ## Author: EK
 ## Notes: A square minimap.
 ## IconTexture: "Interface\\Buttons\\WHITE8x8"
@@ -18,10 +18,6 @@
 ## Category-ruRU: Карта
 ## Category-zhCN: 地图
 ## Category-zhTW: 地圖
-
-
-Libs\LibStub.lua
-Libs\LibEasyMenu.lua
 
 Init.lua
 Locales.lua

@@ -1,7 +1,66 @@
 local addon, ns = ...
 local C, F, G, L = unpack(ns)
-local Minimap, EasyMenu, ToggleDropDownMenu = Minimap, EasyMenu, ToggleDropDownMenu
-local LibEasyMenu = LibStub("LibEasyMenu")
+local Minimap, MinimapCluster = Minimap, MinimapCluster
+
+local GarrisonType = Enum and Enum.GarrisonType
+local GARRISON_TYPE_DRAENOR = GarrisonType and GarrisonType.Type_6_0_Garrison or 2
+local GARRISON_TYPE_LEGION = GarrisonType and GarrisonType.Type_7_0_Garrison or 3
+local GARRISON_TYPE_BFA = GarrisonType and GarrisonType.Type_8_0_Garrison or 9
+local GARRISON_TYPE_SHADOWLANDS = GarrisonType and GarrisonType.Type_9_0_Garrison or 111
+
+--===================================================--
+-----------------    [[ EasyMenu ]]    ----------------
+--===================================================--
+
+local function IsMenuItemHidden(value)
+	if type(value.hidden) == "function" then
+		return value.hidden()
+	end
+
+	return value.hidden
+end
+
+local function EasyMenu_Initialize(frame, level, menuList)
+	for index = 1, #menuList do
+		local value = menuList[index]
+		if value.text and not IsMenuItemHidden(value) then
+			value.index = index
+			UIDropDownMenu_AddButton(value, level)
+		end
+	end
+end
+
+local function EasyMenu(menuList, menuFrame, anchor, x, y, displayMode, autoHideDelay)
+	if displayMode == "MENU" then
+		menuFrame.displayMode = displayMode
+	end
+
+	UIDropDownMenu_Initialize(menuFrame, EasyMenu_Initialize, displayMode, nil, menuList)
+	ToggleDropDownMenu(1, nil, menuFrame, anchor, x, y, menuList, nil, autoHideDelay)
+end
+
+--===================================================--
+-----------------    [[ Function ]]    ----------------
+--===================================================--
+
+-- Mission table visibility
+local function hasMissionTable(garrisonType)
+	return C_Garrison and C_Garrison.HasGarrison and C_Garrison.HasGarrison(garrisonType)
+end
+
+local function openMissionTable(garrisonType)
+	if not hasMissionTable(garrisonType) then return end
+
+	if InCombatLockdown() then
+		UIErrorsFrame:AddMessage(G.ErrColor..ERR_NOT_IN_COMBAT)
+	else
+		securecall(ShowGarrisonLandingPage, garrisonType)
+	end
+end
+
+--====================================================--
+-----------------    [[ ClickMenu ]]    ----------------
+--====================================================--
 
 local function OnEvent()
 	if not EKMinimapDB["ClickMenu"] then return end
@@ -111,7 +170,7 @@ local function OnEvent()
 			icon = "Interface\\CURSOR\\Crosshair\\WildPetCapturable",
 			func = function()
 				if InCombatLockdown() then UIErrorsFrame:AddMessage(G.ErrColor..ERR_NOT_IN_COMBAT) return end
-				if not CollectionsJournal then LoadAddOn("Blizzard_Collections") end
+				if not CollectionsJournal then C_AddOns.LoadAddOn("Blizzard_Collections") end
 				securecall(ToggleCollectionsJournal, 1)
 			end,
 			notCheckable = true,
@@ -122,7 +181,7 @@ local function OnEvent()
 			icon = "Interface\\ENCOUNTERJOURNAL\\UI-EJ-HeroicTextIcon",
 			func = function()
 				if InCombatLockdown() then UIErrorsFrame:AddMessage(G.ErrColor..ERR_NOT_IN_COMBAT) return end
-				if not EncounterJournal then LoadAddOn("Blizzard_EncounterJournal") end
+				if not EncounterJournal then C_AddOns.LoadAddOn("Blizzard_EncounterJournal") end
 				securecall(ToggleEncounterJournal)
 			end,
 			notCheckable = true,
@@ -132,7 +191,7 @@ local function OnEvent()
 			text = BLIZZARD_STORE,
 			icon = "Interface\\MINIMAP\\TRACKING\\Auctioneer",
 			func = function()
-				if not StoreFrame then LoadAddOn("Blizzard_StoreUI") end
+				if not StoreFrame then C_AddOns.LoadAddOn("Blizzard_StoreUI") end
 				securecall(ToggleStoreUI)
 			end,
 			notCheckable = true,
@@ -153,30 +212,19 @@ local function OnEvent()
 		{	-- 要塞報告
 			text = GARRISON_LANDING_PAGE_TITLE,
 			icon = "Interface\\HELPFRAME\\OpenTicketIcon",
+			hidden = function() return not hasMissionTable(GARRISON_TYPE_DRAENOR) end,
 			func = function()
-				if not C_Garrison.HasGarrison(2) then return end
-				if InCombatLockdown() then UIErrorsFrame:AddMessage(G.ErrColor..ERR_NOT_IN_COMBAT) else securecall(ShowGarrisonLandingPage, 2) end
+				openMissionTable(GARRISON_TYPE_DRAENOR)
 			end,
 			notCheckable = true,
 		},
-		--[[
-		{	-- 要塞報告 海軍行動
-			text = GARRISON_LANDING_PAGE_TITLE.." "..GARRISON_SHIPYARD_TITLE,
-			icon = "Interface\\HELPFRAME\\OpenTicketIcon",
-			func = function()
-				if C_Garrison.HasShipyard() then
 
-				end
-			end,
-			notCheckable = true,
-		},
-		]]--
 		{	-- 職業大廳報告
 			text = ORDER_HALL_LANDING_PAGE_TITLE,
 			icon = "Interface\\GossipFrame\\WorkOrderGossipIcon",
+			hidden = function() return not hasMissionTable(GARRISON_TYPE_LEGION) end,
 			func = function()
-				if not C_Garrison.HasGarrison(3) then return end
-				if InCombatLockdown() then UIErrorsFrame:AddMessage(G.ErrColor..ERR_NOT_IN_COMBAT) else securecall(ShowGarrisonLandingPage, 3) end
+				openMissionTable(GARRISON_TYPE_LEGION)
 			end,
 			notCheckable = true,
 		},
@@ -184,9 +232,9 @@ local function OnEvent()
 		{	-- 任務指揮桌
 			text = EXPANSION_NAME7.." "..GARRISON_TYPE_8_0_LANDING_PAGE_TITLE,
 			icon = "Interface\\HELPFRAME\\OpenTicketIcon",
+			hidden = function() return not hasMissionTable(GARRISON_TYPE_BFA) end,
 			func = function()
-				if not C_Garrison.HasGarrison(9) then return end
-				if InCombatLockdown() then UIErrorsFrame:AddMessage(G.ErrColor..ERR_NOT_IN_COMBAT) else securecall(ShowGarrisonLandingPage, 9) end
+				openMissionTable(GARRISON_TYPE_BFA)
 			end,
 			notCheckable = true,
 		},
@@ -194,17 +242,13 @@ local function OnEvent()
 		{	-- 誓盟報告
 			text = GARRISON_TYPE_9_0_LANDING_PAGE_TITLE,
 			icon = "Interface\\GossipFrame\\WorkOrderGossipIcon",
+			hidden = function() return not hasMissionTable(GARRISON_TYPE_SHADOWLANDS) end,
 			func = function()
-				if not C_Garrison.HasGarrison(111) then return end
-				if InCombatLockdown() then UIErrorsFrame:AddMessage(G.ErrColor..ERR_NOT_IN_COMBAT) else securecall(ShowGarrisonLandingPage,  111) end
+				openMissionTable(GARRISON_TYPE_SHADOWLANDS)
 			end,
 			notCheckable = true,
 		},
-		--[[
-		{	-- 巨龍時代
-			text = DRAGONFLIGHT_LANDING_PAGE_TITLE,
-		},
-		]]--
+
 		{	-- 客服支援
 			text = GM_EMAIL_NAME,
 			icon = "Interface\\CHATFRAME\\UI-ChatIcon-Blizz",
@@ -314,9 +358,14 @@ local function OnEvent()
 	}
 
 	-- Right Click for Game Menu, Left Click for Track Menu / 右鍵遊戲選單，中鍵追蹤選單
-	Minimap:SetScript("OnMouseUp", function(self, button)
+	local clicker = EKMinimapClicker or Minimap
+	clicker:SetScript("OnMouseUp", function(self, button)
+		local stat = EKMinimapTooltipButton
+		if stat and stat:IsMouseOver() then return end
+		if IsAltKeyDown() then return end
+
 		if button == "RightButton" then
-			LibEasyMenu:EasyMenu(menuList, menuFrame, self, (Minimap:GetWidth() * .7), -3, "MENU", 2)
+			EasyMenu(menuList, menuFrame, self, (Minimap:GetWidth() * .7), -3, "MENU", 2)
 		elseif button == "MiddleButton" then
 			local button = MinimapCluster.Tracking.Button
 			if button then
