@@ -181,12 +181,63 @@ end
 -----------------    [[ Collapse ]]    ----------------
 --===================================================--
 
+-- 初始化與狀態暫存
 local isAutoCollapsed = false
+local mouseDisabledFrames = {}
+
+-- 滑鼠互動狀態的紀錄與開關
+local function setFrameMouseDisabled(frame, disabled)
+	if not frame or type(frame.EnableMouse) ~= "function" then return end
+
+	if disabled then
+		if frame.__EKMinimapMouseEnabled == nil then
+			local mouseEnabled = true
+			if type(frame.IsMouseEnabled) == "function" then
+				mouseEnabled = frame:IsMouseEnabled()
+			end
+
+			frame.__EKMinimapMouseEnabled = mouseEnabled
+			mouseDisabledFrames[frame] = true
+		end
+		frame:EnableMouse(false)
+	elseif frame.__EKMinimapMouseEnabled ~= nil then
+		frame:EnableMouse(frame.__EKMinimapMouseEnabled)
+		frame.__EKMinimapMouseEnabled = nil
+		mouseDisabledFrames[frame] = nil
+	end
+end
+
+-- 將「更新滑鼠互動狀態」的功能套用到各子框架
+local function setFrameMouseDisabledRecursive(frame, disabled)
+	setFrameMouseDisabled(frame, disabled)
+	if not frame or type(frame.GetChildren) ~= "function" then return end
+
+	local children = { frame:GetChildren() }	-- 遞迴處理
+	for _, child in pairs(children) do
+		setFrameMouseDisabledRecursive(child, disabled)
+	end
+end
+
+-- 還原滑鼠互動狀態
+local function restoreMouseDisabledFrames()
+	for frame in pairs(mouseDisabledFrames) do
+		setFrameMouseDisabled(frame, false)
+	end
+end
+
+-- 整合：切換可見性與滑鼠互動狀態
+local function setTrackerVisualHidden(tracker, hidden)
+	if not tracker then return end
+	
+	tracker:SetAlpha(hidden and 0 or 1)	-- 調整透明度而非直接隱藏
+	setFrameMouseDisabledRecursive(tracker, hidden)
+end
+
+-- 套用到各個子追蹤分類並執行：進入 mythic+ 隱藏框架並關閉互動，離開後還原
 local function updateCollapse()
 	if not EKMinimapDB["AutoCollapse"] then return end
 
 	local _, _, difficulty = GetInstanceInfo()
-	-- Collapse child tracker modules only
 	local trackers = {
 		CampaignQuestObjectiveTracker,
 		QuestObjectiveTracker,
@@ -201,17 +252,14 @@ local function updateCollapse()
 
 	if difficulty == 8 then
 		for _, tracker in pairs(trackers) do
-			if tracker and type(tracker.SetCollapsed) == "function" then
-				tracker:SetCollapsed(true)
-			end
+			setTrackerVisualHidden(tracker, true)
 		end
 		isAutoCollapsed = true
 	else
 		for _, tracker in pairs(trackers) do
-			if tracker and type(tracker.SetCollapsed) == "function" then
-				tracker:SetCollapsed(false)
-			end
+			setTrackerVisualHidden(tracker, false)
 		end
+		restoreMouseDisabledFrames()
 		isAutoCollapsed = false
 	end
 end

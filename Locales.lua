@@ -19,8 +19,8 @@ if GetLocale() == "zhTW" then
 	L.VehicleSeatOpt = "隱藏載具框體"
 	L.DurabilityOpt = "隱藏裝備耐久"
 	L.TrackerStyleOpt = "追蹤列表美化"
-	L.AutoCollapseOpt = "自動折疊追蹤"
-	L.CollapseTip = "在傳奇+ 保留進度追蹤，折疊其他追蹤。"
+	L.AutoCollapseOpt = "自動隱藏追蹤"
+	L.CollapseTip = "在傳奇+ 保留進度追蹤，隱藏其他追蹤。"
 	
 	L.SizeOpt = "縮放"
 	L.AnchorOpt = "錨點"
@@ -55,7 +55,7 @@ elseif GetLocale() == "zhCN" then
 	L.VehicleSeatOpt = "隐藏载具框体"
 	L.DurabilityOpt = "隐藏装备耐久"
 	L.TrackerStyleOpt = "追踪列表美化"
-	L.AutoCollapseOpt = "自动折叠追踪"
+	L.AutoCollapseOpt = "自动隐藏追踪"
 	L.CollapseTip = "在大秘境时保留进度追踪，折叠其他追踪。"
 
 	L.SizeOpt = "缩放"
@@ -91,8 +91,8 @@ else
 	L.VehicleSeatOpt = "Hide Vehicle Seat"
 	L.DurabilityOpt = "Hide Durability"
 	L.TrackerStyleOpt = "Tracker list Style"
-	L.AutoCollapseOpt = "Tracker Auto Collapse"
-	L.CollapseTip = "Keep progress tracker and collapse other in Mythic+."
+	L.AutoCollapseOpt = "Tracker Auto Hide"
+	L.CollapseTip = "Keep progress tracker and hide other in Mythic+."
 
 	L.SizeOpt = "Scale"
 	L.AnchorOpt = "Anchor"
