@@ -312,8 +312,13 @@ local function createGarrisonTooltip(self)
 		end
 	end
 	
+	local landingTitle = ExpansionLandingPageMinimapButton and ExpansionLandingPageMinimapButton.title
 	GameTooltip:AddLine(" ")
+	if landingTitle then
+		GameTooltip:AddDoubleLine(" ", "|TInterface\\TUTORIALFRAME\\UI-TUTORIAL-FRAME:13:11:0:-1:512:512:12:66:230:307|t "..ExpansionLandingPageMinimapButton.title, 1,1,1,1,1,1)
+	end
 	GameTooltip:AddDoubleLine(" ", "|TInterface\\TUTORIALFRAME\\UI-TUTORIAL-FRAME:13:11:0:-1:512:512:12:66:333:411|t "..L.AddonCompartment, 1,1,1,1,1,1)
+
 
 	GameTooltip:Show()
 end
@@ -489,8 +494,8 @@ end
 				button.menu:ClearAllPoints()
 				button.menu:SetPoint("TOP", self, "BOTTOM", findAnchor("MinimapAnchor") and (Minimap:GetWidth() * .5) or -(Minimap:GetWidth() * .5), -3)
 			end
-		else
-			return
+		elseif button == "LeftButton" and ExpansionLandingPageMinimapButton then
+			ExpansionLandingPageMinimapButton:Click()
 		end
 	end)
 	
