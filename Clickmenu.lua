@@ -2,28 +2,22 @@ local addon, ns = ...
 local C, F, G, L = unpack(ns)
 local Minimap, MinimapCluster = Minimap, MinimapCluster
 
-local GarrisonType = Enum and Enum.GarrisonType
-local GARRISON_TYPE_DRAENOR = GarrisonType and GarrisonType.Type_6_0_Garrison or 2
-local GARRISON_TYPE_LEGION = GarrisonType and GarrisonType.Type_7_0_Garrison or 3
-local GARRISON_TYPE_BFA = GarrisonType and GarrisonType.Type_8_0_Garrison or 9
-local GARRISON_TYPE_SHADOWLANDS = GarrisonType and GarrisonType.Type_9_0_Garrison or 111
+local GarrisonType = Enum.GarrisonType
+local GARRISON_TYPE_DRAENOR = GarrisonType.Type_6_0_Garrison
+local GARRISON_TYPE_LEGION = GarrisonType.Type_7_0_Garrison
+local GARRISON_TYPE_BFA = GarrisonType.Type_8_0_Garrison
+local GARRISON_TYPE_SHADOWLANDS = GarrisonType.Type_9_0_Garrison
 
 --===================================================--
 -----------------    [[ EasyMenu ]]    ----------------
 --===================================================--
 
-local function IsMenuItemHidden(value)
-	if type(value.hidden) == "function" then
-		return value.hidden()
-	end
-
-	return value.hidden
-end
-
 local function EasyMenu_Initialize(frame, level, menuList)
 	for index = 1, #menuList do
 		local value = menuList[index]
-		if value.text and not IsMenuItemHidden(value) then
+		local hidden = value.hidden
+		if type(hidden) == "function" then hidden = hidden() end
+		if value.text and not hidden then
 			value.index = index
 			UIDropDownMenu_AddButton(value, level)
 		end
@@ -45,7 +39,9 @@ end
 
 -- Mission table visibility
 local function hasMissionTable(garrisonType)
-	return C_Garrison and C_Garrison.HasGarrison and C_Garrison.HasGarrison(garrisonType)
+	-- 誓盟報告還需要目前誓盟；只擁有任務桌資料不足以建立聲望按鈕。
+	return C_Garrison.HasGarrison(garrisonType)
+		and (garrisonType ~= GARRISON_TYPE_SHADOWLANDS or C_Covenants.GetActiveCovenantID() > 0)
 end
 
 local function openMissionTable(garrisonType)
@@ -107,7 +103,6 @@ local function OnEvent()
 			icon = "Interface\\MINIMAP\\TRACKING\\QuestBlob",
 			func = function() 
 				if InCombatLockdown() then UIErrorsFrame:AddMessage(G.ErrColor..ERR_NOT_IN_COMBAT) return end
-				if not AchievementFrame then C_AddOns.LoadAddOn("Blizzard_AchievementUI") end
 				securecall(ToggleAchievementFrame)
 			end,
 			notCheckable = true,
@@ -117,7 +112,7 @@ local function OnEvent()
 			text = MAP_AND_QUEST_LOG,	-- OLD: QUESTLOG_BUTTON
 			icon = "Interface\\GossipFrame\\ActiveQuestIcon",
 			func = function()
-				if InCombatLockdown() then UIErrorsFrame:AddMessage(G.ErrColor..ERR_NOT_IN_COMBAT) else securecall(ToggleFrame, WorldMapFrame) end
+				if InCombatLockdown() then UIErrorsFrame:AddMessage(G.ErrColor..ERR_NOT_IN_COMBAT) else securecall(ToggleWorldMap) end
 			end,
 			notCheckable = true,
 		},
@@ -170,7 +165,6 @@ local function OnEvent()
 			icon = "Interface\\CURSOR\\Crosshair\\WildPetCapturable",
 			func = function()
 				if InCombatLockdown() then UIErrorsFrame:AddMessage(G.ErrColor..ERR_NOT_IN_COMBAT) return end
-				if not CollectionsJournal then C_AddOns.LoadAddOn("Blizzard_Collections") end
 				securecall(ToggleCollectionsJournal, 1)
 			end,
 			notCheckable = true,
@@ -181,7 +175,6 @@ local function OnEvent()
 			icon = "Interface\\ENCOUNTERJOURNAL\\UI-EJ-HeroicTextIcon",
 			func = function()
 				if InCombatLockdown() then UIErrorsFrame:AddMessage(G.ErrColor..ERR_NOT_IN_COMBAT) return end
-				if not EncounterJournal then C_AddOns.LoadAddOn("Blizzard_EncounterJournal") end
 				securecall(ToggleEncounterJournal)
 			end,
 			notCheckable = true,
@@ -271,7 +264,6 @@ local function OnEvent()
 			text = L.Calendar,
 			func = function()
 				if InCombatLockdown() then UIErrorsFrame:AddMessage(G.ErrColor..ERR_NOT_IN_COMBAT) return end
-				if not CalendarFrame then C_AddOns.LoadAddOn("Blizzard_Calendar") end
 				securecall(ToggleCalendar)
 			end,
 			notCheckable = true,
@@ -282,8 +274,7 @@ local function OnEvent()
 			colorCode = "|cff999999",
 			func = function()
 				if InCombatLockdown() then UIErrorsFrame:AddMessage(G.ErrColor..ERR_NOT_IN_COMBAT) return end
-				if not BattlefieldMapFrame then C_AddOns.LoadAddOn("Blizzard_BattlefieldMap") end
-				securecall(ToggleFrame, BattlefieldMapFrame)
+				securecall(ToggleBattlefieldMap)
 			end,
 			notCheckable = true,
 		},
@@ -336,17 +327,48 @@ local function OnEvent()
 			isTitle = true,
 			notCheckable = true,
 		},
-		--[[{	-- bigwigs
+		-- 僅顯示已註冊的設定入口；GUI 建立與載入交給各插件。
+		{	-- BigWigs
 			text = "BigWigs",
+			hidden = function() return not SlashCmdList.BigWigs end,
 			func = function()
-				if not IsAddOnLoaded("Bigwigs") then
-					print("尚未啟用Bigwigs")
-				else
-					SlashCmdList["BigWigs"]("BigWigs1")
-				end
+				SlashCmdList.BigWigs()
 			end,
 			notCheckable = true,
-		},]]--
+		},
+		{	-- DBM
+			text = "DBM",
+			hidden = function() return not SlashCmdList.DEADLYBOSSMODS end,
+			func = function()
+				-- /dbm 無子命令時仍需空字串，供 handler 解析。
+				SlashCmdList.DEADLYBOSSMODS("")
+			end,
+			notCheckable = true,
+		},
+		{	-- oUF_Ruri
+			text = "oUF_Ruri",
+			hidden = function() return not SlashCmdList.OUFRURI end,
+			func = function()
+				SlashCmdList.OUFRURI()
+			end,
+			notCheckable = true,
+		},
+		{	-- oUF_Hankk
+			text = "oUF_Hankk",
+			hidden = function() return not SlashCmdList.OUFHANKK end,
+			func = function()
+				SlashCmdList.OUFHANKK()
+			end,
+			notCheckable = true,
+		},
+		{	-- Anyon
+			text = "Anyon",
+			hidden = function() return not SlashCmdList.ANYON end,
+			func = function()
+				SlashCmdList.ANYON()
+			end,
+			notCheckable = true,
+		},
 		{	-- 重載
 			text = RELOADUI,
 			colorCode = "|cff999999",
@@ -358,7 +380,7 @@ local function OnEvent()
 	}
 
 	-- Right Click for Game Menu, Left Click for Track Menu / 右鍵遊戲選單，中鍵追蹤選單
-	local clicker = EKMinimapClicker or Minimap
+	local clicker = EKMinimapClicker
 	clicker:SetScript("OnMouseUp", function(self, button)
 		local stat = EKMinimapTooltipButton
 		if stat and stat:IsMouseOver() then return end
