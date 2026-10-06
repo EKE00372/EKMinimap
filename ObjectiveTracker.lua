@@ -5,24 +5,16 @@ local C, F, G, L = unpack(ns)
 -----------------    [[ Function ]]    ----------------
 --===================================================--
 
-local function getHeader(frame)
-	return frame and frame.Header
-end
-
 local function addOutlineFlag(flags)
-	if flags and (flags:find("OUTLINE") or flags:find("THICKOUTLINE")) then
+	if flags and flags:find("OUTLINE", 1, true) then
 		return flags
 	end
 	return flags and flags ~= "" and flags..",OUTLINE" or "OUTLINE"
 end
 
 local function styleObjectiveTrackerFontObject(fontObject)
-	if not fontObject then return end
-
 	local font, size, flags = fontObject:GetFont()
-	if font and size then
-		fontObject:SetFont(font, size, addOutlineFlag(flags))
-	end
+	fontObject:SetFont(font, size, addOutlineFlag(flags))
 	fontObject:SetShadowOffset(0, 0)
 end
 
@@ -30,11 +22,6 @@ local function styleObjectiveTrackerFonts()
 	-- Only touch ObjectiveTracker font objects.
 	styleObjectiveTrackerFontObject(ObjectiveTrackerLineFont)
 	styleObjectiveTrackerFontObject(ObjectiveTrackerHeaderFont)
-
-	if ObjectiveTrackerManager and not ObjectiveTrackerManager.__EKMinimapFontHooked then
-		hooksecurefunc(ObjectiveTrackerManager, "SetTextSize", styleObjectiveTrackerFonts)
-		ObjectiveTrackerManager.__EKMinimapFontHooked = true
-	end
 end
 
 --================================================--
@@ -42,30 +29,28 @@ end
 --================================================--
 
 local function trackerStyle()
-	if not EKMinimapDB["TrackerStyle"] then return end
+	if not F.GetEKMOption("TrackerStyle") then return end
 
 	local OTF = ObjectiveTrackerFrame
 	local textButtonGap = -8
 	local headerTextYOffset = 2		-- Header text and line texture offset
 	local lineYOffset = 3
 	local headers = {
-		getHeader(ObjectiveTrackerFrame),
-		getHeader(ScenarioObjectiveTracker),
-		getHeader(CampaignQuestObjectiveTracker),
-		getHeader(UIWidgetObjectiveTracker),
-		getHeader(QuestObjectiveTracker),
-		getHeader(AchievementObjectiveTracker),
-		getHeader(BonusObjectiveTracker),
-		getHeader(MonthlyActivitiesObjectiveTracker),
-		getHeader(ProfessionsRecipeTracker),
-		getHeader(WorldQuestObjectiveTracker),
-		getHeader(AdventureObjectiveTracker),
-		getHeader(InitiativeTasksObjectiveTracker),
+		ObjectiveTrackerFrame.Header,
+		ScenarioObjectiveTracker.Header,
+		CampaignQuestObjectiveTracker.Header,
+		UIWidgetObjectiveTracker.Header,
+		QuestObjectiveTracker.Header,
+		AchievementObjectiveTracker.Header,
+		BonusObjectiveTracker.Header,
+		MonthlyActivitiesObjectiveTracker.Header,
+		ProfessionsRecipeTracker.Header,
+		WorldQuestObjectiveTracker.Header,
+		AdventureObjectiveTracker.Header,
+		InitiativeTasksObjectiveTracker.Header,
 	}
 
 	local function reskinHeader(header)
-		if not header then return end
-
 		if header.Background then
 			header.Background:SetAtlas(nil)
 			header.Background:Hide()
@@ -88,16 +73,12 @@ local function trackerStyle()
 		end
 
 		if not C_AddOns.IsAddOnLoaded("AuroraClassic") then
-			local headerTex = header.__EKMinimapHeaderTex
-			if not headerTex then
-				headerTex = header:CreateTexture(nil, "BACKGROUND")
-				headerTex:SetTexture(G.Tex)
-				headerTex:SetVertexColor(G.Ccolors.r, G.Ccolors.g, G.Ccolors.b, .8)
-				headerTex.bg = F.CreateBG(headerTex, 2, 2, .5)
-				header.__EKMinimapHeaderTex = headerTex
-			end
+			local headerTex = header:CreateTexture(nil, "BACKGROUND")
+			headerTex:SetTexture(G.Tex)
+			headerTex:SetVertexColor(G.Ccolors.r, G.Ccolors.g, G.Ccolors.b, .8)
+			F.CreateBG(headerTex, 2, 2, .5)
 
-			headerTex:SetSize((OTF and OTF:GetWidth() or 250) / 2, 5)
+			headerTex:SetSize(OTF:GetWidth() / 2, 5)
 			headerTex:ClearAllPoints()
 			if header.Text then
 				headerTex:SetPoint("TOPRIGHT", header.Text, "BOTTOMRIGHT", 0, lineYOffset)
@@ -112,31 +93,15 @@ local function trackerStyle()
 	end
 
 	local function reskinMinimizeButton(header)
-		local minimize = header and header.MinimizeButton
+		local minimize = header.MinimizeButton
 		if not minimize then return end
-
-		if not minimize.__EKMinimapBG then
-			minimize.__EKMinimapBG = F.CreateBG(minimize, 2, 2, .5)
-		end
-
-		if header ~= getHeader(ObjectiveTrackerFrame) then return end
-
-		if not minimize.__EKMinimapResized then
-			-- Match main and child header button size.
-			minimize:SetSize(16, 16)
-			minimize.__EKMinimapResized = true
-		end
-
-		if header.Text then
-			local textOffset = textButtonGap
-			header.Text:ClearAllPoints()
-			header.Text:SetPoint("RIGHT", minimize, "LEFT", textOffset, headerTextYOffset)
-			header.Text:SetJustifyH("RIGHT")
-		end
+		local bg = F.CreateBG(minimize, 2, 2, .5)
+		if header ~= OTF.Header then return end
+		-- Match main and child header button size.
+		minimize:SetSize(16, 16)
 
 		local function updateMainMinimizeButton()
-			local parent = header:GetParent()
-			local collapsed = parent and type(parent.IsCollapsed) == "function" and parent:IsCollapsed()
+			local collapsed = OTF:IsCollapsed()
 			local normalTexture = minimize:GetNormalTexture()
 			local pushedTexture = minimize:GetPushedTexture()
 			local highlightTexture = minimize:GetHighlightTexture()
@@ -155,19 +120,13 @@ local function trackerStyle()
 			if highlightTexture then
 				highlightTexture:SetAlpha(0)
 			end
-			if minimize.__EKMinimapBG then
-				minimize.__EKMinimapBG:ClearAllPoints()
-				minimize.__EKMinimapBG:SetPoint("TOPLEFT", minimize, -2 + visualOffsetX, 2)
-				minimize.__EKMinimapBG:SetPoint("BOTTOMRIGHT", minimize, 2 + visualOffsetX, -2)
-			end
+			bg:ClearAllPoints()
+			bg:SetPoint("TOPLEFT", minimize, -2 + visualOffsetX, 2)
+			bg:SetPoint("BOTTOMRIGHT", minimize, 2 + visualOffsetX, -2)
 		end
 
 		updateMainMinimizeButton()
-
-		if not header.__EKMinimapMinimizeHooked and type(header.SetCollapsed) == "function" then
-			hooksecurefunc(header, "SetCollapsed", updateMainMinimizeButton)
-			header.__EKMinimapMinimizeHooked = true
-		end
+		hooksecurefunc(header, "SetCollapsed", updateMainMinimizeButton)
 	end
 
 	for _, header in pairs(headers) do
@@ -175,6 +134,7 @@ local function trackerStyle()
 	end
 
 	styleObjectiveTrackerFonts()
+	hooksecurefunc(ObjectiveTrackerManager, "SetTextSize", styleObjectiveTrackerFonts)
 end
 
 --===================================================--
@@ -184,109 +144,110 @@ end
 -- 初始化與狀態暫存
 local isAutoCollapsed = false
 local mouseDisabledFrames = {}
+local trackerAlphas = {}
+local trackers
 
 -- 滑鼠互動狀態的紀錄與開關
-local function setFrameMouseDisabled(frame, disabled)
-	if not frame or type(frame.EnableMouse) ~= "function" then return end
-
-	if disabled then
-		if frame.__EKMinimapMouseEnabled == nil then
-			local mouseEnabled = true
-			if type(frame.IsMouseEnabled) == "function" then
-				mouseEnabled = frame:IsMouseEnabled()
-			end
-
-			frame.__EKMinimapMouseEnabled = mouseEnabled
-			mouseDisabledFrames[frame] = true
-		end
-		frame:EnableMouse(false)
-	elseif frame.__EKMinimapMouseEnabled ~= nil then
-		frame:EnableMouse(frame.__EKMinimapMouseEnabled)
-		frame.__EKMinimapMouseEnabled = nil
-		mouseDisabledFrames[frame] = nil
+local function setFrameMouseDisabledRecursive(frame)
+	if not mouseDisabledFrames[frame] then
+		mouseDisabledFrames[frame] = { frame:IsMouseClickEnabled(), frame:IsMouseMotionEnabled() }
 	end
-end
-
--- 將「更新滑鼠互動狀態」的功能套用到各子框架
-local function setFrameMouseDisabledRecursive(frame, disabled)
-	setFrameMouseDisabled(frame, disabled)
-	if not frame or type(frame.GetChildren) ~= "function" then return end
+	frame:EnableMouse(false)
 
 	local children = { frame:GetChildren() }	-- 遞迴處理
-	for _, child in pairs(children) do
-		setFrameMouseDisabledRecursive(child, disabled)
+	for _, child in ipairs(children) do
+		setFrameMouseDisabledRecursive(child)
 	end
-end
-
--- 還原滑鼠互動狀態
-local function restoreMouseDisabledFrames()
-	for frame in pairs(mouseDisabledFrames) do
-		setFrameMouseDisabled(frame, false)
-	end
-end
-
--- 整合：切換可見性與滑鼠互動狀態
-local function setTrackerVisualHidden(tracker, hidden)
-	if not tracker then return end
-	
-	tracker:SetAlpha(hidden and 0 or 1)	-- 調整透明度而非直接隱藏
-	setFrameMouseDisabledRecursive(tracker, hidden)
 end
 
 -- 套用到各個子追蹤分類並執行：進入 mythic+ 隱藏框架並關閉互動，離開後還原
 local function updateCollapse()
-	if not EKMinimapDB["AutoCollapse"] then return end
-
 	local _, _, difficulty = GetInstanceInfo()
-	local trackers = {
-		CampaignQuestObjectiveTracker,
-		QuestObjectiveTracker,
-		AchievementObjectiveTracker,
-		BonusObjectiveTracker,
-		MonthlyActivitiesObjectiveTracker,
-		ProfessionsRecipeTracker,
-		WorldQuestObjectiveTracker,
-		AdventureObjectiveTracker,
-		InitiativeTasksObjectiveTracker,
-	}
-
-	if difficulty == 8 then
-		for _, tracker in pairs(trackers) do
-			setTrackerVisualHidden(tracker, true)
+	if difficulty ~= 8 then
+		if not isAutoCollapsed then return end
+		for tracker, alpha in pairs(trackerAlphas) do
+			tracker:SetAlpha(alpha)
+			trackerAlphas[tracker] = nil
 		end
-		isAutoCollapsed = true
-	else
-		for _, tracker in pairs(trackers) do
-			setTrackerVisualHidden(tracker, false)
+		-- 還原滑鼠互動狀態：直接處理已記錄的 frame
+		for frame, state in pairs(mouseDisabledFrames) do
+			frame:SetMouseClickEnabled(state[1])
+			frame:SetMouseMotionEnabled(state[2])
+			mouseDisabledFrames[frame] = nil
 		end
-		restoreMouseDisabledFrames()
 		isAutoCollapsed = false
+		return
 	end
+
+	for _, tracker in ipairs(trackers) do
+		if trackerAlphas[tracker] == nil then
+			trackerAlphas[tracker] = tracker:GetAlpha()
+		end
+		tracker:SetAlpha(0)	-- 調整透明度而非直接隱藏
+		setFrameMouseDisabledRecursive(tracker)
+	end
+	isAutoCollapsed = true
 end
 
 --================================================--
 -----------------    [[ Load ]]    -----------------
 --================================================--
 
-local function OnEvent(self, event)
-	if not C_AddOns.IsAddOnLoaded("Blizzard_ObjectiveTracker") then
-		C_AddOns.LoadAddOn("Blizzard_ObjectiveTracker")
-	end
+local frame = CreateFrame("FRAME")
+local collapseTimer
 
-	if event == "PLAYER_LOGIN" then
-		trackerStyle()
-	else
-		C_Timer.After(2, function()
-			if not InCombatLockdown() then
-				updateCollapse()
-			end
-		end)
+local function applyPendingCollapse()
+	collapseTimer = nil
+	if InCombatLockdown() then
+		-- 戰鬥中延遲載入
+		frame:RegisterEvent("PLAYER_REGEN_ENABLED")
+		return
 	end
+	frame:UnregisterEvent("PLAYER_REGEN_ENABLED")
+	updateCollapse()
 end
 
-local frame = CreateFrame("FRAME")
-	frame:RegisterEvent("PLAYER_LOGIN")
-	frame:RegisterEvent("PLAYER_ENTERING_WORLD")
-	frame:RegisterEvent("ZONE_CHANGED_NEW_AREA")
-	frame:RegisterEvent("CHALLENGE_MODE_START")
-	frame:SetScript("OnEvent", OnEvent)
+local function OnEvent(self, event)
+	if event == "PLAYER_LOGIN" then
+		trackerStyle()
+		self:UnregisterEvent("PLAYER_LOGIN")
+
+		-- 功能開關只在重載時變更，停用時不建立隱藏流程。
+		if not F.GetEKMOption("AutoCollapse") then
+			self:SetScript("OnEvent", nil)
+			return
+		end
+
+		-- 避免新追蹤的項目隱藏時可被點擊
+		trackers = {
+			CampaignQuestObjectiveTracker,
+			QuestObjectiveTracker,
+			AchievementObjectiveTracker,
+			BonusObjectiveTracker,
+			MonthlyActivitiesObjectiveTracker,
+			ProfessionsRecipeTracker,
+			WorldQuestObjectiveTracker,
+			AdventureObjectiveTracker,
+			InitiativeTasksObjectiveTracker,
+		}
+		for _, tracker in ipairs(trackers) do
+			hooksecurefunc(tracker, "EndLayout", function(self)
+				if isAutoCollapsed then
+					setFrameMouseDisabledRecursive(self)
+				end
+			end)
+		end
+
+		self:RegisterEvent("PLAYER_ENTERING_WORLD")
+		self:RegisterEvent("ZONE_CHANGED_NEW_AREA")
+		self:RegisterEvent("CHALLENGE_MODE_START")
+		return
+	end
+
+	-- 合併推遲更新
+	if collapseTimer then collapseTimer:Cancel() end
+	collapseTimer = C_Timer.NewTimer(2, applyPendingCollapse)
+end
+
+frame:RegisterEvent("PLAYER_LOGIN")
+frame:SetScript("OnEvent", OnEvent)
