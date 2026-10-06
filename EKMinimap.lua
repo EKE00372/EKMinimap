@@ -2,7 +2,6 @@ local addon, ns = ...
 local C, F, G, L = unpack(ns)
 local Minimap, MinimapCluster, sub, floor, CreateFrame = Minimap, MinimapCluster, string.sub, math.floor, CreateFrame
 local MailFrame = MinimapCluster.IndicatorFrame.MailFrame
-local IsPlayerAtEffectiveMaxLevel = GameRulesUtil.IsPlayerAtEffectiveMaxLevel or IsPlayerAtEffectiveMaxLevel
 local AddonCompartmentFrame = AddonCompartmentFrame
 
 --====================================================--
@@ -18,28 +17,8 @@ end
 local function findAnchor(value)
 	--local anchor = EKMinimapDB["MinimapAnchor"]
 	local anchor = EKMinimapDB[value]
-	local myAnchor = sub(anchor, -4)				-- get minimap anchor left or rignt
-	local iconAnchor = not not (myAnchor == "LEFT")	-- hope教我的語法糖
-	
-	return iconAnchor
-end
-
---[[ Format 24/12 hour clock ]]--
-
-local function updateTimerFormat(hour, minute)
-	if not EKMinimapDB["HoverClock"] then return end
-	
-	if GetCVarBool("timeMgrUseMilitaryTime") then
-		return format(TIMEMANAGER_TICKER_24HOUR, hour, minute)
-	else
-		local timerUnit = hour < 12 and " AM" or " PM"
-		
-		if hour > 12 then
-			hour = hour - 12
-		end
-		
-		return format(TIMEMANAGER_TICKER_12HOUR..timerUnit, hour, minute)
-	end
+	local myAnchor = sub(anchor, -4)	-- get minimap anchor left or rignt
+	return myAnchor == "LEFT"
 end
 
 --====================-==============================--
@@ -83,21 +62,28 @@ local function setMinimap()
 	Minimap:SetMaskTexture(G.Tex)
 	Minimap:SetFrameStrata("LOW")
 	Minimap:SetFrameLevel(3)
-	if EKMinimapClicker then
-		EKMinimapClicker:SetFrameLevel(Minimap:GetFrameLevel() + 5)
-	end
+	EKMinimapClicker:SetFrameLevel(Minimap:GetFrameLevel() + 5)
 
-		-- Where to test:  Queen Azshara, The Eternal Palace
-		hooksecurefunc(UIWidgetBelowMinimapContainerFrame, "SetPoint", function(self, _, parent)
-			if parent == "MinimapCluster" or parent == MinimapCluster then
-				self:ClearAllPoints()
-				self:SetClampedToScreen(true)
-				self:SetPoint("TOP", Minimap, "BOTTOM")
-			end
-		end)
+	-- Where to test:  Queen Azshara, The Eternal Palace
+	hooksecurefunc(UIWidgetBelowMinimapContainerFrame, "SetPoint", function(self, _, parent)
+		if parent == "MinimapCluster" or parent == MinimapCluster then
+			self:ClearAllPoints()
+			self:SetClampedToScreen(true)
+			self:SetPoint("TOP", Minimap, "BOTTOM")
+		end
+	end)
 
 	MinimapCluster:EnableMouse(false)
 	Minimap.bg = F.CreateBG(Minimap, 5, 5, 1)
+
+	-- 原生座標移至小地圖內，隨小地圖縮放
+	local coords = MinimapCluster.MinimapContainer.PlayerCoords
+	coords:SetParent(Minimap)
+	coords:ClearAllPoints()
+	coords:SetPoint("BOTTOM", Minimap, "BOTTOM", 0, 8)
+	-- 座標文字描邊
+	local font, size = coords.CoordText:GetFont()
+	coords.CoordText:SetFont(font, size, "OUTLINE")
 
 	Minimap:SetArchBlobRingScalar(0)
 	Minimap:SetQuestBlobRingScalar(0)
@@ -128,22 +114,14 @@ local function setMinimap()
 	}
 
 	for _, f in ipairs(hideAll) do
-		if f then
-			f:Hide()
-			if not f.__isHooked then
-				hooksecurefunc(f, "Show", function(self) self:Hide() end)
-				f.__isHooked = true
-			end
-		end
+		f:Hide()
+		hooksecurefunc(f, "Show", function(self) self:Hide() end)
 	end
 	
     for key, f in pairs(hideOptional) do
-        if f and EKMinimapDB[key] then
+        if EKMinimapDB[key] then
             f:Hide()
-            if not f.__isHooked then
-                hooksecurefunc(f, "Show", function(self) self:Hide() end)
-                f.__isHooked = true
-            end
+            hooksecurefunc(f, "Show", function(self) self:Hide() end)
         end
     end
 
@@ -180,10 +158,9 @@ end
 
 local function QueueStatus()
 	if not EKMinimapDB["QueueStatus"] then return end
-	if not QueueStatusButton or not QueueStatusFrame then return end
 	
-	QueueStatusButton:SetFrameLevel(999)
 	QueueStatusButton:SetParent(Minimap)
+	QueueStatusButton:SetFrameLevel(999)
 	QueueStatusButton:SetScale(.8)
 	
 	local function hookAnchor()
@@ -198,11 +175,7 @@ local function QueueStatus()
 			QueueStatusFrame:SetPoint("TOPRIGHT", Minimap, "TOPLEFT", -10, -2)
 		end
 	end
-	
-	if not QueueStatusFrame.__EKMinimapHooked then
-		hooksecurefunc(QueueStatusFrame, "Update", hookAnchor)
-		QueueStatusFrame.__EKMinimapHooked = true
-	end
+	hooksecurefunc(QueueStatusFrame, "Update", hookAnchor)
 
 	hookAnchor()
 end
@@ -214,9 +187,7 @@ end
 local Stat = CreateFrame("Button", "EKMinimapTooltipButton", Minimap)
     Stat:EnableMouse(true)
     Stat:RegisterForClicks("AnyUp")
-    if Stat.SetPropagateMouseClicks then
-        Stat:SetPropagateMouseClicks(false)
-    end
+    Stat:SetPropagateMouseClicks(false)
 	Stat:SetHitRectInsets(-5, -5, -5, 5)
 	Stat:SetSize(46, 46)
 	Stat:ClearAllPoints()
@@ -226,11 +197,22 @@ local Stat = CreateFrame("Button", "EKMinimapTooltipButton", Minimap)
 	Stat:SetHighlightTexture(G.Report)
 	Stat:SetAlpha(0)
 	Stat:SetScale(1)
+	-- 先把按鈕移出 MinimapCluster 以免參與原生尺寸計算引起錯誤
+	AddonCompartmentFrame:SetParent(Minimap)
 	AddonCompartmentFrame:ClearAllPoints()
-	AddonCompartmentFrame:SetAllPoints(Minimap)
-	AddonCompartmentFrame:SetPoint("CENTER", Stat)
+	AddonCompartmentFrame:SetAllPoints(Stat)
 	AddonCompartmentFrame:SetAlpha(0)
 	AddonCompartmentFrame:EnableMouse(false)
+
+-- 提示與點擊共用原生 Landing Page 可用條件；按鈕本身刻意保持隱藏。
+local function canOpenLandingPage()
+	if not GameRulesUtil.ShouldShowExpansionLandingPageButton() then return false end
+	if ExpansionLandingPageMinimapButton:IsExpansionOverlayMode() then return true end
+	if not ExpansionLandingPageMinimapButton:IsInGarrisonMode() then return false end
+
+	local garrisonType = C_Garrison.GetLandingPageGarrisonType()
+	return garrisonType ~= 0 and C_Garrison.IsLandingPageMinimapButtonVisible(garrisonType)
+end
 
 local function createGarrisonTooltip(self)
 	if not EKMinimapDB["CharacterIcon"] then return end
@@ -239,7 +221,7 @@ local function createGarrisonTooltip(self)
 	GameTooltip:AddLine(CHARACTER_BUTTON, .6,.8, 1)
 
 	-- Experience
-	if not IsPlayerAtEffectiveMaxLevel() then
+	if not GameRulesUtil.IsPlayerAtEffectiveMaxLevel() then
 		local cur, max = UnitXP("player"), UnitXPMax("player")
 		local lvl = UnitLevel("player")
 		local rested = GetXPExhaustion()
@@ -263,34 +245,47 @@ local function createGarrisonTooltip(self)
 	end
 	
 	-- Reputation
-	if C_Reputation.GetWatchedFactionData() then
-		local GetWatchedFactionData = C_Reputation.GetWatchedFactionData()
-		local name = GetWatchedFactionData.name
-		local standing = GetWatchedFactionData.reaction
-		local min = GetWatchedFactionData.currentReactionThreshold
-		local max = GetWatchedFactionData.nextReactionThreshold
-		local cur = GetWatchedFactionData.currentStanding
-		local factionID = GetWatchedFactionData.factionID
+	local factionData = C_Reputation.GetWatchedFactionData()
+	if factionData then
+		local name = factionData.name
+		local standing = factionData.reaction
+		local min = factionData.currentReactionThreshold
+		local max = factionData.nextReactionThreshold
+		local cur = factionData.currentStanding
+		local factionID = factionData.factionID
 		
 		GameTooltip:AddLine(" ")
 		
 		local repInfo = C_GossipInfo.GetFriendshipReputation(factionID)
 		local friendID =  repInfo.friendshipFactionID
+		local majorFactionData = C_Reputation.IsMajorFaction(factionID) and C_MajorFactions.GetMajorFactionData(factionID)
 
-		if factionID and C_Reputation.IsMajorFaction(factionID) then
+		if majorFactionData then
+			GameTooltip:AddDoubleLine(name, JOURNEYS_RENOWN_LABEL.." "..majorFactionData.renownLevel, 0, 1, 0.5, 0, 1, 0.5)
+		elseif friendID and friendID ~= 0 then
+			GameTooltip:AddDoubleLine(name, repInfo.reaction, 0, 1, 0.5, 0, 1, 0.5)
+		else
+			GameTooltip:AddDoubleLine(name, _G["FACTION_STANDING_LABEL"..standing], 0, 1, 0.5, 0, 1, 0.5)
+		end
+
+		if C_Reputation.IsFactionParagonForCurrentPlayer(factionID) then
+			local cur, max, _, hasRewardPending, _, paragonLevel = C_Reputation.GetFactionParagonInfo(factionID)
+			if cur and max then
+				GameTooltip:AddDoubleLine(REFORGE_CURRENT..HEADER_COLON, L.Paragon.." "..paragonLevel, 1, 1, 1, 1, 1, 1)
+				GameTooltip:AddDoubleLine(NEXT_RANK_COLON, max-cur%max, 1, 1, 1, 1, 1, 1)
+				if hasRewardPending then
+					GameTooltip:AddDoubleLine(" ", WEEKLY_REWARDS_UNCLAIMED_TITLE, 1, 1, 1, 0, 1, 0.5)
+				end
+			end
+		elseif majorFactionData then
 			-- 10.0 以後的四大陣營
-			local majorFactionData = C_MajorFactions.GetMajorFactionData(factionID)
-			local renownLevel, cur, min, max = majorFactionData.renownLevel, majorFactionData.renownReputationEarned, 0, majorFactionData.renownLevelThreshold
-			
-			GameTooltip:AddDoubleLine(name, JOURNEYS_RENOWN_LABEL.." "..renownLevel, 0, 1, 0.5, 0, 1, 0.5)
+			local cur, max = majorFactionData.renownReputationEarned, majorFactionData.renownLevelThreshold
+
 			GameTooltip:AddDoubleLine(REFORGE_CURRENT..HEADER_COLON, cur.."/"..max.." ("..floor(cur/max*100).."%)", 1, 1, 1, 1, 1, 1)
 			GameTooltip:AddDoubleLine(NEXT_RANK_COLON, (max-cur), 1, 1, 1, 1, 1, 1)
 		elseif friendID and friendID ~= 0 then
-			-- 新式聲望，親密度
-			
-			-- 當前值, 當前階段, 當前階段最小值, 當前階段最大值
-			local curRep, curReaction, curThreshold, nextThreshold = repInfo.standing, repInfo.reaction, repInfo.reactionThreshold, repInfo.nextThreshold
-			GameTooltip:AddDoubleLine(name, curReaction, 0, 1, 0.5, 0, 1, 0.5)
+			-- 新式聲望，親密度：當前值, 當前階段最小值, 當前階段最大值
+			local curRep, curThreshold, nextThreshold = repInfo.standing, repInfo.reactionThreshold, repInfo.nextThreshold
 			
 			if nextThreshold then
 				cur, min, max = curRep, curThreshold, nextThreshold
@@ -298,13 +293,12 @@ local function createGarrisonTooltip(self)
 				GameTooltip:AddDoubleLine(NEXT_RANK_COLON, (max-cur), 1, 1, 1, 1, 1, 1)
 			end
 		else
-			-- 傳統聲望
-			GameTooltip:AddDoubleLine(name, _G["FACTION_STANDING_LABEL"..standing], 0, 1, 0.5, 0, 1, 0.5)
-			
+			-- 傳統聲望	
 			if standing == MAX_REPUTATION_REACTION then
 				max = min + 1e3
 				cur = max - 1
 			end
+
 			GameTooltip:AddDoubleLine(REFORGE_CURRENT..HEADER_COLON, cur - min.."/"..max - min.." ("..floor((cur - min)/(max - min)*100).."%)", 1, 1, 1, 1, 1, 1)
 			if standing ~= 8 then
 				GameTooltip:AddDoubleLine(NEXT_RANK_COLON, (max-cur), 1, 1, 1, 1, 1, 1)
@@ -312,10 +306,10 @@ local function createGarrisonTooltip(self)
 		end
 	end
 	
-	local landingTitle = ExpansionLandingPageMinimapButton and ExpansionLandingPageMinimapButton.title
+	local landingTitle = canOpenLandingPage() and ExpansionLandingPageMinimapButton.title
 	GameTooltip:AddLine(" ")
 	if landingTitle then
-		GameTooltip:AddDoubleLine(" ", "|TInterface\\TUTORIALFRAME\\UI-TUTORIAL-FRAME:13:11:0:-1:512:512:12:66:230:307|t "..ExpansionLandingPageMinimapButton.title, 1,1,1,1,1,1)
+		GameTooltip:AddDoubleLine(" ", "|TInterface\\TUTORIALFRAME\\UI-TUTORIAL-FRAME:13:11:0:-1:512:512:12:66:230:307|t "..landingTitle, 1,1,1,1,1,1)
 	end
 	GameTooltip:AddDoubleLine(" ", "|TInterface\\TUTORIALFRAME\\UI-TUTORIAL-FRAME:13:11:0:-1:512:512:12:66:333:411|t "..L.AddonCompartment, 1,1,1,1,1,1)
 
@@ -342,15 +336,7 @@ local Diff = CreateFrame("Frame", "EKMinimapDungeonIcon", Minimap)
 	Diff.Texture:SetVertexColor(G.Ccolors.r, G.Ccolors.g, G.Ccolors.b)
 	Diff.Text = F.CreateFS(Diff, "",  G.fontSize+4, "CENTER")
 
-local function styleDifficulty(self)
-	-- Difficulty Text / 難度文字
-	local DiffText = self.Text
-
-	local inInstance, instanceType = IsInInstance()
-	local difficulty = select(3, GetInstanceInfo())
-	local num = select(9, GetInstanceInfo())
-	local mplus = select(1, C_ChallengeMode.GetActiveKeystoneInfo()) or ""
-	local DifficultyTAG = {
+local DifficultyTAG = {
 		-- https://warcraft.wiki.gg/wiki/DifficultyID
 		[1] = "5N",
 		[2] = "5H",
@@ -359,14 +345,14 @@ local function styleDifficulty(self)
 		[5] = "10H",		-- 5 普通十人
 		[6] = "25H",
 		[7] = "L",			-- Old LFR (before SOO)
-		[8] = "M" .. mplus,	-- Challenge Mode and Mythic+
+		[8] = "M",			-- Challenge Mode and Mythic+
 		[9] = "40",
 		[11] = "E",			-- 11 MOP英雄事件
 		[12] = "E",			-- 12 MOP普通事件
-		[14] = num .. "N",	-- Flex normal raid
-		[15] = num .. "H",	-- Flex heroic raid
+		[14] = "N",			-- Flex normal raid
+		[15] = "H",			-- Flex heroic raid
 		[16] = "M",			-- Mythic raid since WOD
-		[17] = num .. "L",	-- Flex LFR raid
+		[17] = "L",			-- Flex LFR raid
 		[18] = "E",			-- 18 Event(raid)
 		[19] = "E",			-- 19 Event(party)
 		[20] = "E",			-- 20 Event(scenario)
@@ -395,10 +381,22 @@ local function styleDifficulty(self)
 		--[208] = "D",		-- 208 探究
 		--[220]	= "S"		-- 故事模式(raid)
 	}
-	
+
+local function styleDifficulty(self)
+	-- Difficulty Text / 難度文字
+	local DiffText = self.Text
+	local _, instanceType, difficulty, _, _, _, _, _, num = GetInstanceInfo()
+	local text = DifficultyTAG[difficulty] or "D"
+	if difficulty == 8 then
+		local level = C_ChallengeMode.GetActiveKeystoneInfo()
+		text = "M"..(level > 0 and level or "")
+	elseif difficulty == 14 or difficulty == 15 or difficulty == 17 then
+		text = num..text
+	end
+
 	if instanceType == "party" or instanceType == "raid" or instanceType == "scenario" then
 		Diff:SetAlpha(1)
-		DiffText:SetText(DifficultyTAG[difficulty] or "D")
+		DiffText:SetText(text)
 	elseif instanceType == "pvp" or instanceType == "arena" then
 		Diff:SetAlpha(1)
 		DiffText:SetText("PVP")
@@ -416,9 +414,8 @@ local function HoverClock()
 	if not EKMinimapDB["HoverClock"] then return end
 	
 	local Clock = CreateFrame("Frame", "EKMinimapTimeIcon", Minimap)
-	Clock:SetFrameLevel(Minimap:GetFrameLevel()+2)
+	Clock:SetFrameLevel(EKMinimapClicker:GetFrameLevel()+1)
 	Clock:SetSize(Minimap:GetWidth()*.8, 20)
-	Clock:EnableMouse(false)
 	Clock:ClearAllPoints()
 	Clock:SetPoint("TOP", Minimap, 0, -2)
 	Clock.Text = F.CreateFS(Clock, "",  G.fontSize+4, "CENTER")
@@ -426,19 +423,17 @@ local function HoverClock()
 	Clock:SetAlpha(0)
 	
 	Clock:SetScript("OnEnter", function(self)
-		local hour, minute
-		if GetCVarBool("timeMgrUseLocalTime") then
-			hour, minute = tonumber(date("%H")), tonumber(date("%M"))
-		else
-			hour, minute = GetGameTime()
-		end
-		
-		Clock.Text:SetText(updateTimerFormat(hour, minute))
+		-- 沿用原生的本地/伺服器時間與 12/24 小時格式
+		Clock.Text:SetText((GameTime_GetTime(true)))
 		securecall(UIFrameFadeIn, Clock, .2, 0, 1)
 	end)
 	Clock:SetScript("OnLeave", function(self)
 		securecall(UIFrameFadeOut, Clock, .8, 1, 0)
 	end)
+	-- 保留滑鼠指向
+	Clock:SetMouseMotionEnabled(true)
+	Clock:SetPropagateMouseMotion(true)
+	Clock:SetMouseClickEnabled(false)
 end
 
 --==================================================--
@@ -494,8 +489,12 @@ end
 				button.menu:ClearAllPoints()
 				button.menu:SetPoint("TOP", self, "BOTTOM", findAnchor("MinimapAnchor") and (Minimap:GetWidth() * .5) or -(Minimap:GetWidth() * .5), -3)
 			end
-		elseif button == "LeftButton" and ExpansionLandingPageMinimapButton then
-			ExpansionLandingPageMinimapButton:Click()
+		elseif button == "LeftButton" and canOpenLandingPage() then
+			if InCombatLockdown() then
+				UIErrorsFrame:AddMessage(G.ErrColor..ERR_NOT_IN_COMBAT)
+			else
+				ExpansionLandingPageMinimapButton:Click()
+			end
 		end
 	end)
 	
@@ -512,11 +511,12 @@ end
 -----------------    [[ Load ]]    -----------------
 --================================================--
 
+local mailAnchorHooked = false
 local function updateIconPos()
 	MailFrame:ClearAllPoints()
 	Stat:ClearAllPoints()
     Diff:ClearAllPoints()
-    Stat:SetFrameLevel((EKMinimapClicker and EKMinimapClicker:GetFrameLevel() or Minimap:GetFrameLevel()) + 1)
+    Stat:SetFrameLevel(Clicker:GetFrameLevel() + 1)
 
 	if findAnchor("MinimapAnchor") then
 		Stat:SetPoint("BOTTOMRIGHT", Minimap, 4, -3)
@@ -528,7 +528,7 @@ local function updateIconPos()
 		MailFrame:SetPoint("BOTTOMRIGHT", Minimap, "BOTTOMRIGHT", -3, 3, true)
 	end
 
-	if not MailFrame.__EKMinimapHooked then
+	if not mailAnchorHooked then
 		hooksecurefunc(MailFrame, "SetPoint", function(frame, _, _, _, _, _, force)
 			if force then return end
 
@@ -539,7 +539,7 @@ local function updateIconPos()
 				frame:SetPoint("BOTTOMRIGHT", Minimap, "BOTTOMRIGHT", -3, 3, true)
 			end
 		end)
-		MailFrame.__EKMinimapHooked = true
+		mailAnchorHooked = true
 	end
 end
 F.ResetM = function()
@@ -563,9 +563,9 @@ local function OnEvent(self, event, addon)
 			tinsert(MBB_Ignore, "EKMinimapTooltipButton")
 		end
 		
+		setMinimap()
 		QueueStatus()
 		HoverClock()
-		setMinimap()
 		updateIconPos()
 		hideExpBar()
 		updateMiniimapTracking()
