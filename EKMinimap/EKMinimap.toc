@@ -1,0 +1,28 @@
+## Interface: 120105, 120107, 16001
+## Title: |cff00ffffEK|rMinimap
+## Version: R5.3
+## Author: EK
+## Notes: A square minimap.
+## IconTexture: "Interface\\Buttons\\WHITE8x8"
+## SavedVariables: EKMinimapDB
+## X-Credits: Ooglogput, Chiril, ape47, sakaras, Siweia, Paopao, HopeASD
+
+## Category-enUS: Map
+## Category-deDE: Karte
+## Category-esES: Mapa
+## Category-esMX: Mapa
+## Category-frFR: Carte
+## Category-itIT: Mappa
+## Category-koKR: 지도
+## Category-ptBR: Mapa
+## Category-ruRU: Карта
+## Category-zhCN: 地图
+## Category-zhTW: 地圖
+
+Init.lua
+Locales.lua
+Config.lua
+
+EKMinimap.lua
+Clickmenu.lua
+ObjectiveTracker.lua
