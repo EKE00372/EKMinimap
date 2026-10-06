@@ -106,6 +106,7 @@ local function setMinimap()
 		MinimapCluster.InstanceDifficulty,
 		GameTimeFrame,
 		ExpansionLandingPageMinimapButton,
+		MinimapCluster.DielFrame,	-- Forever 日夜指示
 	}
 	
 	-- Optional hide frame
@@ -236,7 +237,27 @@ local function createGarrisonTooltip(self)
 	end
 	
 	-- Honor
-	do
+	if G.IsForever then
+		local info = C_MajorFactions.GetMajorFactionProgressionInfo(2800)
+		if info then
+			local rank, cur, max = info.renownLevel, info.renownReputationEarned, info.renownLevelThreshold
+			local rankText = PVP_RANK_0_NAME
+			if rank > 0 then
+				local faction = (UnitFactionGroup("player") == "Alliance" and 1) or 0
+				local title = GetText("PVP_RANK_"..(Enum.PvPRanks.Rank_1 + rank - 1).."_"..faction, UnitSex("player"))
+				rankText = PVP_RANK_NUMBER_AND_TITLE:format(rank, title)
+			end
+
+			GameTooltip:AddLine(" ")
+			GameTooltip:AddDoubleLine(HONOR, rankText, 0, 1, .5, 0, 1, .5)
+			if max > 0 and rank < info.maxLevel then
+				GameTooltip:AddDoubleLine(REFORGE_CURRENT..HEADER_COLON, cur.."/"..max.." ("..floor(cur/max*100).."%)", 1, 1, 1, 1, 1, 1)
+				GameTooltip:AddDoubleLine(NEXT_RANK_COLON, (max-cur), 1, 1, 1, 1, 1, 1)
+			else
+				GameTooltip:AddDoubleLine(REFORGE_CURRENT..HEADER_COLON, tostring(cur), 1, 1, 1, 1, 1, 1)
+			end
+		end
+	else
 		local lvl, cur, max = UnitHonorLevel("player"), UnitHonor("player"), UnitHonorMax("player")
 		
 		GameTooltip:AddLine(" ")
