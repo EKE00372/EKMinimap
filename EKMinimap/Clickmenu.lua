@@ -13,12 +13,26 @@ local GARRISON_TYPE_SHADOWLANDS = GarrisonType.Type_9_0_Garrison
 --===================================================--
 
 local function EasyMenu_Initialize(frame, level, menuList)
+	local pendingTitles
 	for index = 1, #menuList do
 		local value = menuList[index]
 		local hidden = value.hidden
 		if type(hidden) == "function" then hidden = hidden() end
+
 		if value.text and not hidden then
-			UIDropDownMenu_AddButton(value, level)
+			-- 標題與空行等到有可見選項才加入，避免選單尾端留下空分類。
+			if value.isTitle then
+				pendingTitles = pendingTitles or {}
+				pendingTitles[#pendingTitles + 1] = value
+			else
+				if pendingTitles then
+					for _, title in ipairs(pendingTitles) do
+						UIDropDownMenu_AddButton(title, level)
+					end
+					pendingTitles = nil
+				end
+				UIDropDownMenu_AddButton(value, level)
+			end
 		end
 	end
 end
@@ -36,13 +50,13 @@ end
 -----------------    [[ Function ]]    ----------------
 --===================================================--
 
--- Mission table visibility
+-- 誓盟報告需要誓盟
 local function hasMissionTable(garrisonType)
-	-- 誓盟報告還需要目前誓盟；只擁有任務桌資料不足以建立聲望按鈕。
 	return C_Garrison.HasGarrison(garrisonType)
 		and (garrisonType ~= GARRISON_TYPE_SHADOWLANDS or C_Covenants.GetActiveCovenantID() > 0)
 end
 
+-- 任務桌
 local function openMissionTable(garrisonType)
 	if not hasMissionTable(garrisonType) then return end
 
@@ -69,9 +83,10 @@ local function OnEvent()
 			notCheckable = true,
 		},
 		
-		{	-- 角色
+		{
 			text = CHARACTER_BUTTON,
 			icon = "Interface\\PVPFrame\\PVP-Banner-Emblem-3",
+			hidden = G.IsForever,	-- Forever暫時禁用
 			func = function()
 				if InCombatLockdown() then UIErrorsFrame:AddMessage(G.ErrColor..ERR_NOT_IN_COMBAT) else securecall(ToggleCharacter, "PaperDollFrame") end
 			end,
@@ -89,20 +104,43 @@ local function OnEvent()
 		},
 
 		{	--天賦與法術書
-			text = PLAYERSPELLS_BUTTON,	-- TALENTS_BUTTON
+			text = (G.IsForever and TALENTS) or PLAYERSPELLS_BUTTON,
+			hidden = function() return UnitLevel("player") < 10 end,
 			icon = "Interface\\HELPFRAME\\HelpIcon-CharacterStuck",
 			func = function() 
 				if InCombatLockdown() then UIErrorsFrame:AddMessage(G.ErrColor..ERR_NOT_IN_COMBAT) else securecall(TogglePlayerSpellsFrame, 2) end
 			end,
 			notCheckable = true,
 		},
+
+		{	-- Forever 法術書
+			text = SPELLBOOK,
+			icon = "Interface\\ICONS\\INV_Misc_Book_09",
+			hidden = not G.IsForever,
+			func = function()
+				if InCombatLockdown() then UIErrorsFrame:AddMessage(G.ErrColor..ERR_NOT_IN_COMBAT) else securecall(TogglePlayerSpellsFrame, 3) end
+			end,
+			notCheckable = true,
+		},
 		
-		{	-- 成就
+		{	-- Retail 成就
 			text = ACHIEVEMENT_BUTTON,
 			icon = "Interface\\MINIMAP\\TRACKING\\QuestBlob",
+			hidden = G.IsForever,
 			func = function() 
 				if InCombatLockdown() then UIErrorsFrame:AddMessage(G.ErrColor..ERR_NOT_IN_COMBAT) return end
 				securecall(ToggleAchievementFrame)
+			end,
+			notCheckable = true,
+		},
+
+		{	-- Forever 傳承
+			text = LEGACY_BUTTON,
+			icon = "Interface\\MINIMAP\\TRACKING\\QuestBlob",
+			hidden = not G.IsForever,
+			func = function()
+				if InCombatLockdown() then UIErrorsFrame:AddMessage(G.ErrColor..ERR_NOT_IN_COMBAT) return end
+				securecall(ToggleLegacySystemUI)
 			end,
 			notCheckable = true,
 		},
@@ -116,9 +154,10 @@ local function OnEvent()
 			notCheckable = true,
 		},
 		
-		{	-- 房屋資訊看板
+		{	-- Retail 房屋資訊看板
 			text = HOUSING_MICRO_BUTTON,
 			icon = 7252953,
+			hidden = G.IsForever,
 			func = function()
 				if not C_Housing.IsHousingServiceEnabled() then return end
 				if InCombatLockdown() then
@@ -145,16 +184,24 @@ local function OnEvent()
 			text = SOCIAL_BUTTON,
 			icon = "Interface\\CHATFRAME\\UI-ChatWhisperIcon",
 			func = function() 
-				if InCombatLockdown() then UIErrorsFrame:AddMessage(G.ErrColor..ERR_NOT_IN_COMBAT) else securecall(ToggleFriendsFrame, 1) end
+				if InCombatLockdown() then
+					UIErrorsFrame:AddMessage(G.ErrColor..ERR_NOT_IN_COMBAT)
+				else
+					securecall(ToggleFriendsFrame, 1)
+				end
 			end,
 			notCheckable = true,
 		},
 		
-		{	-- 地城與團隊
-			text = GROUP_FINDER,	-- DUNGEONS_BUTTON
+		{	-- 組隊搜尋
+			text = (G.IsForever and LFG_TITLE) or GROUP_FINDER,
 			icon = "Interface\\TUTORIALFRAME\\UI-TutorialFrame-AttackCursor",
 			func = function()
-				if InCombatLockdown() then UIErrorsFrame:AddMessage(G.ErrColor..ERR_NOT_IN_COMBAT) else securecall(ToggleLFDParentFrame) end
+				if InCombatLockdown() then
+					UIErrorsFrame:AddMessage(G.ErrColor..ERR_NOT_IN_COMBAT)
+				else
+					securecall((G.IsForever and ToggleGroupFinderFrame) or ToggleLFDParentFrame)
+				end
 			end,
 			notCheckable = true,
 		},
@@ -169,9 +216,10 @@ local function OnEvent()
 			notCheckable = true,
 		},
 		
-		{	-- 冒險指南
+		{	-- Retail 冒險指南
 			text = ADVENTURE_JOURNAL,	-- OLD: ENCOUNTER_JOURNAL
 			icon = "Interface\\ENCOUNTERJOURNAL\\UI-EJ-HeroicTextIcon",
+			hidden = G.IsForever,
 			func = function()
 				if InCombatLockdown() then UIErrorsFrame:AddMessage(G.ErrColor..ERR_NOT_IN_COMBAT) return end
 				securecall(ToggleEncounterJournal)
@@ -201,7 +249,7 @@ local function OnEvent()
 			notCheckable = true,
 		},
 		
-		{	-- 要塞報告
+		{	-- Retail 要塞報告
 			text = GARRISON_LANDING_PAGE_TITLE,
 			icon = "Interface\\HELPFRAME\\OpenTicketIcon",
 			hidden = function() return not hasMissionTable(GARRISON_TYPE_DRAENOR) end,
@@ -211,7 +259,7 @@ local function OnEvent()
 			notCheckable = true,
 		},
 
-		{	-- 職業大廳報告
+		{	-- Retail 職業大廳報告
 			text = ORDER_HALL_LANDING_PAGE_TITLE,
 			icon = "Interface\\GossipFrame\\WorkOrderGossipIcon",
 			hidden = function() return not hasMissionTable(GARRISON_TYPE_LEGION) end,
@@ -221,7 +269,7 @@ local function OnEvent()
 			notCheckable = true,
 		},
 		
-		{	-- 任務指揮桌
+		{	-- Retail 任務指揮桌
 			text = EXPANSION_NAME7.." "..GARRISON_TYPE_8_0_LANDING_PAGE_TITLE,
 			icon = "Interface\\HELPFRAME\\OpenTicketIcon",
 			hidden = function() return not hasMissionTable(GARRISON_TYPE_BFA) end,
@@ -231,7 +279,7 @@ local function OnEvent()
 			notCheckable = true,
 		},
 		
-		{	-- 誓盟報告
+		{	-- Retail 誓盟報告
 			text = GARRISON_TYPE_9_0_LANDING_PAGE_TITLE,
 			icon = "Interface\\GossipFrame\\WorkOrderGossipIcon",
 			hidden = function() return not hasMissionTable(GARRISON_TYPE_SHADOWLANDS) end,
@@ -339,8 +387,7 @@ local function OnEvent()
 			text = "DBM",
 			hidden = function() return not SlashCmdList.DEADLYBOSSMODS end,
 			func = function()
-				-- /dbm 無子命令時仍需空字串，供 handler 解析。
-				SlashCmdList.DEADLYBOSSMODS("")
+				SlashCmdList.DEADLYBOSSMODS("")	-- /dbm 無子命令時仍需空字串，供 handler 解析。
 			end,
 			notCheckable = true,
 		},
@@ -371,6 +418,7 @@ local function OnEvent()
 		{	-- 重載
 			text = RELOADUI,
 			colorCode = "|cff999999",
+			hidden = G.IsForever,		-- Forever暫時禁用
 			func = function()
 				ReloadUI()
 			end,
