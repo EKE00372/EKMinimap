@@ -11,6 +11,8 @@ local addon, ns = ...
 local C, F, G, L = unpack(ns)
 local MediaFolder = "Interface\\AddOns\\EKMinimap\\Media\\"
 
+	G.IsForever = LE_EXPANSION_LEVEL_CURRENT == LE_EXPANSION_CLASSIC
+	
 -------------------
 -- Golbal / 全局 --
 -------------------
@@ -20,11 +22,13 @@ local MediaFolder = "Interface\\AddOns\\EKMinimap\\Media\\"
 	G.Tex = "Interface\\Buttons\\WHITE8x8"
 	G.Glow = MediaFolder.."glow.tga"
 	G.Diff = MediaFolder.."difficulty.tga"
-	G.Mail = "Interface\\MINIMAP\\TRACKING\\Mailbox.blp"
+	--G.Mail = "Interface\\MINIMAP\\TRACKING\\Mailbox.blp"
 	G.Report = "Interface\\HelpFrame\\HelpIcon-ReportLag.blp"
 	
 	G.Question = "Interface\\HelpFrame\\HelpIcon-KnowledgeBase"
 	G.Info = "Interface\\FriendsFrame\\InformationIcon"
+	G.MiddleButton = " |TInterface\\TUTORIALFRAME\\UI-TUTORIAL-FRAME:14:10:0:-1:512:512:12:66:127:204|t "
+	G.RightButton = " |TInterface\\TUTORIALFRAME\\UI-TUTORIAL-FRAME:14:10:0:-1:512:512:12:66:333:411|t "
 	
 	-- 字體 / font
 	G.font = STANDARD_TEXT_FONT		-- 字型 / Font
@@ -39,21 +43,81 @@ local MediaFolder = "Interface\\AddOns\\EKMinimap\\Media\\"
 -- Settings / 預設設定 --
 -------------------------
 
-	C.defaultSettings = {
-		["MinimapScale"] = 1,
-		["MinimapAnchor"] = "TOPLEFT",
-		["MinimapY"] = -10,
-		["MinimapX"] = 10,
-		["ClickMenu"] = true,
-		["HoverClock"] = true,
-		["CharacterIcon"] = true,
-		["Tracking"] = true,
-		["QueueStatus"] = true,
-		["VehicleSeat"] = true,
-		["Durability"] = true,
-		["TrackerStyle"] = true,
-		["AutoCollapse"] = true,
+	-- 選項、預設值與 GUI 順序共用一份定義；label／tooltip 在建立 GUI 時解析。
+	F.GUIOptionGroups = {
+		{
+			name = MINIMAP_LABEL,
+			options = {
+				{ type = "toggle", key = "ClickMenu", label = "ClickMenuOpt", tooltip = "MenuTip", default = true },
+				{ type = "toggle", key = "HoverClock", label = "HoverClockOpt", default = false },
+				{ type = "toggle", key = "CharacterIcon", label = "IconOpt", tooltip = "IconTip", default = true },
+				{ type = "toggle", key = "Tracking", label = "TrackingOpt", default = true },
+				{ type = "toggle", key = "QueueStatus", label = "QueueOpt", default = true },
+				{ type = "dropdown", key = "MinimapAnchor", label = "AnchorOpt", default = "TOPLEFT", width = 120, height = 20 },
+				{ type = "edit", key = "MinimapX", label = "XOpt", default = 10, width = 120, height = 20 },
+				{ type = "edit", key = "MinimapY", label = "YOpt", default = -10, width = 120, height = 20 },
+				{ type = "slider", key = "MinimapScale", label = "SizeOpt", default = 1, min = 5, max = 20, step = 1, coeff = .1 },
+			},
+		},
+		{
+			name = OTHER,
+			options = {
+				{ type = "toggle", key = "VehicleSeat", label = "VehicleSeatOpt", default = true },
+				{ type = "toggle", key = "Durability", label = "DurabilityOpt", default = true },
+				{ type = "toggle", key = "TrackerStyle", label = "TrackerStyleOpt", default = true },
+				{ type = "toggle", key = "AutoCollapse", label = "AutoCollapseOpt", tooltip = "CollapseTip", default = false },
+			},
+		},
 	}
+
+	local activeOptions = {}
+	C.defaultSettings = {}
+	for _, group in ipairs(F.GUIOptionGroups) do
+		for _, option in ipairs(group.options) do
+			C.defaultSettings[option.key] = option.default
+		end
+	end
+
+	-- 功能模組只讀本次登入的快照，GUI 寫入不會半途改變模組狀態。
+	F.GetEKMOption = function(key)
+		return activeOptions[key]
+	end
+	F.GetSavedEKMOption = function(key)
+		return EKMinimapDB[key]
+	end
+	F.SetEKMOption = function(key, value)
+		EKMinimapDB[key] = value
+	end
+
+	F.HasPendingEKMChanges = function()
+		for key in pairs(C.defaultSettings) do
+			if EKMinimapDB[key] ~= activeOptions[key] then return true end
+		end
+		return false
+	end
+
+	-- 保留尺寸座標的單獨套用；其他功能開關仍等重載。
+	F.ApplyEKMPositionSettings = function()
+		for _, key in ipairs({ "MinimapAnchor", "MinimapX", "MinimapY", "MinimapScale" }) do
+			activeOptions[key] = EKMinimapDB[key]
+		end
+	end
+
+	local dbLoader = CreateFrame("Frame")
+	dbLoader:RegisterEvent("ADDON_LOADED")
+	dbLoader:SetScript("OnEvent", function(self, event, name)
+		if name ~= addon then return end
+		if type(EKMinimapDB) ~= "table" then EKMinimapDB = {} end
+		for key, value in pairs(C.defaultSettings) do
+			if EKMinimapDB[key] == nil then EKMinimapDB[key] = value end
+			activeOptions[key] = EKMinimapDB[key]
+		end
+		for key in pairs(EKMinimapDB) do
+			if C.defaultSettings[key] == nil then EKMinimapDB[key] = nil end
+		end
+		self:UnregisterEvent(event)
+		self:SetScript("OnEvent", nil)
+	end)
 
 ----------------------
 -- Functions / 功能 --
@@ -82,7 +146,7 @@ F.CreateBG = function(parent, size, offset, a)
 	end
 	local lvl = frame:GetFrameLevel()
 
-	local bg = CreateFrame("Frame", nil, frame, BackdropTemplateMixin and "BackdropTemplate")
+	local bg = CreateFrame("Frame", nil, frame, "BackdropTemplate")
 	bg:ClearAllPoints()
 	bg:SetPoint("TOPLEFT", parent, -size, size)
 	bg:SetPoint("BOTTOMRIGHT", parent, size, -size)
