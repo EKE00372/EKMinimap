@@ -9,10 +9,10 @@ local GetLocale = GetLocale
 if GetLocale() == "zhTW" then
 
 	L.ClickMenuOpt = "啟用點擊選單"
-	L.MenuTip = "中鍵：追蹤選單\n右鍵：遊戲選項"
+	L.MenuTip = G.MiddleButton.."中鍵：追蹤選單\n"..G.RightButton.."右鍵：遊戲選項"
 	L.TrackingOpt = "完整追蹤選單"
 	L.IconOpt = "角色資訊提示"
-	L.IconTip = "啟用時將一併隱藏內建的經驗聲望條。"
+	L.IconTip = "顯示經驗值、聲望值和榮譽值；啟用時將一併隱藏內建的經驗聲望條。"
 	L.Paragon = "巔峰"
 	L.HoverClockOpt = "指向頂部顯示時間"
 	L.QueueOpt = "移動隊列按鈕"
@@ -20,7 +20,7 @@ if GetLocale() == "zhTW" then
 	L.VehicleSeatOpt = "隱藏載具框體"
 	L.DurabilityOpt = "隱藏裝備耐久"
 	L.TrackerStyleOpt = "追蹤列表美化"
-	L.AutoCollapseOpt = "自動隱藏追蹤"
+	L.AutoCollapseOpt = "隱藏追蹤列表"
 	L.CollapseTip = "在傳奇+ 保留進度追蹤，隱藏其他追蹤。"
 	
 	L.SizeOpt = "縮放"
@@ -34,7 +34,8 @@ if GetLocale() == "zhTW" then
 	L.Left = "左"
 	L.Right = "右"
 	
-	L.Apply = "更改後點擊「"..APPLY.."」立即重載生效。"
+	L.ReloadUI = "重載 UI"
+	L.StatusChanged = "設定已變更，重載後生效。"
 	L.posApply = APPLY..L.SizeOpt.."座標"
 	
 	L.tempTip1 = "Alt 功能是臨時性功能，提供給需要追蹤某些特定目標的偶發情況，所以它們的變動不會被儲存。"
@@ -46,10 +47,10 @@ if GetLocale() == "zhTW" then
 elseif GetLocale() == "zhCN" then
 
 	L.ClickMenuOpt = "启用点击菜单"
-	L.MenuTip = "中键：追踪清单\n右键：游戏菜单"
+	L.MenuTip = G.MiddleButton.."中键：追踪清单\n"..G.RightButton.."右键：游戏菜单"
 	L.TrackingOpt = "完整追踪清单"
 	L.IconOpt = "角色信息提示"
-	L.IconTip = "同时会隐藏原生经验条。"
+	L.IconTip = "显示经验值、声望值和荣誉值；启用时将一并隐藏内置的经验声望条。"
 	L.Paragon = "巅峰"
 	L.HoverClockOpt = "指向顶部显示时间"
 	L.QueueOpt = "移动队列按钮"
@@ -57,7 +58,7 @@ elseif GetLocale() == "zhCN" then
 	L.VehicleSeatOpt = "隐藏载具框体"
 	L.DurabilityOpt = "隐藏装备耐久"
 	L.TrackerStyleOpt = "追踪列表美化"
-	L.AutoCollapseOpt = "自动隐藏追踪"
+	L.AutoCollapseOpt = "隐藏追踪列表"
 	L.CollapseTip = "在大秘境时保留进度追踪，折叠其他追踪。"
 
 	L.SizeOpt = "缩放"
@@ -71,7 +72,8 @@ elseif GetLocale() == "zhCN" then
 	L.Left = "左"
 	L.Right = "右"
 
-	L.Apply = "更改后点击＂"..APPLY.."＂立即重载生效。"
+	L.ReloadUI = "重载 UI"
+	L.StatusChanged = "设置已变更，重载后生效。"
 	L.posApply = APPLY..L.SizeOpt.."座标"
 	
 	L.tempTip1 = "Alt 功能是临时性功能，提供给需要追踪某些特定目标的偶发情况，所以它们的变动不会被保存。"
@@ -83,10 +85,10 @@ elseif GetLocale() == "zhCN" then
 else
 	
 	L.ClickMenuOpt = "Enable click menu"
-	L.MenuTip = "Middle: tracker menu\nRight: Game menu"
+	L.MenuTip = G.MiddleButton.."Middle: tracker menu\n"..G.RightButton.."Right: Game menu"
 	L.TrackingOpt = "Full tracking list"
 	L.IconOpt = "Character icon tooltip"
-	L.IconTip = "Enable will also hide blizzard experience bar."
+	L.IconTip = "Shows experience, reputation, and honor; enabling this option also hides the built-in experience and reputation bars."
 	L.Paragon = "Paragon"
 	L.HoverClockOpt = "Hover clock at top"
 	L.QueueOpt = "QueueStatus on Minimap"
@@ -94,7 +96,7 @@ else
 	L.VehicleSeatOpt = "Hide Vehicle Seat"
 	L.DurabilityOpt = "Hide Durability"
 	L.TrackerStyleOpt = "Tracker list Style"
-	L.AutoCollapseOpt = "Tracker Auto Hide"
+	L.AutoCollapseOpt = "Hide tracker list"
 	L.CollapseTip = "Keep progress tracker and hide other in Mythic+."
 
 	L.SizeOpt = "Scale"
@@ -108,7 +110,8 @@ else
 	L.Left = "Left"
 	L.Right = "Right"
 
-	L.Apply = "Click "..APPLY.." to active changes."
+	L.ReloadUI = "Reload UI"
+	L.StatusChanged = "Reload UI to apply settings."
 	L.posApply = APPLY.." Size and Pos"
 	
 	L.tempTip1 = "Alt-function is a temporary function, for people wanna track something recently, they will not be saved to settgins."
