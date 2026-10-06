@@ -15,8 +15,7 @@ function GetMinimapShape()
 end
 
 local function findAnchor(value)
-	--local anchor = EKMinimapDB["MinimapAnchor"]
-	local anchor = EKMinimapDB[value]
+	local anchor = F.GetEKMOption(value)
 	local myAnchor = sub(anchor, -4)	-- get minimap anchor left or rignt
 	return myAnchor == "LEFT"
 end
@@ -26,7 +25,7 @@ end
 --===================================================--
 
 local function updateMiniimapTracking()
-	if EKMinimapDB["Tracking"] then
+	if F.GetEKMOption("Tracking") then
 		SetCVar("minimapTrackingShowAll", 1)
 	else
 		SetCVar("minimapTrackingShowAll", 0)
@@ -35,7 +34,7 @@ end
 
 local function updateMinimapPos()
 	Minimap:ClearAllPoints()
-	Minimap:SetPoint(EKMinimapDB["MinimapAnchor"], UIParent, EKMinimapDB["MinimapX"], EKMinimapDB["MinimapY"])
+	Minimap:SetPoint(F.GetEKMOption("MinimapAnchor"), UIParent, F.GetEKMOption("MinimapX"), F.GetEKMOption("MinimapY"))
 end
 
 local function updateMinimapScale()
@@ -44,10 +43,10 @@ local function updateMinimapScale()
 	-- addon minimap icon may put themself to strange place because icon was created before EKMinimap addon loaded.
 	
 	-- To ignore editmode size config, we don't use MinimapCluster
-	--MinimapCluster:SetScale(EKMinimapDB["MinimapScale"])
+	--MinimapCluster:SetScale(F.GetEKMOption("MinimapScale"))
 
 	Minimap:SetIgnoreParentScale(true)
-	Minimap:SetScale(EKMinimapDB["MinimapScale"])
+	Minimap:SetScale(F.GetEKMOption("MinimapScale"))
 end
 
 local function setMinimap()
@@ -76,14 +75,16 @@ local function setMinimap()
 	MinimapCluster:EnableMouse(false)
 	Minimap.bg = F.CreateBG(Minimap, 5, 5, 1)
 
-	-- 原生座標移至小地圖內，隨小地圖縮放
+	-- 12.1.5 的原生座標移至小地圖內，隨小地圖縮放。
 	local coords = MinimapCluster.MinimapContainer.PlayerCoords
-	coords:SetParent(Minimap)
-	coords:ClearAllPoints()
-	coords:SetPoint("BOTTOM", Minimap, "BOTTOM", 0, 8)
-	-- 座標文字描邊
-	local font, size = coords.CoordText:GetFont()
-	coords.CoordText:SetFont(font, size, "OUTLINE")
+	if coords then
+		coords:SetParent(Minimap)
+		coords:ClearAllPoints()
+		coords:SetPoint("BOTTOM", Minimap, "BOTTOM", 0, 8)
+		-- 座標文字描邊
+		local font, size = coords.CoordText:GetFont()
+		coords.CoordText:SetFont(font, size, "OUTLINE")
+	end
 
 	Minimap:SetArchBlobRingScalar(0)
 	Minimap:SetQuestBlobRingScalar(0)
@@ -119,7 +120,7 @@ local function setMinimap()
 	end
 	
     for key, f in pairs(hideOptional) do
-        if EKMinimapDB[key] then
+        if F.GetEKMOption(key) then
             f:Hide()
             hooksecurefunc(f, "Show", function(self) self:Hide() end)
         end
@@ -157,7 +158,7 @@ end
 --=================================================--
 
 local function QueueStatus()
-	if not EKMinimapDB["QueueStatus"] then return end
+	if not F.GetEKMOption("QueueStatus") then return end
 	
 	QueueStatusButton:SetParent(Minimap)
 	QueueStatusButton:SetFrameLevel(999)
@@ -215,7 +216,7 @@ local function canOpenLandingPage()
 end
 
 local function createGarrisonTooltip(self)
-	if not EKMinimapDB["CharacterIcon"] then return end
+	if not F.GetEKMOption("CharacterIcon") then return end
 	
 	GameTooltip:SetOwner(self, "ANCHOR_BOTTOM", findAnchor("MinimapAnchor") and (Minimap:GetWidth()*.7) or -(Minimap:GetWidth()*.7), -10)
 	GameTooltip:AddLine(CHARACTER_BUTTON, .6,.8, 1)
@@ -318,7 +319,7 @@ local function createGarrisonTooltip(self)
 end
 
 local function hideExpBar()
-	if EKMinimapDB["CharacterIcon"] then
+	if F.GetEKMOption("CharacterIcon") then
 		StatusTrackingBarManager:UnregisterAllEvents()
 		StatusTrackingBarManager:Hide()
 	end
@@ -411,7 +412,7 @@ end
 --=================================================--
 
 local function HoverClock()
-	if not EKMinimapDB["HoverClock"] then return end
+	if not F.GetEKMOption("HoverClock") then return end
 	
 	local Clock = CreateFrame("Frame", "EKMinimapTimeIcon", Minimap)
 	Clock:SetFrameLevel(EKMinimapClicker:GetFrameLevel()+1)
@@ -543,6 +544,7 @@ local function updateIconPos()
 	end
 end
 F.ResetM = function()
+	F.ApplyEKMPositionSettings()
 	updateMinimapPos()
 	updateMinimapScale()
 	updateIconPos()

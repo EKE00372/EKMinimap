@@ -18,7 +18,6 @@ local function EasyMenu_Initialize(frame, level, menuList)
 		local hidden = value.hidden
 		if type(hidden) == "function" then hidden = hidden() end
 		if value.text and not hidden then
-			value.index = index
 			UIDropDownMenu_AddButton(value, level)
 		end
 	end
@@ -59,7 +58,7 @@ end
 --====================================================--
 
 local function OnEvent()
-	if not EKMinimapDB["ClickMenu"] then return end
+	if not F.GetEKMOption("ClickMenu") then return end
 	
 	-- Right Click Menu List
 	local menuFrame = CreateFrame("Frame", "MinimapRightClickMenu", UIParent, "UIDropDownMenuTemplate")
