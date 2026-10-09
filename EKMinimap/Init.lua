@@ -123,6 +123,15 @@ local MediaFolder = "Interface\\AddOns\\EKMinimap\\Media\\"
 -- Functions / 功能 --
 ----------------------
 
+-- 戰鬥時提示並回傳 true，讓呼叫端停止操作。
+F.CombatError = function()
+	if InCombatLockdown() then
+		UIErrorsFrame:AddMessage(G.ErrColor..ERR_NOT_IN_COMBAT)
+		return true
+	end
+	return false
+end
+
 F.CreateFS = function(parent, text, fontsize, justify, anchor, x, y)
 	local fs = parent:CreateFontString(nil, "OVERLAY")
 	fs:SetFont(G.font, fontsize, G.fontFlag)

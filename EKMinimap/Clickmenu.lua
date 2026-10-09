@@ -8,47 +8,9 @@ local GARRISON_TYPE_LEGION = GarrisonType.Type_7_0_Garrison
 local GARRISON_TYPE_BFA = GarrisonType.Type_8_0_Garrison
 local GARRISON_TYPE_SHADOWLANDS = GarrisonType.Type_9_0_Garrison
 
---===================================================--
------------------    [[ EasyMenu ]]    ----------------
---===================================================--
-
-local function EasyMenu_Initialize(frame, level, menuList)
-	local pendingTitles
-	for index = 1, #menuList do
-		local value = menuList[index]
-		local hidden = value.hidden
-		if type(hidden) == "function" then hidden = hidden() end
-
-		if value.text and not hidden then
-			-- 標題與空行等到有可見選項才加入，避免選單尾端留下空分類。
-			if value.isTitle then
-				pendingTitles = pendingTitles or {}
-				pendingTitles[#pendingTitles + 1] = value
-			else
-				if pendingTitles then
-					for _, title in ipairs(pendingTitles) do
-						UIDropDownMenu_AddButton(title, level)
-					end
-					pendingTitles = nil
-				end
-				UIDropDownMenu_AddButton(value, level)
-			end
-		end
-	end
-end
-
-local function EasyMenu(menuList, menuFrame, anchor, x, y, displayMode, autoHideDelay)
-	if displayMode == "MENU" then
-		menuFrame.displayMode = displayMode
-	end
-
-	UIDropDownMenu_Initialize(menuFrame, EasyMenu_Initialize, displayMode, nil, menuList)
-	ToggleDropDownMenu(1, nil, menuFrame, anchor, x, y, menuList, nil, autoHideDelay)
-end
-
---===================================================--
------------------    [[ Function ]]    ----------------
---===================================================--
+---------------
+-- Functions --
+---------------
 
 -- 誓盟報告需要誓盟
 local function hasMissionTable(garrisonType)
@@ -60,373 +22,255 @@ end
 local function openMissionTable(garrisonType)
 	if not hasMissionTable(garrisonType) then return end
 
-	if InCombatLockdown() then
-		UIErrorsFrame:AddMessage(G.ErrColor..ERR_NOT_IN_COMBAT)
-	else
-		securecall(ShowGarrisonLandingPage, garrisonType)
-	end
+	if F.CombatError() then return end
+	securecall(ShowGarrisonLandingPage, garrisonType)
 end
 
---====================================================--
------------------    [[ ClickMenu ]]    ----------------
---====================================================--
+---------------
+-- Menu lsit --
+---------------
+
+-- 建立包含圖示的選項
+local function CreateIconButton(rootDescription, text, icon, callback)
+	local atlasInfo = type(icon) == "string" and C_Texture.GetAtlasInfo(icon)
+	local markup
+	if atlasInfo then
+		markup = CreateAtlasMarkup(icon, 16, 16)	-- 引用原生micro menu atlas
+	else
+		markup = CreateSimpleTextureMarkup(icon, 16, 16)	-- 自定材質路徑
+	end
+
+	return rootDescription:CreateButton(markup.." "..text, callback)	-- 選項文字，點擊該選項要執行的功能
+end
+
+-- 每次開啟重新判斷可見項目
+local function GenerateMenu(_, rootDescription)
+	-- 標題
+	rootDescription:CreateTitle(MAINMENU_BUTTON)
+
+	-- 角色
+	CreateIconButton(rootDescription, CHARACTER_BUTTON, "Interface\\PVPFrame\\PVP-Banner-Emblem-3", function()
+		if F.CombatError() then return end
+		securecall(ToggleCharacter, "PaperDollFrame")
+	end)
+
+	-- 專業技能
+	CreateIconButton(rootDescription, PROFESSIONS_BUTTON, "Interface\\MINIMAP\\TRACKING\\Class", function()
+		if F.CombatError() then return end
+			ToggleProfessionsBook()
+	end)
+
+	-- Forever 天賦 / Retail 天賦與法術書
+	if UnitLevel("player") >= 10 then
+		CreateIconButton(rootDescription, (G.IsForever and TALENTS) or PLAYERSPELLS_BUTTON,
+			"Interface\\HELPFRAME\\HelpIcon-CharacterStuck", function()
+				if F.CombatError() then return end
+				securecall(TogglePlayerSpellsFrame, 2)
+		end)
+	end
+
+	if G.IsForever then
+		-- Forever 法術書
+		CreateIconButton(rootDescription, SPELLBOOK, "Interface\\ICONS\\INV_Misc_Book_09", function()
+			if F.CombatError() then return end
+				securecall(TogglePlayerSpellsFrame, 3)
+		end)
+	end
+
+	if G.IsForever then
+		-- Forever 傳承
+		CreateIconButton(rootDescription, LEGACY_BUTTON, "UI-HUD-MicroMenu-Legacy-Up", function()
+			if F.CombatError() then return end
+			securecall(ToggleLegacySystemUI)
+		end)
+	else
+		-- Retail 成就
+		CreateIconButton(rootDescription, ACHIEVEMENT_BUTTON, "Interface\\MINIMAP\\TRACKING\\QuestBlob", function()
+			if F.CombatError() then return end
+			securecall(ToggleAchievementFrame)
+		end)
+	end
+
+	-- 地圖與任務日誌
+	CreateIconButton(rootDescription, MAP_AND_QUEST_LOG, "Interface\\GossipFrame\\ActiveQuestIcon", function()
+		if F.CombatError() then return end
+		securecall(ToggleWorldMap)
+	end)
+
+	-- Retail 房屋資訊看板
+	if not G.IsForever then
+		CreateIconButton(rootDescription, HOUSING_MICRO_BUTTON, 7252953, function()
+			if (not C_Housing.IsHousingServiceEnabled()) or F.CombatError() then return end
+			_G.HousingFramesUtil.ToggleHousingDashboard()
+		end)
+	end
+
+	-- 社群 "Interface\\FriendsFrame\\UI-Toast-ChatInviteIcon"
+	CreateIconButton(rootDescription, COMMUNITIES_FRAME_TITLE, "UI-HUD-MicroMenu-GuildCommunities-Up", function()
+		if F.CombatError() then return end
+		securecall(ToggleCommunitiesFrame)
+	end)
+
+	-- 好友
+	CreateIconButton(rootDescription, SOCIAL_BUTTON, "Interface\\CHATFRAME\\UI-ChatWhisperIcon", function()
+		if F.CombatError() then return end
+		securecall(ToggleFriendsFrame, 1)
+	end)
+
+	-- 組隊搜尋 "Interface\\TUTORIALFRAME\\UI-TutorialFrame-AttackCursor"
+	CreateIconButton(rootDescription, (G.IsForever and LFG_TITLE) or GROUP_FINDER, "UI-HUD-MicroMenu-Groupfinder-Up", function()
+		if F.CombatError() then return end
+		securecall((G.IsForever and ToggleGroupFinderFrame) or ToggleLFDParentFrame)
+	end)
+
+	-- 收藏
+	CreateIconButton(rootDescription, COLLECTIONS, "Interface\\CURSOR\\Crosshair\\WildPetCapturable", function()
+		if F.CombatError() then return end
+		securecall(ToggleCollectionsJournal, 1)
+	end)
+
+	-- Retail 冒險指南
+	if not G.IsForever then
+		CreateIconButton(rootDescription, ADVENTURE_JOURNAL, "Interface\\ENCOUNTERJOURNAL\\UI-EJ-HeroicTextIcon", function()
+			if F.CombatError() then return end
+			securecall(ToggleEncounterJournal)
+		end)
+	end
+
+	-- 遊戲商城
+	CreateIconButton(rootDescription, BLIZZARD_STORE, "Interface\\MINIMAP\\TRACKING\\Auctioneer", function()
+		if not StoreFrame then C_AddOns.LoadAddOn("Blizzard_StoreUI") end
+		securecall(ToggleStoreUI)
+	end)
+
+	-- 空行
+	rootDescription:QueueSpacer()
+
+	-- 其他
+	rootDescription:QueueTitle(OTHER)
+
+	-- Retail 要塞報告
+	if hasMissionTable(GARRISON_TYPE_DRAENOR) then
+		CreateIconButton(rootDescription, GARRISON_LANDING_PAGE_TITLE, "Interface\\HELPFRAME\\OpenTicketIcon", function()
+			openMissionTable(GARRISON_TYPE_DRAENOR)
+		end)
+	end
+
+	-- Retail 職業大廳報告
+	if hasMissionTable(GARRISON_TYPE_LEGION) then
+		CreateIconButton(rootDescription, ORDER_HALL_LANDING_PAGE_TITLE, "Interface\\GossipFrame\\WorkOrderGossipIcon", function()
+			openMissionTable(GARRISON_TYPE_LEGION)
+		end)
+	end
+
+	-- Retail 任務指揮桌
+	if hasMissionTable(GARRISON_TYPE_BFA) then
+		CreateIconButton(rootDescription, EXPANSION_NAME7.." "..GARRISON_TYPE_8_0_LANDING_PAGE_TITLE, "Interface\\HELPFRAME\\OpenTicketIcon", function()
+			openMissionTable(GARRISON_TYPE_BFA)
+		end)
+	end
+
+	-- Retail 誓盟報告
+	if hasMissionTable(GARRISON_TYPE_SHADOWLANDS) then
+		CreateIconButton(rootDescription, GARRISON_TYPE_9_0_LANDING_PAGE_TITLE, "Interface\\GossipFrame\\WorkOrderGossipIcon", function()
+			openMissionTable(GARRISON_TYPE_SHADOWLANDS)
+		end)
+	end
+
+	-- 客服支援
+	CreateIconButton(rootDescription, GM_EMAIL_NAME, "Interface\\CHATFRAME\\UI-ChatIcon-Blizz", function()
+		if F.CombatError() then return end
+		securecall(ToggleHelpFrame)
+	end)
+
+	-- 對話頻道
+	CreateIconButton(rootDescription, CHANNEL, "Interface\\CHATFRAME\\UI-ChatIcon-ArmoryChat-AwayMobile", function()
+		if F.CombatError() then return end
+		securecall(ToggleChannelFrame)
+	end)
+
+	-- 行事曆
+	rootDescription:CreateButton(L.Calendar, function()
+		if F.CombatError() then return end
+		securecall(ToggleCalendar)
+	end)
+
+	-- 區域地圖
+	rootDescription:CreateButton("|cff999999"..BATTLEFIELD_MINIMAP.."|r", function()
+		if F.CombatError() then return end
+		securecall(ToggleBattlefieldMap)
+	end)
+
+	rootDescription:CreateButton("|cff00FFFF"..L.ToggleConfig.."|r", function()
+		F.CreateEKMOptions()
+	end)
+
+	-- 空行
+	rootDescription:QueueSpacer()
+
+	-- 彈出乘客
+	rootDescription:QueueTitle(EJECT_PASSENGER)
+
+	-- 彈出乘客1
+	rootDescription:CreateButton(L.Left, function()
+		EjectPassengerFromSeat(1)
+	end)
+
+	-- 彈出乘客2
+	rootDescription:CreateButton(L.Right, function()
+		EjectPassengerFromSeat(2)
+	end)
+
+	-- 空行
+	rootDescription:QueueSpacer()
+
+	-- 插件標題
+	rootDescription:QueueTitle(ADDONS)
+
+	-- BigWigs
+	if SlashCmdList.BigWigs then
+		rootDescription:CreateButton("BigWigs", function()
+			SlashCmdList.BigWigs()
+		end)
+	end
+
+	-- DBM
+	if SlashCmdList.DEADLYBOSSMODS then
+		rootDescription:CreateButton("DBM", function()
+			SlashCmdList.DEADLYBOSSMODS("")	-- /dbm 無子命令時仍需空字串，供 handler 解析。
+		end)
+	end
+
+	-- oUF_Ruri
+	if SlashCmdList.OUFRURI then
+		rootDescription:CreateButton("oUF_Ruri", function()
+			SlashCmdList.OUFRURI()
+		end)
+	end
+
+	-- oUF_Hankk
+	if SlashCmdList.OUFHANKK then
+		rootDescription:CreateButton("oUF_Hankk", function()
+			SlashCmdList.OUFHANKK()
+		end)
+	end
+
+	-- Anyon
+	if SlashCmdList.ANYON then
+		rootDescription:CreateButton("Anyon", function()
+			SlashCmdList.ANYON()
+		end)
+	end
+
+	rootDescription:CreateButton("|cff999999"..RELOADUI.."|r", function()
+		ReloadUI()
+	end)
+end
 
 local function OnEvent()
 	if not F.GetEKMOption("ClickMenu") then return end
-	
-	-- Right Click Menu List
-	local menuFrame = CreateFrame("Frame", "MinimapRightClickMenu", UIParent, "UIDropDownMenuTemplate")
-	local menuList = {
-		{	-- 標題
-			text = MAINMENU_BUTTON,
-			isTitle = true,
-			notCheckable = true,
-		},
-		
-		{
-			text = CHARACTER_BUTTON,
-			icon = "Interface\\PVPFrame\\PVP-Banner-Emblem-3",
-			hidden = G.IsForever,	-- Forever暫時禁用
-			func = function()
-				if InCombatLockdown() then UIErrorsFrame:AddMessage(G.ErrColor..ERR_NOT_IN_COMBAT) else securecall(ToggleCharacter, "PaperDollFrame") end
-			end,
-			notCheckable = true,
-		},
-		
-		{	-- 專業技能
-			text = PROFESSIONS_BUTTON,
-			icon = "Interface\\MINIMAP\\TRACKING\\Class",
-			func = function()
-				if InCombatLockdown() then UIErrorsFrame:AddMessage(G.ErrColor..ERR_NOT_IN_COMBAT) else ToggleProfessionsBook() end
-				
-			end,
-			notCheckable = true,
-		},
 
-		{	--天賦與法術書
-			text = (G.IsForever and TALENTS) or PLAYERSPELLS_BUTTON,
-			hidden = function() return UnitLevel("player") < 10 end,
-			icon = "Interface\\HELPFRAME\\HelpIcon-CharacterStuck",
-			func = function() 
-				if InCombatLockdown() then UIErrorsFrame:AddMessage(G.ErrColor..ERR_NOT_IN_COMBAT) else securecall(TogglePlayerSpellsFrame, 2) end
-			end,
-			notCheckable = true,
-		},
-
-		{	-- Forever 法術書
-			text = SPELLBOOK,
-			icon = "Interface\\ICONS\\INV_Misc_Book_09",
-			hidden = not G.IsForever,
-			func = function()
-				if InCombatLockdown() then UIErrorsFrame:AddMessage(G.ErrColor..ERR_NOT_IN_COMBAT) else securecall(TogglePlayerSpellsFrame, 3) end
-			end,
-			notCheckable = true,
-		},
-		
-		{	-- Retail 成就
-			text = ACHIEVEMENT_BUTTON,
-			icon = "Interface\\MINIMAP\\TRACKING\\QuestBlob",
-			hidden = G.IsForever,
-			func = function() 
-				if InCombatLockdown() then UIErrorsFrame:AddMessage(G.ErrColor..ERR_NOT_IN_COMBAT) return end
-				securecall(ToggleAchievementFrame)
-			end,
-			notCheckable = true,
-		},
-
-		{	-- Forever 傳承
-			text = LEGACY_BUTTON,
-			icon = "Interface\\MINIMAP\\TRACKING\\QuestBlob",
-			hidden = not G.IsForever,
-			func = function()
-				if InCombatLockdown() then UIErrorsFrame:AddMessage(G.ErrColor..ERR_NOT_IN_COMBAT) return end
-				securecall(ToggleLegacySystemUI)
-			end,
-			notCheckable = true,
-		},
-
-		{	-- 地圖與任務日誌
-			text = MAP_AND_QUEST_LOG,	-- OLD: QUESTLOG_BUTTON
-			icon = "Interface\\GossipFrame\\ActiveQuestIcon",
-			func = function()
-				if InCombatLockdown() then UIErrorsFrame:AddMessage(G.ErrColor..ERR_NOT_IN_COMBAT) else securecall(ToggleWorldMap) end
-			end,
-			notCheckable = true,
-		},
-		
-		{	-- Retail 房屋資訊看板
-			text = HOUSING_MICRO_BUTTON,
-			icon = 7252953,
-			hidden = G.IsForever,
-			func = function()
-				if not C_Housing.IsHousingServiceEnabled() then return end
-				if InCombatLockdown() then
-					UIErrorsFrame:AddMessage(G.ErrColor..ERR_NOT_IN_COMBAT)
-				else
-					_G.HousingFramesUtil.ToggleHousingDashboard()
-				end
-			end,
-			notCheckable = true,
-		},
-		
-		{	-- 社群
-			text = COMMUNITIES_FRAME_TITLE,
-			icon = "Interface\\FriendsFrame\\UI-Toast-ChatInviteIcon",
-			func = function()
-				if InCombatLockdown() then UIErrorsFrame:AddMessage(G.ErrColor..ERR_NOT_IN_COMBAT) return end
-				if not CommunitiesFrame then C_AddOns.LoadAddOn("Blizzard_Communities") end
-				securecall(ToggleCommunitiesFrame)
-			end,
-			notCheckable = true,
-		},
-		
-		{	-- 好友
-			text = SOCIAL_BUTTON,
-			icon = "Interface\\CHATFRAME\\UI-ChatWhisperIcon",
-			func = function() 
-				if InCombatLockdown() then
-					UIErrorsFrame:AddMessage(G.ErrColor..ERR_NOT_IN_COMBAT)
-				else
-					securecall(ToggleFriendsFrame, 1)
-				end
-			end,
-			notCheckable = true,
-		},
-		
-		{	-- 組隊搜尋
-			text = (G.IsForever and LFG_TITLE) or GROUP_FINDER,
-			icon = "Interface\\TUTORIALFRAME\\UI-TutorialFrame-AttackCursor",
-			func = function()
-				if InCombatLockdown() then
-					UIErrorsFrame:AddMessage(G.ErrColor..ERR_NOT_IN_COMBAT)
-				else
-					securecall((G.IsForever and ToggleGroupFinderFrame) or ToggleLFDParentFrame)
-				end
-			end,
-			notCheckable = true,
-		},
-		
-		{	-- 收藏
-			text = COLLECTIONS,
-			icon = "Interface\\CURSOR\\Crosshair\\WildPetCapturable",
-			func = function()
-				if InCombatLockdown() then UIErrorsFrame:AddMessage(G.ErrColor..ERR_NOT_IN_COMBAT) return end
-				securecall(ToggleCollectionsJournal, 1)
-			end,
-			notCheckable = true,
-		},
-		
-		{	-- Retail 冒險指南
-			text = ADVENTURE_JOURNAL,	-- OLD: ENCOUNTER_JOURNAL
-			icon = "Interface\\ENCOUNTERJOURNAL\\UI-EJ-HeroicTextIcon",
-			hidden = G.IsForever,
-			func = function()
-				if InCombatLockdown() then UIErrorsFrame:AddMessage(G.ErrColor..ERR_NOT_IN_COMBAT) return end
-				securecall(ToggleEncounterJournal)
-			end,
-			notCheckable = true,
-		},
-		
-		{	-- 遊戲商城
-			text = BLIZZARD_STORE,
-			icon = "Interface\\MINIMAP\\TRACKING\\Auctioneer",
-			func = function()
-				if not StoreFrame then C_AddOns.LoadAddOn("Blizzard_StoreUI") end
-				securecall(ToggleStoreUI)
-			end,
-			notCheckable = true,
-		},
-		
-		{	-- 空行
-			text = "",
-			isTitle = true,
-			notCheckable = true,
-		},
-		
-		{	-- 其他
-			text = OTHER,
-			isTitle = true,
-			notCheckable = true,
-		},
-		
-		{	-- Retail 要塞報告
-			text = GARRISON_LANDING_PAGE_TITLE,
-			icon = "Interface\\HELPFRAME\\OpenTicketIcon",
-			hidden = function() return not hasMissionTable(GARRISON_TYPE_DRAENOR) end,
-			func = function()
-				openMissionTable(GARRISON_TYPE_DRAENOR)
-			end,
-			notCheckable = true,
-		},
-
-		{	-- Retail 職業大廳報告
-			text = ORDER_HALL_LANDING_PAGE_TITLE,
-			icon = "Interface\\GossipFrame\\WorkOrderGossipIcon",
-			hidden = function() return not hasMissionTable(GARRISON_TYPE_LEGION) end,
-			func = function()
-				openMissionTable(GARRISON_TYPE_LEGION)
-			end,
-			notCheckable = true,
-		},
-		
-		{	-- Retail 任務指揮桌
-			text = EXPANSION_NAME7.." "..GARRISON_TYPE_8_0_LANDING_PAGE_TITLE,
-			icon = "Interface\\HELPFRAME\\OpenTicketIcon",
-			hidden = function() return not hasMissionTable(GARRISON_TYPE_BFA) end,
-			func = function()
-				openMissionTable(GARRISON_TYPE_BFA)
-			end,
-			notCheckable = true,
-		},
-		
-		{	-- Retail 誓盟報告
-			text = GARRISON_TYPE_9_0_LANDING_PAGE_TITLE,
-			icon = "Interface\\GossipFrame\\WorkOrderGossipIcon",
-			hidden = function() return not hasMissionTable(GARRISON_TYPE_SHADOWLANDS) end,
-			func = function()
-				openMissionTable(GARRISON_TYPE_SHADOWLANDS)
-			end,
-			notCheckable = true,
-		},
-
-		{	-- 客服支援
-			text = GM_EMAIL_NAME,
-			icon = "Interface\\CHATFRAME\\UI-ChatIcon-Blizz",
-			func = function() 
-				if InCombatLockdown() then UIErrorsFrame:AddMessage(G.ErrColor..ERR_NOT_IN_COMBAT) else securecall(ToggleHelpFrame) end
-			end,
-			notCheckable = true,
-		},
-		
-		{	-- 對話頻道
-			text = CHANNEL,
-			icon = "Interface\\CHATFRAME\\UI-ChatIcon-ArmoryChat-AwayMobile",
-			func = function()
-				if InCombatLockdown() then UIErrorsFrame:AddMessage(G.ErrColor..ERR_NOT_IN_COMBAT) else securecall(ToggleChannelFrame) end
-			end,
-			notCheckable = true
-		},
-		
-		{	-- 行事曆
-			text = L.Calendar,
-			func = function()
-				if InCombatLockdown() then UIErrorsFrame:AddMessage(G.ErrColor..ERR_NOT_IN_COMBAT) return end
-				securecall(ToggleCalendar)
-			end,
-			notCheckable = true,
-		},
-		
-		{	-- 區域地圖
-			text = BATTLEFIELD_MINIMAP,
-			colorCode = "|cff999999",
-			func = function()
-				if InCombatLockdown() then UIErrorsFrame:AddMessage(G.ErrColor..ERR_NOT_IN_COMBAT) return end
-				securecall(ToggleBattlefieldMap)
-			end,
-			notCheckable = true,
-		},
-		
-		{
-			text = L.ToggleConfig,
-			colorCode = "|cff00FFFF",
-			func = function()
-				F.CreateEKMOptions()
-			end,
-			notCheckable = true,
-		},
-		
-		{	-- 空行
-			text = "",
-			isTitle = true,
-			notCheckable = true,
-		},
-		
-		{	-- 彈出乘客
-			text = EJECT_PASSENGER,
-			isTitle = true,
-			notCheckable = true,
-		},
-		
-		{	-- 彈出乘客1
-			text = L.Left,
-			func = function()
-				EjectPassengerFromSeat(1)
-			end,
-			notCheckable = true,
-		},
-		
-		{	-- 彈出乘客2
-			text = L.Right,
-			func = function()
-				EjectPassengerFromSeat(2)
-			end,
-			notCheckable = true,
-		},
-
-		{	-- 空行
-			text = "",
-			isTitle = true,
-			notCheckable = true,
-		},
-		
-		{	-- 插件標題
-			text = ADDONS,
-			isTitle = true,
-			notCheckable = true,
-		},
-		-- 僅顯示已註冊的設定入口；GUI 建立與載入交給各插件。
-		{	-- BigWigs
-			text = "BigWigs",
-			hidden = function() return not SlashCmdList.BigWigs end,
-			func = function()
-				SlashCmdList.BigWigs()
-			end,
-			notCheckable = true,
-		},
-		{	-- DBM
-			text = "DBM",
-			hidden = function() return not SlashCmdList.DEADLYBOSSMODS end,
-			func = function()
-				SlashCmdList.DEADLYBOSSMODS("")	-- /dbm 無子命令時仍需空字串，供 handler 解析。
-			end,
-			notCheckable = true,
-		},
-		{	-- oUF_Ruri
-			text = "oUF_Ruri",
-			hidden = function() return not SlashCmdList.OUFRURI end,
-			func = function()
-				SlashCmdList.OUFRURI()
-			end,
-			notCheckable = true,
-		},
-		{	-- oUF_Hankk
-			text = "oUF_Hankk",
-			hidden = function() return not SlashCmdList.OUFHANKK end,
-			func = function()
-				SlashCmdList.OUFHANKK()
-			end,
-			notCheckable = true,
-		},
-		{	-- Anyon
-			text = "Anyon",
-			hidden = function() return not SlashCmdList.ANYON end,
-			func = function()
-				SlashCmdList.ANYON()
-			end,
-			notCheckable = true,
-		},
-		{	-- 重載
-			text = RELOADUI,
-			colorCode = "|cff999999",
-			hidden = G.IsForever,		-- Forever暫時禁用
-			func = function()
-				ReloadUI()
-			end,
-			notCheckable = true,
-		},
-	}
-
-	-- Right Click for Game Menu, Left Click for Track Menu / 右鍵遊戲選單，中鍵追蹤選單
+	-- 右鍵 context menu；中鍵追蹤選單。
 	local clicker = EKMinimapClicker
 	clicker:SetScript("OnMouseUp", function(self, button)
 		local stat = EKMinimapTooltipButton
@@ -434,7 +278,7 @@ local function OnEvent()
 		if IsAltKeyDown() then return end
 
 		if button == "RightButton" then
-			EasyMenu(menuList, menuFrame, self, (Minimap:GetWidth() * .7), -3, "MENU", 2)
+			MenuUtil.CreateContextMenu(self, GenerateMenu)
 		elseif button == "MiddleButton" then
 			local button = MinimapCluster.Tracking.Button
 			if button then
