@@ -75,13 +75,11 @@ local function setMinimap()
 	MinimapCluster:EnableMouse(false)
 	Minimap.bg = F.CreateBG(Minimap, 5, 5, 1)
 
-	-- 12.1.5 的原生座標移至小地圖內，隨小地圖縮放。
 	local coords = MinimapCluster.MinimapContainer.PlayerCoords
 	if coords then
 		coords:SetParent(Minimap)
 		coords:ClearAllPoints()
 		coords:SetPoint("BOTTOM", Minimap, "BOTTOM", 0, 8)
-		-- 座標文字描邊
 		local font, size = coords.CoordText:GetFont()
 		coords.CoordText:SetFont(font, size, "OUTLINE")
 	end
@@ -164,7 +162,6 @@ local function QueueStatus()
 	QueueStatusButton:SetParent(Minimap)
 	QueueStatusButton:SetFrameLevel(999)
 	QueueStatusButton:SetScale(.8)
-	
 	local function hookAnchor()
 		QueueStatusButton:ClearAllPoints()
 		QueueStatusFrame:ClearAllPoints()
@@ -199,14 +196,13 @@ local Stat = CreateFrame("Button", "EKMinimapTooltipButton", Minimap)
 	Stat:SetHighlightTexture(G.Report)
 	Stat:SetAlpha(0)
 	Stat:SetScale(1)
-	-- 先把按鈕移出 MinimapCluster 以免參與原生尺寸計算引起錯誤
-	AddonCompartmentFrame:SetParent(Minimap)
+	AddonCompartmentFrame:SetParent(Minimap)	-- 先把按鈕移出 MinimapCluster 以免參與原生尺寸計算引起錯誤
 	AddonCompartmentFrame:ClearAllPoints()
 	AddonCompartmentFrame:SetAllPoints(Stat)
 	AddonCompartmentFrame:SetAlpha(0)
 	AddonCompartmentFrame:EnableMouse(false)
 
--- 提示與點擊共用原生 Landing Page 可用條件；按鈕本身刻意保持隱藏。
+-- 資料片按鈕
 local function canOpenLandingPage()
 	if not GameRulesUtil.ShouldShowExpansionLandingPageButton() then return false end
 	if ExpansionLandingPageMinimapButton:IsExpansionOverlayMode() then return true end
@@ -345,6 +341,7 @@ local function hideExpBar()
 		StatusTrackingBarManager:Hide()
 	end
 end
+
 --======================================================--
 -----------------    [[ Difficulty ]]    -----------------
 --======================================================--
@@ -512,11 +509,8 @@ end
 				button.menu:SetPoint("TOP", self, "BOTTOM", findAnchor("MinimapAnchor") and (Minimap:GetWidth() * .5) or -(Minimap:GetWidth() * .5), -3)
 			end
 		elseif button == "LeftButton" and canOpenLandingPage() then
-			if InCombatLockdown() then
-				UIErrorsFrame:AddMessage(G.ErrColor..ERR_NOT_IN_COMBAT)
-			else
-				ExpansionLandingPageMinimapButton:Click()
-			end
+			if F.CombatError() then return end
+			ExpansionLandingPageMinimapButton:Click()
 		end
 	end)
 	
@@ -564,6 +558,7 @@ local function updateIconPos()
 		mailAnchorHooked = true
 	end
 end
+
 F.ResetM = function()
 	F.ApplyEKMPositionSettings()
 	updateMinimapPos()

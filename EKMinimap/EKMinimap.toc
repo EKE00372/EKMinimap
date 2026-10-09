@@ -1,4 +1,4 @@
-## Interface: 120105, 120107, 16001
+## Interface: 120100, 120105, 120107, 16001
 ## Title: |cff00ffffEK|rMinimap
 ## Version: R5.3
 ## Author: EK

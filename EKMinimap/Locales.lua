@@ -2,6 +2,9 @@ local addon, ns = ...
 local C, F, G, L = unpack(ns)
 local GetLocale = GetLocale
 
+-- 各語系的指令排序不同，優先取本地化名稱。
+L.Calendar = (SLASH_CALENDAR1 ~= "/calendar" and SLASH_CALENDAR1 or SLASH_CALENDAR2):sub(2)
+
 --===================================================--
 -----------------    [[ Locales ]]    -----------------
 --===================================================--
@@ -30,7 +33,6 @@ if GetLocale() == "zhTW" then
 	
 	L.ToggleConfig = "開啟設定選項"
 	L.AddonCompartment = "插件收納"
-	L.Calendar = SLASH_CALENDAR2:gsub("/(.*)","%1")
 	L.Left = "左"
 	L.Right = "右"
 	
@@ -59,7 +61,7 @@ elseif GetLocale() == "zhCN" then
 	L.DurabilityOpt = "隐藏装备耐久"
 	L.TrackerStyleOpt = "追踪列表美化"
 	L.AutoCollapseOpt = "隐藏追踪列表"
-	L.CollapseTip = "在大秘境时保留进度追踪，折叠其他追踪。"
+	L.CollapseTip = "在大秘境时保留进度追踪，隐藏其他追踪。"
 
 	L.SizeOpt = "缩放"
 	L.AnchorOpt = "锚点"
@@ -106,7 +108,6 @@ else
 
 	L.ToggleConfig = "EkMinimap Options"
 	L.AddonCompartment = "Addon Compartment"
-	L.Calendar = SLASH_CALENDAR1:gsub("/(.*)","%1")
 	L.Left = "Left"
 	L.Right = "Right"
 

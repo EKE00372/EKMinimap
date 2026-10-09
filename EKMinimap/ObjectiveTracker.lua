@@ -212,8 +212,8 @@ local function OnEvent(self, event)
 		trackerStyle()
 		self:UnregisterEvent("PLAYER_LOGIN")
 
-		-- 功能開關只在重載時變更，停用時不建立隱藏流程。
-		if not F.GetEKMOption("AutoCollapse") then
+		-- Forever 不啟用隱藏；其他版本的功能開關只在重載時變更。
+		if G.IsForever or not F.GetEKMOption("AutoCollapse") then
 			self:SetScript("OnEvent", nil)
 			return
 		end
