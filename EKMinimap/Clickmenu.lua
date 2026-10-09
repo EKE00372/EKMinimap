@@ -23,19 +23,37 @@ local function openMissionTable(garrisonType)
 	if not hasMissionTable(garrisonType) then return end
 
 	if F.CombatError() then return end
-	securecall(ShowGarrisonLandingPage, garrisonType)
+	ShowGarrisonLandingPage(garrisonType)
 end
 
 ---------------
 -- Menu lsit --
 ---------------
 
+-- 標題分隔線
+local function CreateMenuTitle(rootDescription, text, queued)
+	local title = MenuUtil.CreateTitle(text)
+	title:SetFinalInitializer(function(frame)
+		local line = frame:AttachTexture()
+		line:SetColorTexture(.6, .65, .65, .3)
+		line:SetHeight(1)
+		line:SetPoint("LEFT", frame.fontString, "RIGHT", 8, 0)
+		line:SetPoint("RIGHT", frame, "RIGHT", -2, 0)
+	end)
+
+	if queued then
+		rootDescription:AddQueuedDescription(title)
+	else
+		rootDescription:Insert(title)
+	end
+end
+
 -- 建立包含圖示的選項
 local function CreateIconButton(rootDescription, text, icon, callback)
 	local atlasInfo = type(icon) == "string" and C_Texture.GetAtlasInfo(icon)
 	local markup
 	if atlasInfo then
-		markup = CreateAtlasMarkup(icon, 16, 16)	-- 引用原生micro menu atlas
+		markup = CreateAtlasMarkup(icon, 16, 16)	-- 原生 atlas
 	else
 		markup = CreateSimpleTextureMarkup(icon, 16, 16)	-- 自定材質路徑
 	end
@@ -46,12 +64,12 @@ end
 -- 每次開啟重新判斷可見項目
 local function GenerateMenu(_, rootDescription)
 	-- 標題
-	rootDescription:CreateTitle(MAINMENU_BUTTON)
+	CreateMenuTitle(rootDescription, MAINMENU_BUTTON)
 
-	-- 角色
-	CreateIconButton(rootDescription, CHARACTER_BUTTON, "Interface\\PVPFrame\\PVP-Banner-Emblem-3", function()
+	-- 角色 舊圖示："Interface\\PVPFrame\\PVP-Banner-Emblem-3"
+	CreateIconButton(rootDescription, CHARACTER_BUTTON, "Interface\\ICONS\\INV_Chest_Plate01", function()
 		if F.CombatError() then return end
-		securecall(ToggleCharacter, "PaperDollFrame")
+		ToggleCharacter("PaperDollFrame")
 	end)
 
 	-- 專業技能
@@ -65,7 +83,7 @@ local function GenerateMenu(_, rootDescription)
 		CreateIconButton(rootDescription, (G.IsForever and TALENTS) or PLAYERSPELLS_BUTTON,
 			"Interface\\HELPFRAME\\HelpIcon-CharacterStuck", function()
 				if F.CombatError() then return end
-				securecall(TogglePlayerSpellsFrame, 2)
+				TogglePlayerSpellsFrame(2)
 		end)
 	end
 
@@ -73,7 +91,7 @@ local function GenerateMenu(_, rootDescription)
 		-- Forever 法術書
 		CreateIconButton(rootDescription, SPELLBOOK, "Interface\\ICONS\\INV_Misc_Book_09", function()
 			if F.CombatError() then return end
-				securecall(TogglePlayerSpellsFrame, 3)
+				TogglePlayerSpellsFrame(3)
 		end)
 	end
 
@@ -81,20 +99,20 @@ local function GenerateMenu(_, rootDescription)
 		-- Forever 傳承
 		CreateIconButton(rootDescription, LEGACY_BUTTON, "UI-HUD-MicroMenu-Legacy-Up", function()
 			if F.CombatError() then return end
-			securecall(ToggleLegacySystemUI)
+			ToggleLegacySystemUI()
 		end)
 	else
 		-- Retail 成就
 		CreateIconButton(rootDescription, ACHIEVEMENT_BUTTON, "Interface\\MINIMAP\\TRACKING\\QuestBlob", function()
 			if F.CombatError() then return end
-			securecall(ToggleAchievementFrame)
+			ToggleAchievementFrame()
 		end)
 	end
 
 	-- 地圖與任務日誌
 	CreateIconButton(rootDescription, MAP_AND_QUEST_LOG, "Interface\\GossipFrame\\ActiveQuestIcon", function()
 		if F.CombatError() then return end
-		securecall(ToggleWorldMap)
+		ToggleWorldMap()
 	end)
 
 	-- Retail 房屋資訊看板
@@ -108,46 +126,46 @@ local function GenerateMenu(_, rootDescription)
 	-- 社群 "Interface\\FriendsFrame\\UI-Toast-ChatInviteIcon"
 	CreateIconButton(rootDescription, COMMUNITIES_FRAME_TITLE, "UI-HUD-MicroMenu-GuildCommunities-Up", function()
 		if F.CombatError() then return end
-		securecall(ToggleCommunitiesFrame)
+		ToggleCommunitiesFrame()
 	end)
 
 	-- 好友
 	CreateIconButton(rootDescription, SOCIAL_BUTTON, "Interface\\CHATFRAME\\UI-ChatWhisperIcon", function()
 		if F.CombatError() then return end
-		securecall(ToggleFriendsFrame, 1)
+		ToggleFriendsFrame(1)
 	end)
 
-	-- 組隊搜尋 "Interface\\TUTORIALFRAME\\UI-TutorialFrame-AttackCursor"
-	CreateIconButton(rootDescription, (G.IsForever and LFG_TITLE) or GROUP_FINDER, "UI-HUD-MicroMenu-Groupfinder-Up", function()
+	-- 組隊搜尋 舊圖示："Interface\\TUTORIALFRAME\\UI-TutorialFrame-AttackCursor"、"UI-HUD-MicroMenu-Groupfinder-Up"
+	CreateIconButton(rootDescription, (G.IsForever and LFG_TITLE) or GROUP_FINDER, "friends-icon-eye", function()
 		if F.CombatError() then return end
-		securecall((G.IsForever and ToggleGroupFinderFrame) or ToggleLFDParentFrame)
+		((G.IsForever and ToggleGroupFinderFrame) or ToggleLFDParentFrame)()
 	end)
 
 	-- 收藏
 	CreateIconButton(rootDescription, COLLECTIONS, "Interface\\CURSOR\\Crosshair\\WildPetCapturable", function()
 		if F.CombatError() then return end
-		securecall(ToggleCollectionsJournal, 1)
+		ToggleCollectionsJournal(1)
 	end)
 
 	-- Retail 冒險指南
 	if not G.IsForever then
 		CreateIconButton(rootDescription, ADVENTURE_JOURNAL, "Interface\\ENCOUNTERJOURNAL\\UI-EJ-HeroicTextIcon", function()
 			if F.CombatError() then return end
-			securecall(ToggleEncounterJournal)
+			ToggleEncounterJournal()
 		end)
 	end
 
 	-- 遊戲商城
 	CreateIconButton(rootDescription, BLIZZARD_STORE, "Interface\\MINIMAP\\TRACKING\\Auctioneer", function()
 		if not StoreFrame then C_AddOns.LoadAddOn("Blizzard_StoreUI") end
-		securecall(ToggleStoreUI)
+		ToggleStoreUI()
 	end)
 
 	-- 空行
 	rootDescription:QueueSpacer()
 
 	-- 其他
-	rootDescription:QueueTitle(OTHER)
+	CreateMenuTitle(rootDescription, OTHER, true)
 
 	-- Retail 要塞報告
 	if hasMissionTable(GARRISON_TYPE_DRAENOR) then
@@ -180,36 +198,42 @@ local function GenerateMenu(_, rootDescription)
 	-- 客服支援
 	CreateIconButton(rootDescription, GM_EMAIL_NAME, "Interface\\CHATFRAME\\UI-ChatIcon-Blizz", function()
 		if F.CombatError() then return end
-		securecall(ToggleHelpFrame)
+		ToggleHelpFrame()
 	end)
 
-	-- 對話頻道
-	CreateIconButton(rootDescription, CHANNEL, "Interface\\CHATFRAME\\UI-ChatIcon-ArmoryChat-AwayMobile", function()
+	-- 對話頻道 舊圖示："Interface\\CHATFRAME\\UI-ChatIcon-ArmoryChat-AwayMobile"
+	CreateIconButton(rootDescription, CHANNEL, "chatframe-button-icon-voicechat", function()
 		if F.CombatError() then return end
-		securecall(ToggleChannelFrame)
+		ToggleChannelFrame()
 	end)
 
 	-- 行事曆
-	rootDescription:CreateButton(L.Calendar, function()
+	CreateIconButton(rootDescription, L.Calendar, "ui-hud-calendar-1-up", function()
 		if F.CombatError() then return end
-		securecall(ToggleCalendar)
+		ToggleCalendar()
 	end)
 
-	-- 區域地圖
-	rootDescription:CreateButton("|cff999999"..BATTLEFIELD_MINIMAP.."|r", function()
+	-- 區域地圖 舊圖示："Waypoint-MapPin-Untracked"
+	CreateIconButton(rootDescription, BATTLEFIELD_MINIMAP, "Interface\\ICONS\\INV_Misc_Map_01", function()
 		if F.CombatError() then return end
-		securecall(ToggleBattlefieldMap)
+		ToggleBattlefieldMap()
 	end)
 
 	rootDescription:CreateButton("|cff00FFFF"..L.ToggleConfig.."|r", function()
 		F.CreateEKMOptions()
+	end):AddInitializer(function(button)
+		local icon = button:AttachTexture()
+		icon:SetColorTexture(0, 1, 1, 1)
+		icon:SetSize(12, 12)
+		icon:SetPoint("LEFT", 4, 0)
+		button.fontString:SetPoint("LEFT", icon, "RIGHT", 8, 0)
 	end)
 
 	-- 空行
 	rootDescription:QueueSpacer()
 
 	-- 彈出乘客
-	rootDescription:QueueTitle(EJECT_PASSENGER)
+	CreateMenuTitle(rootDescription, EJECT_PASSENGER, true)
 
 	-- 彈出乘客1
 	rootDescription:CreateButton(L.Left, function()
@@ -225,7 +249,7 @@ local function GenerateMenu(_, rootDescription)
 	rootDescription:QueueSpacer()
 
 	-- 插件標題
-	rootDescription:QueueTitle(ADDONS)
+	CreateMenuTitle(rootDescription, ADDONS, true)
 
 	-- BigWigs
 	if SlashCmdList.BigWigs then
