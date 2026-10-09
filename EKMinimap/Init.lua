@@ -65,7 +65,7 @@ local MediaFolder = "Interface\\AddOns\\EKMinimap\\Media\\"
 				{ type = "toggle", key = "VehicleSeat", label = "VehicleSeatOpt", default = true },
 				{ type = "toggle", key = "Durability", label = "DurabilityOpt", default = true },
 				{ type = "toggle", key = "TrackerStyle", label = "TrackerStyleOpt", default = true },
-				{ type = "toggle", key = "AutoCollapse", label = "AutoCollapseOpt", tooltip = "CollapseTip", default = false },
+				{ type = "toggle", key = "AutoCollapse", label = "AutoCollapseOpt", tooltip = "CollapseTip", default = false, hidden = G.IsForever },
 			},
 		},
 	}

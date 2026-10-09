@@ -62,7 +62,7 @@ local function CreateButton(self, width, height, text)
 	bu:SetPushedTexture(0)
 	bu:SetDisabledTexture(0)
 	
-	bu.Text = F.CreateFS(bu, text, configFontSize, "CENTER", "CENTER", 0, 0)
+	F.CreateFS(bu, text, configFontSize, "CENTER", "CENTER", 0, 0)
 	
 	bu:SetScript("OnEnter", function() bu.bg:SetBackdropColor(0, 1, 1, .5) end)
 	bu:SetScript("OnLeave", function() bu.bg:SetBackdropColor(0, 0, 0, .5) end)
@@ -193,7 +193,7 @@ local function CreateDropDown(self, text, width, height, data, value)
 	
 	bu:SetScript("OnShow", function() list:Hide() end)
 	bu:SetScript("OnClick", function()
-		ToggleFrame(list)
+		list:SetShown(not list:IsShown())
 	end)
 
 	local opt, index = {}, 0
@@ -298,10 +298,19 @@ local function BuildGUI()
 	MainFrame:SetMovable(true)
 	MainFrame:EnableMouse(true)
 	MainFrame:RegisterForDrag("LeftButton")
-	MainFrame.bg = F.CreateBG(MainFrame, 5, 5, .4)
+	F.CreateBG(MainFrame, 5, 5, .4)
 	MainFrame:SetClampedToScreen(true)
 	MainFrame:SetScript("OnDragStart", function() MainFrame:StartMoving() end)
 	MainFrame:SetScript("OnDragStop", function() MainFrame:StopMovingOrSizing() end)
+	-- 設定只在非戰鬥時開啟；進入戰鬥便關閉已開啟的視窗。
+	MainFrame:SetScript("OnShow", function(self)
+		self:RegisterEvent("PLAYER_REGEN_DISABLED")
+	end)
+	MainFrame:SetScript("OnHide", function(self)
+		self:UnregisterEvent("PLAYER_REGEN_DISABLED")
+		self:StopMovingOrSizing()
+	end)
+	MainFrame:SetScript("OnEvent", function(self) self:Hide() end)
 	MainFrame.OptionControls = {}
 	MainFrame.StatusText = F.CreateFS(MainFrame, "", configFontSize, "LEFT", "TOPLEFT", panelInset + columnWidth + columnGap, -258)
 	MainFrame.StatusText:SetWidth(columnWidth)
@@ -315,30 +324,32 @@ local function BuildGUI()
 		local x = panelInset + (column - 1) * (columnWidth + columnGap)
 		F.CreateFS(MainFrame, "|cff00ffff"..group.name.."|r", configFontSize + 2, "LEFT", "TOPLEFT", x, -panelInset)
 		for index, option in ipairs(group.options) do
-			local control
-			local text = L[option.label]
-			if option.type == "toggle" then
-				control = CreateCheckBox(MainFrame, text, option.key)
-			elseif option.type == "dropdown" then
-				control = CreateDropDown(MainFrame, text, option.width, option.height, optList, option.key)
-			elseif option.type == "edit" then
-				control = CreateEditBox(MainFrame, text, option.width, option.height, option.key)
-			elseif option.type == "slider" then
-				control = CreateBar(MainFrame, "Size", 160, 20, option.min, option.max, option.step, option.key, text, option.coeff)
+			if not option.hidden then
+				local control
+				local text = L[option.label]
+				if option.type == "toggle" then
+					control = CreateCheckBox(MainFrame, text, option.key)
+				elseif option.type == "dropdown" then
+					control = CreateDropDown(MainFrame, text, option.width, option.height, optList, option.key)
+				elseif option.type == "edit" then
+					control = CreateEditBox(MainFrame, text, option.width, option.height, option.key)
+				elseif option.type == "slider" then
+					control = CreateBar(MainFrame, "Size", 160, 20, option.min, option.max, option.step, option.key, text, option.coeff)
+				end
+				local y = -panelInset - 24 - (index - 1) * (rowHeight + rowGap)
+				-- 位置與縮放區多留 4px，和上方勾選項分開。
+				if option.type ~= "toggle" then y = y - 4 end
+				if option.type == "slider" then
+					control:SetPoint("TOPLEFT", MainFrame, x + (columnWidth - control:GetWidth()) / 2, y - 24)
+				else
+					control:SetPoint("TOPLEFT", MainFrame, x, y)
+				end
+				if option.tooltip then
+					local tip = CreateTooltip(control, G.Info, "ANCHOR_RIGHT", L[option.tooltip])
+					tip:SetPoint("LEFT", control.text, "RIGHT", 4, 2)
+				end
+				tinsert(MainFrame.OptionControls, control)
 			end
-			local y = -panelInset - 24 - (index - 1) * (rowHeight + rowGap)
-			-- 位置與縮放區多留 4px，和上方勾選項分開。
-			if option.type ~= "toggle" then y = y - 4 end
-			if option.type == "slider" then
-				control:SetPoint("TOPLEFT", MainFrame, x + (columnWidth - control:GetWidth()) / 2, y - 24)
-			else
-				control:SetPoint("TOPLEFT", MainFrame, x, y)
-			end
-			if option.tooltip then
-				local tip = CreateTooltip(control, G.Info, "ANCHOR_RIGHT", L[option.tooltip])
-				tip:SetPoint("LEFT", control.text, "RIGHT", 4, 2)
-			end
-			tinsert(MainFrame.OptionControls, control)
 		end
 	end
 
@@ -386,6 +397,7 @@ end
 
 -- 與 Ruri 一樣切換視窗；重開時同步存檔值，不保存尚未按 Enter 的草稿。
 F.CreateEKMOptions = function()
+	if F.CombatError() then return end
 	if not MainFrame then BuildGUI() end
 	if MainFrame:IsShown() then
 		MainFrame:Hide()
