@@ -1,14 +1,10 @@
-## Interface: 11404
+## Interface: 11509, 20506
 ## Title: |cff00ffffEK|rMinimap_Classic
 ## Version: C2.7
 ## Author: EK
 ## SavedVariables: EKMinimapDB
 ## Notes: A square minimap.
 ## X-Credits: HopeASD, Ooglogput, Chiril, ape47, sakaras, Siweia, Paopao
-
-Libs\LibStub.lua
-Libs\TaintLess.xml
-Libs\LibShowUIPanel-1.0.lua
 
 Init.lua
 Locales.lua

@@ -1,11 +1,11 @@
 # EKMinimap
 
-A Square Miniamp, Classic version.
+A square minimap for Classic Era 1.15.9 and Burning Crusade Classic 2.5.6.
 
-## Feature
+## Features
 
 * Square minimap, 1px border and 5px shadow.
-* Hide elements: timer/location/scale/buttons etc.
+* Hide the default minimap border, location text, clock and zoom buttons.
 * Indicator:
   * new mail
   * tracking
@@ -13,14 +13,28 @@ A Square Miniamp, Classic version.
   * Scroll to scale map
   * ALT+scroll to scale frame
 * Move
-  * Default on topleft, you can change default position in EKMinimap.lua.
-  * ALT+right click to drag, /rm for reset
-* Right click for micro menu
+  * Configure the anchor, coordinates and scale in the in-game options.
+  * ALT+right click to temporarily drag the minimap.
+* Right click for the game menu, using Blizzard's current menu framework.
+* Middle click opens the native tracking menu on TBC.
+* Hover over the character icon to show experience and watched reputation.
+* Optional hover clock follows the game's local/server and 12/24-hour settings.
 * Quest watch frame
   * Outline
-  * Class color title
-  * ALT+right click title to drag, /rq for reset
+  * Class color title, optional star markers and clickable quest titles.
+  * ALT+right click the title to temporarily drag the tracker.
+  * Leaves the tracker untouched when Questie is loaded or styling is disabled.
 * Map
-  * Movabble, ALT+right click head to drag, /rmp to reset
+  * Movable floating map; ALT+right click to drag.
   * No background
-  * Fadeout when moving
+  * Optional fade while moving and configurable scale.
+  * Keeps the native maximize, minimize and position reset controls.
+  * Automatically leaves the map untouched when Leatrix Maps is loaded.
+
+## Settings
+
+Use `/ekm`, `/ekminimap`, or the right-click menu to open the options.
+
+Feature switches and world map settings take effect after reloading the UI.
+The apply button updates minimap size/position and tracker position immediately.
+Temporary ALT adjustments do not change saved settings. Options close when combat begins.

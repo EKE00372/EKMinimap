@@ -4,53 +4,43 @@ local C, F, G, L = unpack(ns)
 local QWF, QTF, gsub = QuestWatchFrame, QuestTimerFrame, string.gsub
 local GetNumQuestWatches = GetNumQuestWatches
 local ClickFrames = {}
-local frame
-
-if IsAddOnLoaded("Questie") then return end
+local ObjectiveFrameHolder
+local trackerEnabled = false
 
 --================================================--
 -----------------    [[ Core ]]    -----------------
 --================================================--
 
-local ObjectiveFrameHolder = CreateFrame("Frame", "QWFHoler", UIParent)
-	ObjectiveFrameHolder:SetSize(160, G.fontSize + 4)
-
 local function updateQWFPos()
 	ObjectiveFrameHolder:ClearAllPoints()
-	ObjectiveFrameHolder:SetPoint(EKMinimapDB["QuestWatchAnchor"], UIParent, EKMinimapDB["QuestWatchAnchor"], EKMinimapDB["QuestWatchX"], EKMinimapDB["QuestWatchY"])
+	ObjectiveFrameHolder:SetPoint(F.GetEKMOption("QuestWatchAnchor"), UIParent, F.GetEKMOption("QuestWatchAnchor"), F.GetEKMOption("QuestWatchX"), F.GetEKMOption("QuestWatchY"))
 	ObjectiveFrameHolder:SetMovable(true)
 	ObjectiveFrameHolder:SetClampedToScreen(true)
-	
+
 	QWF:SetParent(ObjectiveFrameHolder)
 	QWF:ClearAllPoints()
 	QWF:SetPoint("TOPLEFT", ObjectiveFrameHolder)
 end
 
 local function setQWF()
-	if not EKMinimapDB["QuestWatchStyle"] then return end
-	
+	ObjectiveFrameHolder = CreateFrame("Frame", "QWFHoler", UIParent)
+	ObjectiveFrameHolder:SetSize(160, G.fontSize + 4)
+	-- 原生 OnShow 會重新加入 managed container，先解除管理再接管定位。
+	for _, target in ipairs({ QWF, QTF }) do
+		target.ignoreFramePositionManager = true
+		target.layoutParent:RemoveManagedFrame(target)
+	end
+
 	local numWatches = GetNumQuestWatches()
-	
+
 	updateQWFPos()
 	QWF:SetClampedToScreen(true)
 	QWF:SetMovable(true)
 	QWF:SetUserPlaced(true)
 
-	hooksecurefunc(QWF, "SetPoint", function(self, _, parent)
-		if parent == "MinimapCluster" or parent == _G.MinimapCluster then
-			self:SetParent(ObjectiveFrameHolder)
-			self:ClearAllPoints()
-			self:SetPoint("TOPLEFT", ObjectiveFrameHolder)
-		end
-	end)
-	
-	hooksecurefunc(QTF, "SetPoint", function(self, _, parent)
-		if parent ~= ObjectiveFrameHolder then
-			self:SetParent(ObjectiveFrameHolder)
-			self:ClearAllPoints()
-			self:SetPoint("TOPRIGHT", ObjectiveFrameHolder , "TOPLEFT", -10 , 0)
-		end
-	end)
+	QTF:SetParent(ObjectiveFrameHolder)
+	QTF:ClearAllPoints()
+	QTF:SetPoint("TOPRIGHT", ObjectiveFrameHolder, "TOPLEFT", -10, 0)
 
 	-- add title line
 	local HeaderBar = CreateFrame("StatusBar", nil, ObjectiveFrameHolder)
@@ -65,7 +55,7 @@ local function setQWF()
 	HeaderBar.Text = F.CreateFS(HeaderBar, CURRENT_QUESTS, "RIGHT", "RIGHT", 2, G.fontSize+2)
 	HeaderBar.Text:SetFont(G.font, G.fontSize, G.fontFlag)
 	HeaderBar.Text:SetTextColor(G.Ccolors.r, G.Ccolors.g, G.Ccolors.b)
-	
+
 	local HeaderButton = CreateFrame("Button", nil, HeaderBar)
 	HeaderButton:SetSize(20, 20)
 	HeaderButton:SetPoint("LEFT", HeaderBar, "RIGHT", 8, 8)
@@ -75,15 +65,15 @@ local function setQWF()
 	HeaderButton:SetNormalTexture("")
 	HeaderButton:SetHighlightTexture("")
 	HeaderButton:SetShown(numWatches > 0)
-	
+
 	HeaderButton:SetScript("OnEnter", function(self)
 		HeaderButton.bg:SetBackdropBorderColor(G.Ccolors.r, G.Ccolors.g, G.Ccolors.b, 1)
 	end)
-	
+
 	HeaderButton:SetScript("OnLeave", function(self)
 		HeaderButton.bg:SetBackdropBorderColor(0, 0, 0, 1)
 	end)
-	
+
 	HeaderButton:SetScript("OnClick", function(self)
 		self.collapse = not self.collapse
 		if self.collapse then
@@ -91,29 +81,29 @@ local function setQWF()
 			QWF:Hide()
 		else
 			self.text:SetText("-")
-			if numWatches > 0 then
+			if GetNumQuestWatches() > 0 then
 				QWF:Show()
 			end
 		end
 	end)
-	
+
 	-- block text outline
 	for i = 1, 30 do
 		local line = _G["QuestWatchLine"..i]
-		
+
 		line:SetFont(G.font, G.fontSize, G.fontFlag)
 		line:SetHeight(G.fontSize)
 		line:SetShadowOffset(0, 0)
 	end
-	
+
 	hooksecurefunc("QuestWatch_Update", function()
 		-- make sure header and collapse button show only when tracking quest
 		HeaderBar:SetShown(GetNumQuestWatches() > 0)
 		HeaderButton:SetShown(GetNumQuestWatches() > 0)
 		-- if quest update when collapse then keep collapse it
 		if HeaderButton.collapse then QuestWatchFrame:Hide() end
-		
-		if EKMinimapDB["QuestWatchStar"] then
+
+		if F.GetEKMOption("QuestWatchStar") then
 			for i = 1, 30 do
 				local line = _G["QuestWatchLine"..i]
 				local text = line:GetText()
@@ -123,13 +113,13 @@ local function setQWF()
 			end
 		end
 	end)
-	
+
 	local function QWF_Tooltip(self)
 		GameTooltip:SetOwner(self, "ANCHOR_TOP")
 		GameTooltip:AddDoubleLine(DRAG_MODEL, "Alt + |TInterface\\TUTORIALFRAME\\UI-TUTORIAL-FRAME:13:11:0:-1:512:512:12:66:333:411|t", 0, 1, 0.5, 1, 1, 1)
 		GameTooltip:Show()
 	end
-	
+
 	local QWFMove = CreateFrame("FRAME", "QWFdrag", ObjectiveFrameHolder)
 		-- Create frame for click
 		QWFMove:SetSize(160, G.fontSize + 2)
@@ -164,12 +154,10 @@ end
 --============================================================--
 
 local function ModernQuestWatch()
-	if not EKMinimapDB["QuestWatchStyle"] then return end
-	
 	-- ModernQuestWatch, Ketho
 	local function onMouseUp(self)
-		if not EKMinimapDB["QuestWatchClick"] then return end
-		
+		if not F.GetEKMOption("QuestWatchClick") then return end
+
 		if IsShiftKeyDown() then -- untrack quest
 			local questID = GetQuestIDFromLogIndex(self.questIndex)
 			for index, value in ipairs(QUEST_WATCH_LIST) do
@@ -180,6 +168,7 @@ local function ModernQuestWatch()
 			RemoveQuestWatch(self.questIndex)
 			QuestWatch_Update()
 		else -- open to quest log
+			if F.CombatError() then return end
 			if QuestLogEx then -- https://www.wowinterface.com/downloads/info24980-QuestLogEx.html
 				ShowUIPanel(QuestLogExFrame)
 				QuestLogEx:QuestLog_SetSelection(self.questIndex)
@@ -214,10 +203,10 @@ local function ModernQuestWatch()
 			end
 		end
 	end
-	
+
 	local function SetClickFrame(watchIndex, questIndex, headerText, objectiveTexts, completed)
 		if not ClickFrames[watchIndex] then
-			ClickFrames[watchIndex] = CreateFrame("Frame")
+			ClickFrames[watchIndex] = CreateFrame("Frame", nil, QWF)
 			ClickFrames[watchIndex]:SetScript("OnMouseUp", onMouseUp)
 			ClickFrames[watchIndex]:SetScript("OnEnter", onEnter)
 			ClickFrames[watchIndex]:SetScript("OnLeave", QuestWatch_Update)
@@ -248,7 +237,7 @@ local function ModernQuestWatch()
 					watchTextIndex = watchTextIndex + 1
 					local objectivesGroup = {}
 					local objectivesCompleted = 0
-					
+
 					for j = 1, numObjectives do
 						local finished = select(3, GetQuestLogLeaderBoard(j, questIndex))
 						if finished then
@@ -262,7 +251,7 @@ local function ModernQuestWatch()
 				end
 			end
 		end
-		-- hide/show frames so it doesnt eat clicks, since we cant parent to a FontString
+		-- 以任務索引回收點擊區；父框體同時負責收合時的顯隱。
 		for _, frame in pairs(ClickFrames) do
 			frame[GetQuestIndexForWatch(frame.watchIndex) and "Show" or "Hide"](frame)
 		end
@@ -275,7 +264,7 @@ local function ModernQuestWatch()
 			AutoQuestWatch_Insert(questIndex, QUEST_WATCH_NO_EXPIRE)
 		end
 	end
-	
+
 	local frame = CreateFrame("FRAME")
 	frame:RegisterEvent("QUEST_ACCEPTED")
 	frame:SetScript("OnEvent", autoQuestWatch)
@@ -283,12 +272,18 @@ end
 
 -- Reset / 重置
 F.ResetO = function()
+	if not trackerEnabled then return end
 	updateQWFPos()
 end
 
-local function OnEvent()
+local function OnEvent(self)
+	self:UnregisterEvent("PLAYER_LOGIN")
+	-- 所有一般插件載入後才判斷 Questie，停用時仍保留設定呼叫契約。
+	if not F.GetEKMOption("QuestWatchStyle") or C_AddOns.IsAddOnLoaded("Questie") then return end
+	trackerEnabled = true
 	setQWF()
 	ModernQuestWatch()
+	QuestWatch_Update()
 end
 
 local frame = CreateFrame("FRAME")

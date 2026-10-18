@@ -1,4 +1,4 @@
-﻿local addon, ns = ...
+local addon, ns = ...
 local C, F, G, L = unpack(ns)
 local WMF = WorldMapFrame
 
@@ -15,49 +15,63 @@ end
 --================================================--
 
 local function styleWMF()
-	if not EKMinimapDB["WorldMapStyle"] then return end
-	if IsAddOnLoaded("Leatrix_Maps") then return end
-	
-	WMF:SetScale(EKMinimapDB["WorldMapScale"])
+	if not F.GetEKMOption("WorldMapStyle") then return end
+	if C_AddOns.IsAddOnLoaded("Leatrix_Maps") then return end
+
+	WMF:SetScale(F.GetEKMOption("WorldMapScale"))
 	WMF.BlackoutFrame.Blackout:SetAlpha(0)		-- No background / 去背
-	--WMF.BlackoutFrame.Blackout = function() end
-	WMF.BlackoutFrame:EnableMouse(false)		-- Click through / 點擊穿透	
+	WMF.BlackoutFrame:EnableMouse(false)		-- Click through / 點擊穿透
 	-- Cursor match scale / 滑鼠跟隨縮放
 	WMF.ScrollContainer.GetCursorPosition = function(f)
 		local x, y = MapCanvasScrollControllerMixin.GetCursorPosition(f)
 		local s = WorldMapFrame:GetScale()
-		
+
 		return x/s, y/s
 	end
-	
-	if EKMinimapDB["WorldMapFade"] then
-		local alpha = EKMinimapDB["WorldMapAlpha"]
+
+	if F.GetEKMOption("WorldMapFade") then
+		local alpha = F.GetEKMOption("WorldMapAlpha")
 		PlayerMovementFrameFader.AddDeferredFrame(WMF, alpha, 1, .5, isMouseOverMap)
 	else
 		PlayerMovementFrameFader.RemoveFrame(WMF)
 	end
-	
-	-- Movable
-	WMF:SetMovable(true)						-- 使地圖可移動
-	WMF:SetUserPlaced(true)						-- 使框架可以超出畫面
+
+	-- 讓原生 UIPanel 保留浮動世界地圖的錨點，保留放大與重置的原生定位。
+	SetUIPanelAttribute(WMF, "area", "center")
+	SetUIPanelAttribute(WMF, "centerFrameSkipAnchoring", true)
+	WMF:SetMovable(true)
+	WMF:SetUserPlaced(true)
 	WMF:ClearAllPoints()
-	WMF.ClearAllPoints = F.Dummy				-- 使座標可自訂義
 	WMF:SetPoint("LEFT", UIParent, 10, 0)		-- Default at left / 初始化於畫面左邊
-	WMF.SetPoint = F.Dummy						-- 使拖動過的位置可以被儲存
-	
+	WorldMapScreenAnchor:StartMoving()
+	WorldMapScreenAnchor:SetPoint("TOPLEFT", WMF)
+	WorldMapScreenAnchor:StopMovingOrSizing()
+	hooksecurefunc(WMF, "SynchronizeDisplayState", function(self)
+		if not self:IsMaximized() then
+			self:ClearAllPoints()
+			self:SetPoint("TOPLEFT", WorldMapScreenAnchor)
+		end
+	end)
+
 	-- Alt+right click to drag frame / alt+右鍵拖動
 	WMF:RegisterForDrag("RightButton")
 	WMF:SetScript("OnDragStart", function(self)
 		if IsAltKeyDown() then
+			WorldMapScreenAnchor:ClearAllPoints()
+			self:ClearAllPoints()
 			self:StartMoving()
 		end
 	end)
 	WMF:SetScript("OnDragStop", function(self)
 		self:StopMovingOrSizing()
+		WorldMapScreenAnchor:StartMoving()
+		WorldMapScreenAnchor:SetPoint("TOPLEFT", self)
+		WorldMapScreenAnchor:StopMovingOrSizing()
 	end)
 end
 
-local function OnEvent()
+local function OnEvent(self)
+	self:UnregisterEvent("PLAYER_LOGIN")
 	styleWMF()
 end
 

@@ -11,6 +11,8 @@ local addon, ns = ...
 local C, F, G, L = unpack(ns)
 local MediaFolder = "Interface\\AddOns\\EKMinimap\\Media\\"
 
+G.IsTBC = (WOW_PROJECT_ID == WOW_PROJECT_BURNING_CRUSADE_CLASSIC)
+
 -------------------
 -- Golbal / 全局 --
 -------------------
@@ -20,48 +22,109 @@ local MediaFolder = "Interface\\AddOns\\EKMinimap\\Media\\"
 	G.Glow = MediaFolder.."glow.tga"
 	G.Mail = "Interface\\MINIMAP\\TRACKING\\Mailbox.blp"
 	G.Report = "Interface\\HelpFrame\\HelpIcon-ReportLag.blp"
-	
+
 	G.Question = "Interface\\HelpFrame\\HelpIcon-KnowledgeBase"
 	G.Info = "Interface\\FriendsFrame\\InformationIcon"
-	
+
 	-- 字體 / font
 	G.font = STANDARD_TEXT_FONT		-- 字型 / Font
-	G.fontSize = 14					-- 大小 / size
-	G.fontFlag = "THINOUTLINE"		-- 描邊 / outline
+	G.fontSize = 12					-- 大小 / size
+	G.fontFlag = "OUTLINE"		-- 描邊 / outline
 
 -------------------------
 -- Settings / 預設設定 --
 -------------------------
 
-	C.defaultSettings = {
-		["QuestWatchStyle"] = true,
-		["QuestWatchClick"] = true,
-		["QuestWatchStar"] = true,
-		["QuestWatchAnchor"] = "TOPRIGHT",
-		["QuestWatchX"] = -170,
-		["QuestWatchY"] = -220,
-		
-		["MinimapScale"] = 1.2,
-		["MinimapAnchor"] = "TOPRIGHT",
-		["MinimapY"] = -10,
-		["MinimapX"] = -10,
-		["ClickMenu"] = true,
-		["CharacterIcon"] = true,
-		["HoverClock"] = true,
-		
-		["WorldMapStyle"] = true,
-		["WorldMapScale"] = 0.6,
-		["WorldMapFade"] = true,
-		["WorldMapAlpha"] = 0.5,
+	F.AnchorOptions = { "TOP", "TOPLEFT", "TOPRIGHT", "CENTER", "LEFT", "BOTTOM", "BOTTOMLEFT", "BOTTOMRIGHT", "RIGHT" }
+	F.GUIOptionGroups = {
+		{ name = MINIMAP_LABEL, column = 1, y = 24, options = {
+			{ type = "toggle", key = "ClickMenu", label = "ClickMenuOpt", default = true },
+			{ type = "toggle", key = "CharacterIcon", label = "IconOpt", default = true },
+			{ type = "toggle", key = "HoverClock", label = "HoverClockOpt", default = true },
+			{ type = "dropdown", key = "MinimapAnchor", label = "AnchorOpt", default = "TOPRIGHT", width = 120, height = 20 },
+			{ type = "edit", key = "MinimapX", label = "XOpt", default = -10, width = 120, height = 20 },
+			{ type = "edit", key = "MinimapY", label = "YOpt", default = -10, width = 120, height = 20 },
+			{ type = "slider", key = "MinimapScale", label = "SizeOpt", default = 1.2, min = 5, max = 20, step = 1, coeff = .1 },
+		} },
+		{ label = "QuestWatchOpt", column = 1, y = 300, options = {
+			{ type = "toggle", key = "QuestWatchStyle", label = "QuestWatchStyleOpt", default = true },
+			{ type = "toggle", key = "QuestWatchStar", label = "QuestWatchStarOpt", default = true },
+			{ type = "toggle", key = "QuestWatchClick", label = "QuestWatchClickOpt", default = true },
+			{ type = "dropdown", key = "QuestWatchAnchor", label = "AnchorOpt", default = "TOPRIGHT", width = 120, height = 20 },
+			{ type = "edit", key = "QuestWatchX", label = "XOpt", default = -170, width = 120, height = 20 },
+			{ type = "edit", key = "QuestWatchY", label = "YOpt", default = -220, width = 120, height = 20 },
+		} },
+		{ name = WORLDMAP_BUTTON, column = 2, y = 24, options = {
+			{ type = "toggle", key = "WorldMapStyle", label = "WorldMapStyleOpt", tooltip = "WMFTip", default = true },
+			{ type = "toggle", key = "WorldMapFade", label = "fadeOpt", default = true },
+			{ type = "slider", key = "WorldMapScale", label = "SizeOpt", default = .6, min = 1, max = 10, step = 1, coeff = .1 },
+			{ type = "slider", key = "WorldMapAlpha", label = "AlphaOpt", default = .5, min = 0, max = 10, step = 1, coeff = .1 },
+		} },
 	}
+
+	local activeOptions = {}
+	C.defaultSettings = {}
+	for _, group in ipairs(F.GUIOptionGroups) do
+		for _, option in ipairs(group.options) do C.defaultSettings[option.key] = option.default end
+	end
+	F.GetEKMOption = function(key) return activeOptions[key] end
+	F.GetSavedEKMOption = function(key) return EKMinimapDB[key] end
+	F.SetEKMOption = function(key, value) EKMinimapDB[key] = value end
+	F.HasPendingEKMChanges = function()
+		for key in pairs(C.defaultSettings) do
+			if EKMinimapDB[key] ~= activeOptions[key] then return true end
+		end
+		return false
+	end
+	-- 套用只更新小地圖尺寸／位置與追蹤框位置；功能開關及世界地圖仍等重載。
+	F.ApplyEKMPositionSettings = function()
+		for _, key in ipairs({ "MinimapAnchor", "MinimapX", "MinimapY", "MinimapScale", "QuestWatchAnchor", "QuestWatchX", "QuestWatchY" }) do
+			activeOptions[key] = EKMinimapDB[key]
+		end
+	end
+	local dbLoader = CreateFrame("Frame")
+	dbLoader:RegisterEvent("ADDON_LOADED")
+	dbLoader:SetScript("OnEvent", function(self, event, name)
+		if name ~= addon then return end
+		if type(EKMinimapDB) ~= "table" then EKMinimapDB = {} end
+		for _, group in ipairs(F.GUIOptionGroups) do
+			for _, option in ipairs(group.options) do
+				local value = EKMinimapDB[option.key]
+				local valid = (type(value) == type(option.default))
+				if valid and type(value) == "number" then
+					valid = (value == value and value > -math.huge and value < math.huge)
+					if valid and option.type == "slider" then
+						valid = (value >= option.min * option.coeff and value <= option.max * option.coeff)
+					end
+				elseif valid and option.type == "dropdown" then
+					valid = tContains(F.AnchorOptions, value)
+				end
+				if not valid then EKMinimapDB[option.key] = option.default end
+				activeOptions[option.key] = EKMinimapDB[option.key]
+			end
+		end
+		for key in pairs(EKMinimapDB) do
+			if C.defaultSettings[key] == nil then EKMinimapDB[key] = nil end
+		end
+		self:UnregisterEvent(event)
+		self:SetScript("OnEvent", nil)
+	end)
 
 ----------------------
 -- Functions / 功能 --
 ----------------------
 
-F.CreateFS = function(parent, text, justify, anchor, x, y)
+F.CombatError = function()
+	if InCombatLockdown() then
+		UIErrorsFrame:AddMessage("|cffffff00"..ERR_NOT_IN_COMBAT)
+		return true
+	end
+	return false
+end
+
+F.CreateFS = function(parent, text, justify, anchor, x, y, size)
 	local fs = parent:CreateFontString(nil, "OVERLAY")
-	fs:SetFont(G.font, G.fontSize, G.fontFlag)
+	fs:SetFont(G.font, size or G.fontSize, G.fontFlag)
 	fs:SetText(text)
 	fs:SetShadowOffset(0, 0)
 	fs:SetWordWrap(false)
@@ -69,9 +132,9 @@ F.CreateFS = function(parent, text, justify, anchor, x, y)
 	if anchor and x and y then
 		fs:SetPoint(anchor, x, y)
 	else
-		fs:SetPoint("CENTER", 1, 0)
+		fs:SetPoint("CENTER", 0, 0)
 	end
-	
+
 	return fs
 end
 
@@ -82,7 +145,7 @@ F.CreateBG = function(parent, size, offset, a)
 	end
 	local lvl = frame:GetFrameLevel()
 
-	local bg = CreateFrame("Frame", nil, frame, BackdropTemplateMixin and "BackdropTemplate")
+	local bg = CreateFrame("Frame", nil, frame, "BackdropTemplate")
 	bg:ClearAllPoints()
 	bg:SetPoint("TOPLEFT", parent, -size, size)
 	bg:SetPoint("BOTTOMRIGHT", parent, size, -size)
@@ -96,11 +159,9 @@ F.CreateBG = function(parent, size, offset, a)
 		})
 	bg:SetBackdropColor(0, 0, 0, a)
 	bg:SetBackdropBorderColor(0, 0, 0, 1)
-	
+
 	return bg
 end
-
-F.Dummy = function() end
 
 --------------------
 -- Credits / 銘謝 --
