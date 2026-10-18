@@ -1,201 +1,151 @@
 local addon, ns = ...
 local C, F, G, L = unpack(ns)
-local Minimap, EasyMenu, ToggleDropDownMenu = Minimap, EasyMenu, ToggleDropDownMenu
-local LibShowUIPanel = LibStub("LibShowUIPanel-1.0")
-local ShowUIPanel = LibShowUIPanel.ShowUIPanel
-local HideUIPanel = LibShowUIPanel.HideUIPanel
+local Minimap = Minimap
 
+-- 標題沿用原生字體與顏色，只在文字右側補分隔線。
+local function CreateMenuTitle(rootDescription, text)
+	local title = MenuUtil.CreateTitle(text)
+	title:SetFinalInitializer(function(frame)
+		local line = frame:AttachTexture()
+		line:SetColorTexture(.6, .65, .65, .3)
+		line:SetHeight(1)
+		line:SetPoint("LEFT", frame.fontString, "RIGHT", 8, 0)
+		line:SetPoint("RIGHT", frame, "RIGHT", -2, 0)
+	end)
+	rootDescription:Insert(title)
+end
+
+-- 圖示與文字放在同一行，使用與主分支相同的 16px 尺寸。
+local function CreateIconButton(rootDescription, text, icon, callback)
+	local atlasInfo = type(icon) == "string" and C_Texture.GetAtlasInfo(icon)
+	local markup
+	if atlasInfo then
+		markup = CreateAtlasMarkup(icon, 16, 16)
+	else
+		markup = CreateSimpleTextureMarkup(icon, 16, 16)
+	end
+	return rootDescription:CreateButton(markup.." "..text, callback)
+end
+
+-- 每次開啟時產生選單，讓天賦與榮譽入口跟隨目前角色狀態。
+local function GenerateMenu(_, rootDescription)
+	CreateMenuTitle(rootDescription, MAINMENU_BUTTON)
+
+	-- 舊圖示："Interface\\PaperDollInfoFrame\\UI-EquipmentManager-Toggle"
+	CreateIconButton(rootDescription, CHARACTER_BUTTON, "Interface\\ICONS\\INV_Chest_Plate01", function()
+		if F.CombatError() then return end
+		ToggleCharacter("PaperDollFrame")
+	end)
+
+	-- 舊圖示："Interface\\MINIMAP\\TRACKING\\Class"
+	CreateIconButton(rootDescription, SPELLBOOK_ABILITIES_BUTTON, "Interface\\ICONS\\INV_Misc_Book_09", function()
+		if F.CombatError() then return end
+		ToggleSpellBook(BOOKTYPE_SPELL)
+	end)
+
+	if C_SpecializationInfo.CanPlayerUseTalentUI() then
+		CreateIconButton(rootDescription, TALENTS, "Interface\\MINIMAP\\TRACKING\\Ammunition", function()
+			if F.CombatError() then return end
+			ToggleTalentFrame()
+		end)
+	end
+
+	CreateIconButton(rootDescription, QUESTLOG_BUTTON, "Interface\\GossipFrame\\ActiveQuestIcon", function()
+		if F.CombatError() then return end
+		ToggleQuestLog()
+	end)
+
+	CreateIconButton(rootDescription, WORLD_MAP, "Interface\\WorldMap\\UI-World-Icon", function()
+		if F.CombatError() then return end
+		ToggleWorldMap()
+	end)
+
+	CreateIconButton(rootDescription, SOCIAL_BUTTON, "Interface\\FriendsFrame\\UI-Toast-ChatInviteIcon", function()
+		if F.CombatError() then return end
+		ToggleFriendsFrame(FRIEND_TAB_FRIENDS)
+	end)
+
+	CreateIconButton(rootDescription, GUILD, "Interface\\GossipFrame\\TabardGossipIcon", function()
+		if F.CombatError() then return end
+		ToggleFriendsFrame(FRIEND_TAB_GUILD)
+	end)
+
+	rootDescription:QueueSpacer()
+	CreateMenuTitle(rootDescription, OTHER)
+
+	CreateIconButton(rootDescription, BACKPACK_TOOLTIP, "Interface\\MINIMAP\\TRACKING\\Banker", function()
+		if F.CombatError() then return end
+		ToggleAllBags()
+	end)
+
+	if G.IsTBC or HonorSystemEnabled() then
+		CreateIconButton(rootDescription, PLAYER_V_PLAYER, "Interface\\MINIMAP\\TRACKING\\BattleMaster", function()
+			if F.CombatError() then return end
+			ToggleCharacter(G.IsTBC and "PVPFrame" or "HonorFrame")
+		end)
+	end
+
+	CreateIconButton(rootDescription, RAID, "Interface\\Buttons\\UI-GuildButton-PublicNote-Up", function()
+		if F.CombatError() then return end
+		ToggleFriendsFrame(FRIEND_TAB_RAID)
+	end)
+
+	CreateIconButton(rootDescription, GM_EMAIL_NAME, "Interface\\CHATFRAME\\UI-ChatIcon-Blizz", function()
+		if F.CombatError() then return end
+		ToggleHelpFrame()
+	end)
+
+	-- 舊圖示："Interface\\CHATFRAME\\UI-ChatIcon-ArmoryChat-AwayMobile"
+	CreateIconButton(rootDescription, CHANNEL, "chatframe-button-icon-voicechat", function()
+		if F.CombatError() then return end
+		ToggleChannelFrame()
+	end)
+
+	CreateIconButton(rootDescription, STOPWATCH_TITLE, "Interface\\Icons\\INV_Misc_PocketWatch_01", function()
+		if F.CombatError() then return end
+		TimeManager_LoadUI()
+		TimeManager_Toggle()
+	end)
+
+	CreateIconButton(rootDescription, BATTLEFIELD_MINIMAP, "Interface\\ICONS\\INV_Misc_Map_01", function()
+		if F.CombatError() then return end
+		ToggleBattlefieldMap()
+	end)
+
+	rootDescription:QueueSpacer()
+	CreateMenuTitle(rootDescription, ADDONS)
+
+	rootDescription:CreateButton("|cff00FFFF"..L.ToggleConfig.."|r", function()
+		F.CreateEKMOptions()
+	end):AddInitializer(function(button)
+		local icon = button:AttachTexture()
+		icon:SetColorTexture(0, 1, 1, 1)
+		icon:SetSize(12, 12)
+		icon:SetPoint("LEFT", 4, 0)
+		button.fontString:SetPoint("LEFT", icon, "RIGHT", 8, 0)
+	end)
+
+	rootDescription:CreateButton("|cff999999"..RELOADUI.."|r", function()
+		ReloadUI()
+	end)
+end
 
 local function OnEvent()
-	if not EKMinimapDB["ClickMenu"] then return end
-	
-	-- Right Click Menu List
-	local menuFrame = CreateFrame("Frame", "MinimapRightClickMenu", UIParent, "UIDropDownMenuTemplate")
-	local menuList = {
-		{	-- 標題
-			text = MAINMENU_BUTTON,
-			isTitle = true,
-			notCheckable = true,
-		},
-		{	-- 角色
-			text = CHARACTER_BUTTON,
-			icon = "Interface\\PaperDollInfoFrame\\UI-EquipmentManager-Toggle",
-			func = function()
-				if not CharacterFrame:IsShown() then ShowUIPanel(CharacterFrame) else HideUIPanel(CharacterFrame) end
-			end,
-			notCheckable = true,
-		},
-		{	-- 法術書
-			text = SPELLBOOK_ABILITIES_BUTTON,
-			icon = "Interface\\MINIMAP\\TRACKING\\Class",
-			func = function() 
-				if not SpellBookFrame:IsShown() then ShowUIPanel(SpellBookFrame) else HideUIPanel(SpellBookFrame) end
-			end,
-			notCheckable = true,
-		},
-		{	--天賦
-			text = TALENTS,
-			icon = "Interface\\MINIMAP\\TRACKING\\Ammunition",
-			func = function()
-				if UnitLevel("player") > 10 then
-					if not PlayerTalentFrame then LoadAddOn("Blizzard_TalentUI") end
-					if not TalentFrame:IsShown() then ShowUIPanel(TalentFrame) else HideUIPanel(TalentFrame) end
-				end
-			end,
-			notCheckable = true,
-		},
-		{	-- 任務日誌
-			text = QUESTLOG_BUTTON,
-			icon = "Interface\\GossipFrame\\ActiveQuestIcon",
-			func = function()
-				if not QuestLogFrame:IsShown() then ShowUIPanel(QuestLogFrame) else HideUIPanel(QuestLogFrame) end
-			end,
-			notCheckable = true,
-		},
-		{	-- 地圖
-			text = WORLD_MAP,
-			icon = "Interface\\WorldMap\\UI-World-Icon",
-			func = function()
-				if not WorldMapFrame:IsShown() then ShowUIPanel(WorldMapFrame) else HideUIPanel(WorldMapFrame) end
-			end,
-			notCheckable = true,
-		},
-		{	-- 好友
-			text = SOCIAL_BUTTON,
-			icon = "Interface\\FriendsFrame\\UI-Toast-ChatInviteIcon",
-			func = function()
-				if not FriendsFrame:IsShown() then ShowUIPanel(FriendsFrame) else HideUIPanel(FriendsFrame) end
-				securecall(ToggleFriendsFrame, 1) 
-			end,
-			notCheckable = true,
-		},
-		{	-- 公會
-			text = GUILD,
-			icon = "Interface\\GossipFrame\\TabardGossipIcon",
-			arg1 = IsInGuild("player"),
-			func = function()
-				if not GuildFrame then LoadAddOn("Blizzard_GuildUI") end
-				if not FriendsFrame:IsShown() then ShowUIPanel(FriendsFrame) else HideUIPanel(FriendsFrame) end
-				securecall(ToggleFriendsFrame, 3)
-			end,
-			notCheckable = true,
-		},
-		{	-- 空行
-			text = "",
-			isTitle = true,
-			notCheckable = true,
-		},
-		{	-- 其他
-			text = OTHER,
-			isTitle = true,
-			notCheckable = true,
-		},
-		{	-- 背包
-			text = BACKPACK_TOOLTIP,
-			icon = "Interface\\MINIMAP\\TRACKING\\Banker",
-			func = function()
-				securecall(ToggleAllBags)
-			end,
-			notCheckable = true,
-		},
-		{	-- PVP
-			text = PLAYER_V_PLAYER,
-			icon = "Interface\\MINIMAP\\TRACKING\\BattleMaster",
-			func = function()
-				if UnitLevel("player") > 10 then
-					securecall(ToggleCharacter, "HonorFrame")
-				end
-			end,
-			notCheckable = true,
-		},
-		{	-- 團隊
-			text = RAID,
-			icon = "Interface\\Buttons\\UI-GuildButton-PublicNote-Up",
-			func = function() 
-				securecall(ToggleFriendsFrame, 4)
-			end,
-			notCheckable = true,
-		},
-		{	-- 客服支援
-			text = GM_EMAIL_NAME,
-			icon = "Interface\\CHATFRAME\\UI-ChatIcon-Blizz",
-			func = function() 
-				if not HelpFrame:IsShown() then ShowUIPanel(HelpFrame) else HideUIPanel(HelpFrame) end
-			end,
-			notCheckable = true,
-		},
-		{	-- 語音
-			text = CHANNEL,
-			icon = "Interface\\CHATFRAME\\UI-ChatIcon-ArmoryChat-AwayMobile",
-			func = function()
-				if not ChannelFrame:IsShown() then ShowUIPanel(ChannelFrame) else HideUIPanel(ChannelFrame) end
-			end,
-			notCheckable = true
-		},
-		{	-- 碼表
-			text = STOPWATCH_TITLE,
-			icon = "Interface\\Icons\\INV_Misc_PocketWatch_01",
-			func = function()
-				if not TimeManagerFrame:IsShown() then ShowUIPanel(TimeManagerFrame) else HideUIPanel(TimeManagerFrame) end
-			end,
-			notCheckable = true
-		},
-		
-		{	-- 區域地圖
-			text = BATTLEFIELD_MINIMAP,
-			colorCode = "|cff999999",
-			func = function()
-				if not BattlefieldMapFrame then LoadAddOn("Blizzard_BattlefieldMap") end
-				if not BattlefieldMapFrame:IsShown() then ShowUIPanel(BattlefieldMapFrame) else HideUIPanel(BattlefieldMapFrame) end
-			end,
-			notCheckable = true,
-		},
-		{	-- 空行
-			text = "",
-			isTitle = true,
-			notCheckable = true,
-		},
-		{	-- 插件標題
-			text = ADDONS,
-			isTitle = true,
-			notCheckable = true,
-		},
-		{
-			text = L.ToggleConfig,
-			colorCode = "|cff00FFFF",
-			func = function()
-				F.CreateEKMOptions()
-			end,
-			notCheckable = true,
-		},
-		{	-- 重載
-			text = RELOADUI,
-			colorCode = "|cff999999",
-			func = function()
-				ReloadUI()
-			end,
-			notCheckable = true,
-		},
-	}
+	if not F.GetEKMOption("ClickMenu") then return end
 
-	-- Right Click for Game Menu / 右鍵遊戲選單
 	Minimap:SetScript("OnMouseUp", function(self, button)
+		if IsAltKeyDown() then return end
+
 		if button == "RightButton" then
-			EasyMenu(menuList, menuFrame, self, (Minimap:GetWidth() * .7), -3, "MENU", 3)
+			MenuUtil.CreateContextMenu(self, GenerateMenu)
+		elseif button == "MiddleButton" and G.IsTBC then
+			MiniMapTrackingButton:OpenMenu()
 		else
 			Minimap_OnClick(self)
 		end
 	end)
 end
 
-local frame = CreateFrame("FRAME")
+local frame = CreateFrame("Frame")
 frame:RegisterEvent("PLAYER_LOGIN")
 frame:SetScript("OnEvent", OnEvent)
-
--- avoid taint / 避免taint
-local initialize = CreateFrame("Frame")
-	initialize:SetScript("OnEvent", function()
-		ShowUIPanel(SpellBookFrame)
-		HideUIPanel(SpellBookFrame)
-	end)
-	initialize:RegisterEvent("PLAYER_ENTERING_WORLD")

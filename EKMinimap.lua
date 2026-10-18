@@ -1,4 +1,4 @@
-﻿local addon, ns = ...
+local addon, ns = ...
 local C, F, G, L = unpack(ns)
 local Minimap, CreateFrame = Minimap, CreateFrame
 local sub, floor, tinsert = string.sub, math.floor, table.insert
@@ -13,31 +13,10 @@ function GetMinimapShape()
 	return "SQUARE"
 end
 
--- [[ Custom API for anchor ]] --							 
+-- [[ Custom API for anchor ]] --
 local function findAnchor(value)
-	local anchor = EKMinimapDB[value]
-	local myAnchor = sub(anchor, -4)				-- get minimap anchor left or rignt
-	local iconAnchor = not not (myAnchor == "LEFT")	-- hope教我的語法糖
-	
-	return iconAnchor
-end
-
---[[ Format 24/12 hour clock ]]--
-
-local function updateTimerFormat(hour, minute)
-	if not EKMinimapDB["HoverClock"] then return end
-	
-	if GetCVarBool("timeMgrUseMilitaryTime") then
-		return format(TIMEMANAGER_TICKER_24HOUR, hour, minute)
-	else
-		local timerUnit = hour < 12 and " AM" or " PM"
-		
-		if hour > 12 then
-			hour = hour - 12
-		end
-		
-		return format(TIMEMANAGER_TICKER_12HOUR..timerUnit, hour, minute)
-	end
+	local anchor = F.GetEKMOption(value)
+	return sub(anchor, -4) == "LEFT"
 end
 --================================================--
 -----------------    [[ Core ]]    -----------------
@@ -45,17 +24,14 @@ end
 
 local function updateMinimapPos()
 	Minimap:ClearAllPoints()
-	Minimap:SetPoint(EKMinimapDB["MinimapAnchor"], UIParent, EKMinimapDB["MinimapX"], EKMinimapDB["MinimapY"])
+	Minimap:SetPoint(F.GetEKMOption("MinimapAnchor"), UIParent, F.GetEKMOption("MinimapX"), F.GetEKMOption("MinimapY"))
 end
 
 local function updateMinimapSize()
-	-- default size is ≈ 140
-	-- We use SetScale() instead SetSize() because there's an issue happened on load order and addon icons.
-	-- addon minimap icon may put themself to strange place because this addon load after then icons been created.
-	-- 如果使用 SetScale() 而非 SetSize()，會導致小地圖圖示跑到奇怪的地方
-	-- 因為插件的載入順序不同，本插件的小地圖尺寸更改晚於別的插件生成圖示，是於無法獲取正確的座標
+	-- 保留 Classic 的 140px 基準，以縮放調整整體並隔離編輯模式的父層縮放。
 	Minimap:SetSize(140, 140)
-	Minimap:SetScale(EKMinimapDB["MinimapScale"])
+	Minimap:SetIgnoreParentScale(true)
+	Minimap:SetScale(F.GetEKMOption("MinimapScale"))
 end
 
 local function setMinimap()
@@ -64,54 +40,59 @@ local function setMinimap()
 	Minimap:SetMovable(true)
 	Minimap:EnableMouse(true)
 	Minimap:RegisterForDrag("RightButton")
-	
+
 	updateMinimapSize()
 	Minimap:SetMaskTexture(G.Tex)
 	Minimap:SetFrameStrata("LOW")
 	Minimap:SetFrameLevel(3)
-	
+
 	MinimapCluster:EnableMouse(false)
 	Minimap.bg = F.CreateBG(Minimap, 5, 5, 1)
 
 	-- Hide all frames / 隱藏各種
 	local hideAll = {
-		"MinimapBorder",			-- 大圈
-		"MinimapBorderTop",
-		"MinimapNorthTag",			-- 指北針
-		"MiniMapWorldMapButton",	-- 世界地圖
-		"MinimapZoneTextButton",	-- 區域名字
-		"MinimapToggleButton",		-- 選單
-		"MinimapZoomIn",			-- 放大
-		"MinimapZoomOut",			-- 縮小
-		"GameTimeFrame",			-- 時間
-		"SubZoneTextFrame",
-		"DurabilityFrame",			-- 裝備耐久
+		MinimapBorder,
+		MinimapCluster.BorderTop,
+		MinimapNorthTag,
+		MiniMapWorldMapButton,
+		MinimapZoneTextButton,
+		MinimapToggleButton,
+		MinimapZoomIn,
+		MinimapZoomOut,
+		GameTimeFrame,
+		SubZoneTextFrame,
+		DurabilityFrame,
 	}
-	for i, v in pairs(hideAll) do
-		getglobal(v).Show = F.Dummy
-		getglobal(v):Hide()
+	for _, frame in ipairs(hideAll) do
+		frame:Hide()
+		hooksecurefunc(frame, "Show", frame.Hide)
 	end
-	
+
 	-- Mail Frame / 信件提示
 	MiniMapMailBorder:Hide()
 	MiniMapMailIcon:SetTexture(G.Mail)
 
 	-- Minimap Tracker / 追蹤
-	MiniMapTrackingBorder:Hide()
+	MiniMapTracking:SetParent(Minimap)
+	if G.IsTBC then
+		MiniMapTrackingButtonBorder:Hide()
+	else
+		MiniMapTrackingBorder:Hide()
+	end
 	MiniMapTrackingIcon:SetScale(0.8)
 	MiniMapTrackingIcon:SetTexCoord(.08, .92, .08, .92)
 	MiniMapTrackingIcon.bg = F.CreateBG(MiniMapTrackingIcon, 3, 3, 1)
-	
+
 	MiniMapBattlefieldBorder:Hide()
 end
 
 local function OnMouseWheel(self, delta)
 	if IsAltKeyDown() then
 		local i = Minimap:GetScale()
-		 if delta > 0 and i < 4 then
-			Minimap:SetScale(i+0.1)
-		 elseif delta < 0 and i > 0.5 then
-			Minimap:SetScale(i-0.1)
+		if delta > 0 and i < 4 then
+			Minimap:SetScale(math.min(4, i+0.1))
+		elseif delta < 0 and i > 0.5 then
+			Minimap:SetScale(math.max(0.5, i-0.1))
 		end
 	else
 		if delta > 0 then
@@ -127,6 +108,9 @@ end
 --===================================================--
 
 local Stat = CreateFrame("Button", "EKMinimapTooltipButton", Minimap)
+	-- 此圖示只提供提示；點擊交給小地圖的原生動作與右鍵選單。
+	Stat:SetMouseClickEnabled(false)
+	Stat:SetMouseMotionEnabled(true)
 	Stat:SetHitRectInsets(-5, -5, -5, 5)
 	Stat:SetSize(28, 28)
 	Stat:ClearAllPoints()
@@ -138,17 +122,17 @@ local Stat = CreateFrame("Button", "EKMinimapTooltipButton", Minimap)
 	Stat:SetScale(1)
 
 local function createGarrisonTooltip(self)
-	if not EKMinimapDB["CharacterIcon"] then return end
-	
+	if not F.GetEKMOption("CharacterIcon") then return end
+
 	GameTooltip:SetOwner(self, "ANCHOR_BOTTOM", findAnchor("MinimapAnchor") and (Minimap:GetWidth()*.7) or -(Minimap:GetWidth()*.7), -10)
 	GameTooltip:AddLine(CHARACTER_BUTTON, .6,.8, 1)
 
 	-- Experience
-	if UnitLevel("player") < MAX_PLAYER_LEVEL then
+	if UnitLevel("player") < GameRulesUtil.GetEffectiveMaxLevelForPlayer() then
 		local cur, max = UnitXP("player"), UnitXPMax("player")
 		local lvl = UnitLevel("player")
 		local rested = GetXPExhaustion()
-		
+
 		GameTooltip:AddLine(" ")
 		GameTooltip:AddDoubleLine(CHARACTER, LEVEL.. " "..lvl, 0, 1, .5, 0, 1, .5)
 		GameTooltip:AddDoubleLine(XP..HEADER_COLON, cur.." / "..max.." ("..floor(cur/max*100).."%)", 1,1,1,1,1,1)
@@ -159,28 +143,27 @@ local function createGarrisonTooltip(self)
 
 	-- Reputation
 	do
-		local name, standing, min, max, cur = GetWatchedFactionInfo()
-		
-		if name then
+		local faction = C_Reputation.GetWatchedFactionData()
+
+		if faction and faction.factionID ~= 0 then
+			local standing = faction.reaction
+			local min, max, cur = faction.currentReactionThreshold, faction.nextReactionThreshold, faction.currentStanding
 			GameTooltip:AddLine(" ")
-			GameTooltip:AddDoubleLine(name, _G["FACTION_STANDING_LABEL"..standing], 0, 1, 0.5, 0, 1, 0.5)
-			if standing == MAX_REPUTATION_REACTION then
-				max = min + 1e3
-				cur = max - 1
+			GameTooltip:AddDoubleLine(faction.name, GetText("FACTION_STANDING_LABEL"..standing, UnitSex("player")), 0, 1, 0.5, 0, 1, 0.5)
+			local total, current = max - min, cur - min
+			-- 原生聲望條在已達最高階且區間為零時，以滿條呈現。
+			if standing == MAX_REPUTATION_REACTION and total == 0 then
+				total, current = 1, 1
 			end
-			GameTooltip:AddDoubleLine(REFORGE_CURRENT..HEADER_COLON, cur - min.." / "..max - min.." ("..floor((cur - min)/(max - min)*100).."%)", 1, 1, 1, 1, 1, 1)
-			if standing ~= 8 then
+			GameTooltip:AddDoubleLine(REFORGE_CURRENT..HEADER_COLON, current.." / "..total.." ("..floor(current/total*100).."%)", 1, 1, 1, 1, 1, 1)
+			if standing ~= MAX_REPUTATION_REACTION then
 				GameTooltip:AddDoubleLine(L.Next, (max-cur), 1, 1, 1, 1, 1, 1)
 			end
 		end
 	end
-	
+
 	GameTooltip:Show()
 end
-
---======================================================--
------------------    [[ Difficulty ]]    -----------------
---======================================================--
 
 --================================================--
 -----------------    [[ Ping ]]    -----------------
@@ -190,7 +173,6 @@ local function whoPing()
 	local ping = CreateFrame("Frame", nil, Minimap)
 	ping:SetSize(100, 20)
 	ping:SetPoint("BOTTOM", Minimap, 0, 2)
-	ping:RegisterEvent("MINIMAP_PING")
 	ping.text = F.CreateFS(ping, "", "CENTER")
 
 	local anim = ping:CreateAnimationGroup()
@@ -203,7 +185,8 @@ local function whoPing()
 	anim.fader:SetSmoothing("OUT")
 	anim.fader:SetStartDelay(3)
 
-	ping:SetScript("OnEvent", function(_, _, unit)
+	-- MINIMAP_PING 已改由 callback 傳入 payload，沒有舊 OnEvent 的 event 參數。
+	ping:RegisterEventCallback("MINIMAP_PING", function(_, unit)
 		local class = select(2, UnitClass(unit))
 		local name = GetUnitName(unit)
 		local classcolor = 	(CUSTOM_CLASS_COLORS or RAID_CLASS_COLORS)[class]
@@ -220,7 +203,7 @@ end
 --=================================================--
 
 local function HoverClock()
-	if not EKMinimapDB["HoverClock"] then return end
+	if not F.GetEKMOption("HoverClock") then return end
 
 	local Clock = CreateFrame("Frame", nil, Minimap)
 	Clock:SetSize(80, 20)
@@ -229,29 +212,22 @@ local function HoverClock()
 	Clock:SetPoint("TOP", Minimap, 0, 0)
 	Clock.Text:SetText("")
 	Clock:SetAlpha(0)
-	
-	-- Alt+right click to drag frame
-	Minimap:SetScript("OnEnter", function()
-		local hour, minute
-		if GetCVarBool("timeMgrUseLocalTime") then
-			hour, minute = tonumber(date("%H")), tonumber(date("%M"))
-		else
-			hour, minute = GetGameTime()
-		end
-		
-		Clock.Text:SetText(updateTimerFormat(hour, minute))
-		securecall(UIFrameFadeIn, Clock, .2, 0, 1)
+
+	Minimap:HookScript("OnEnter", function()
+		local time = GameTime_GetTime(true)
+		Clock.Text:SetText(time)
+		UIFrameFadeIn(Clock, .2, 0, 1)
 	end)
-	Minimap:SetScript("OnLeave", function()
-		securecall(UIFrameFadeOut, Clock, .8, 1, 0)
+	Minimap:HookScript("OnLeave", function()
+		UIFrameFadeOut(Clock, .8, 1, 0)
 	end)
 end
 --==================================================--
 -----------------    [[ Script ]]    -----------------
 --==================================================--
-	
+
 	-- [[ Minimap ]] --
-	
+
 	-- Alt+right click to drag frame
 	Minimap:SetScript("OnMouseWheel", OnMouseWheel)
 	Minimap:SetScript("OnDragStart", function(self)
@@ -264,14 +240,14 @@ end
 	end)
 
 	-- [[ Icon ]] --
-	
+
 	Stat:SetScript("OnEnter", function(self)
 		createGarrisonTooltip(self)
 		-- fade in
-		securecall(UIFrameFadeIn, Stat, .4, 0, 1)
+		UIFrameFadeIn(Stat, .4, 0, 1)
 	end)
 	Stat:SetScript("OnLeave", function()
-		securecall(UIFrameFadeOut, Stat, .8, 1, 0)
+		UIFrameFadeOut(Stat, .8, 1, 0)
 		GameTooltip:Hide()
 	end)
 
@@ -282,19 +258,19 @@ end
 local function updateIconPos()
 	MiniMapMailFrame:ClearAllPoints()
 	MiniMapBattlefieldFrame:ClearAllPoints()
-	MiniMapTrackingFrame:ClearAllPoints()
+	MiniMapTracking:ClearAllPoints()
 	Stat:ClearAllPoints()
 
 	if findAnchor("MinimapAnchor") then
 		MiniMapMailFrame:SetPoint("BOTTOMLEFT", Minimap, 0, 0)
 		Stat:SetPoint("BOTTOMRIGHT", Minimap, 1, 2)
 		MiniMapBattlefieldFrame:SetPoint("TOPRIGHT", 0, 0)
-		MiniMapTrackingFrame:SetPoint("TOPLEFT", Minimap, 0, 0)
+		MiniMapTracking:SetPoint("TOPLEFT", Minimap, 0, 0)
 	else
 		MiniMapMailFrame:SetPoint("BOTTOMRIGHT", Minimap, 0, 0)
 		Stat:SetPoint("BOTTOMLEFT", Minimap, -1, 2)
 		MiniMapBattlefieldFrame:SetPoint("TOPLEFT", 0, 0)
-		MiniMapTrackingFrame:SetPoint("TOPRIGHT", Minimap, 0, 0)
+		MiniMapTracking:SetPoint("TOPRIGHT", Minimap, 0, 0)
 	end
 end
 
@@ -305,29 +281,32 @@ F.ResetM = function()
 end
 
 local function OnEvent(self, event, addon)
-	-- Hide Clock / 隱藏時鐘
-	if event == "ADDON_LOADED" and addon == "Blizzard_TimeManager" then
+	if event == "ADDON_LOADED" then
+		if addon ~= "Blizzard_TimeManager" then return end
 		TimeManagerClockButton:Hide()
-		TimeManagerClockButton:SetScript("OnShow", function(self)
-			TimeManagerClockButton:Hide()
-		end)
+		TimeManagerClockButton:HookScript("OnShow", TimeManagerClockButton.Hide)
 		self:UnregisterEvent("ADDON_LOADED")
 	elseif event == "PLAYER_LOGIN" then
+		-- TimeManager 可能先於本插件載入，兩種載入順序都隱藏原生時鐘。
+		if TimeManagerClockButton then
+			TimeManagerClockButton:Hide()
+			TimeManagerClockButton:HookScript("OnShow", TimeManagerClockButton.Hide)
+		else
+			self:RegisterEvent("ADDON_LOADED")
+		end
 		-- make sure MBB dont take my icon 益rz
 		if MBB_Ignore then
 			tinsert(MBB_Ignore, "EKMinimapTooltipButton")
 		end
-		
+
 		whoPing()
 		setMinimap()
 		updateIconPos()
 		HoverClock()
-	else
-		return
+		self:UnregisterEvent("PLAYER_LOGIN")
 	end
 end
 
 local frame = CreateFrame("FRAME")
 	frame:RegisterEvent("PLAYER_LOGIN")
-	frame:RegisterEvent("ADDON_LOADED")
 	frame:SetScript("OnEvent", OnEvent)
