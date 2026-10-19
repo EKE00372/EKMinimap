@@ -37,31 +37,35 @@ G.IsTBC = (WOW_PROJECT_ID == WOW_PROJECT_BURNING_CRUSADE_CLASSIC)
 
 	F.AnchorOptions = { "TOP", "TOPLEFT", "TOPRIGHT", "CENTER", "LEFT", "BOTTOM", "BOTTOMLEFT", "BOTTOMRIGHT", "RIGHT" }
 	F.GUIOptionGroups = {
+		{ label = "QuestWatchOpt", column = 2, y = 24, options = {
+			{ type = "toggle", key = "QuestWatchStyle", label = "QuestWatchStyleOpt", default = true },
+			{ type = "toggle", key = "QuestWatchStar", label = "QuestWatchStarOpt", default = true },
+			{ type = "toggle", key = "QuestWatchClick", label = "QuestWatchClickOpt", default = true },
+			{ type = "dropdown", key = "QuestWatchAnchor", label = "AnchorOpt", default = "TOPRIGHT", width = 120, height = 20 },
+			{ type = "edit", key = "QuestWatchX", label = "XOpt", default = -170, width = 50, height = 20, rowColumn = 1 },
+			{ type = "edit", key = "QuestWatchY", label = "YOpt", default = -230, width = 50, height = 20, rowColumn = 2 },
+		} },
+		{ name = WORLDMAP_BUTTON, column = 1, y = 232, options = {
+			{ type = "toggle", key = "WorldMapStyle", label = "WorldMapStyleOpt", tooltip = "WMFTip", default = true },
+			{ type = "toggle", key = "WorldMapFade", label = "fadeOpt", default = true },
+			{ type = "slider", key = "WorldMapScale", label = "SizeOpt", default = .8, min = 4, max = 12, step = 1, coeff = .1 },
+			{ type = "slider", key = "WorldMapAlpha", label = "AlphaOpt", default = .5, min = 0, max = 10, step = 1, coeff = .1 },
+		} },
 		{ name = MINIMAP_LABEL, column = 1, y = 24, options = {
 			{ type = "toggle", key = "ClickMenu", label = "ClickMenuOpt", default = true },
 			{ type = "toggle", key = "CharacterIcon", label = "IconOpt", default = true },
 			{ type = "toggle", key = "HoverClock", label = "HoverClockOpt", default = true },
 			{ type = "dropdown", key = "MinimapAnchor", label = "AnchorOpt", default = "TOPRIGHT", width = 120, height = 20 },
-			{ type = "edit", key = "MinimapX", label = "XOpt", default = -10, width = 120, height = 20 },
-			{ type = "edit", key = "MinimapY", label = "YOpt", default = -10, width = 120, height = 20 },
+			{ type = "edit", key = "MinimapX", label = "XOpt", default = -10, width = 50, height = 20, rowColumn = 1 },
+			{ type = "edit", key = "MinimapY", label = "YOpt", default = -10, width = 50, height = 20, rowColumn = 2 },
 			{ type = "slider", key = "MinimapScale", label = "SizeOpt", default = 1.2, min = 5, max = 20, step = 1, coeff = .1 },
-		} },
-		{ label = "QuestWatchOpt", column = 1, y = 300, options = {
-			{ type = "toggle", key = "QuestWatchStyle", label = "QuestWatchStyleOpt", default = true },
-			{ type = "toggle", key = "QuestWatchStar", label = "QuestWatchStarOpt", default = true },
-			{ type = "toggle", key = "QuestWatchClick", label = "QuestWatchClickOpt", default = true },
-			{ type = "dropdown", key = "QuestWatchAnchor", label = "AnchorOpt", default = "TOPRIGHT", width = 120, height = 20 },
-			{ type = "edit", key = "QuestWatchX", label = "XOpt", default = -170, width = 120, height = 20 },
-			{ type = "edit", key = "QuestWatchY", label = "YOpt", default = -220, width = 120, height = 20 },
-		} },
-		{ name = WORLDMAP_BUTTON, column = 2, y = 24, options = {
-			{ type = "toggle", key = "WorldMapStyle", label = "WorldMapStyleOpt", tooltip = "WMFTip", default = true },
-			{ type = "toggle", key = "WorldMapFade", label = "fadeOpt", default = true },
-			{ type = "slider", key = "WorldMapScale", label = "SizeOpt", default = .6, min = 1, max = 10, step = 1, coeff = .1 },
-			{ type = "slider", key = "WorldMapAlpha", label = "AlphaOpt", default = .5, min = 0, max = 10, step = 1, coeff = .1 },
 		} },
 	}
 
+	local positionOptions = {
+		MinimapAnchor = true, MinimapX = true, MinimapY = true, MinimapScale = true,
+		QuestWatchAnchor = true, QuestWatchX = true, QuestWatchY = true,
+	}
 	local activeOptions = {}
 	C.defaultSettings = {}
 	for _, group in ipairs(F.GUIOptionGroups) do
@@ -70,15 +74,16 @@ G.IsTBC = (WOW_PROJECT_ID == WOW_PROJECT_BURNING_CRUSADE_CLASSIC)
 	F.GetEKMOption = function(key) return activeOptions[key] end
 	F.GetSavedEKMOption = function(key) return EKMinimapDB[key] end
 	F.SetEKMOption = function(key, value) EKMinimapDB[key] = value end
+	-- 位置與小地圖縮放由套用生效，不列入重載提示。
 	F.HasPendingEKMChanges = function()
 		for key in pairs(C.defaultSettings) do
-			if EKMinimapDB[key] ~= activeOptions[key] then return true end
+			if not positionOptions[key] and EKMinimapDB[key] ~= activeOptions[key] then return true end
 		end
 		return false
 	end
 	-- 套用只更新小地圖尺寸／位置與追蹤框位置；功能開關及世界地圖仍等重載。
 	F.ApplyEKMPositionSettings = function()
-		for _, key in ipairs({ "MinimapAnchor", "MinimapX", "MinimapY", "MinimapScale", "QuestWatchAnchor", "QuestWatchX", "QuestWatchY" }) do
+		for key in pairs(positionOptions) do
 			activeOptions[key] = EKMinimapDB[key]
 		end
 	end
@@ -87,6 +92,16 @@ G.IsTBC = (WOW_PROJECT_ID == WOW_PROJECT_BURNING_CRUSADE_CLASSIC)
 	dbLoader:SetScript("OnEvent", function(self, event, name)
 		if name ~= addon then return end
 		if type(EKMinimapDB) ~= "table" then EKMinimapDB = {} end
+		-- 只搬移舊預設位置一次；自訂座標與之後手動選回的座標都保留。
+		if EKMinimapDB.TrackerLayoutVersion == nil or EKMinimapDB.TrackerLayoutVersion == 1 then
+			local oldDefaultY = EKMinimapDB.TrackerLayoutVersion == 1 and -240 or -220
+			if EKMinimapDB.QuestWatchY == oldDefaultY
+				and (EKMinimapDB.QuestWatchAnchor == nil or EKMinimapDB.QuestWatchAnchor == "TOPRIGHT")
+				and (EKMinimapDB.QuestWatchX == nil or EKMinimapDB.QuestWatchX == -170) then
+				EKMinimapDB.QuestWatchY = -230
+			end
+			EKMinimapDB.TrackerLayoutVersion = 2
+		end
 		for _, group in ipairs(F.GUIOptionGroups) do
 			for _, option in ipairs(group.options) do
 				local value = EKMinimapDB[option.key]
@@ -104,7 +119,7 @@ G.IsTBC = (WOW_PROJECT_ID == WOW_PROJECT_BURNING_CRUSADE_CLASSIC)
 			end
 		end
 		for key in pairs(EKMinimapDB) do
-			if C.defaultSettings[key] == nil then EKMinimapDB[key] = nil end
+			if C.defaultSettings[key] == nil and key ~= "TrackerLayoutVersion" then EKMinimapDB[key] = nil end
 		end
 		self:UnregisterEvent(event)
 		self:SetScript("OnEvent", nil)

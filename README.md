@@ -2,6 +2,8 @@
 
 A square minimap for Classic Era 1.15.9 and Burning Crusade Classic 2.5.6.
 
+The `Classic_Era` branch maintains both clients in the C2.x release line, replacing the separate `Classic_TBC` branch. Both clients use the same addon package.
+
 ## Features
 
 * Square minimap, 1px border and 5px shadow.

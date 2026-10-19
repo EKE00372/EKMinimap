@@ -35,7 +35,7 @@ if GetLocale() == "zhTW" then
 
 	L.WMFTip = "世界地圖模組會在你同時啟用 Leatrix Maps 時自動禁用。"
 	L.tempTip1 = "Alt 功能是臨時性功能，提供給需要追蹤某些特定目標的偶發情況，所以它們的變動不會被儲存。"
-	L.tempTip2 = "所有 Alt 功能造成的更改會在重載介面或點擊「"..L.posApply.."」後復原。"
+	L.tempTip2 = "Alt 臨時調整會在重載介面後復原；小地圖與追蹤框也可點擊「"..L.posApply.."」復原。"
 	L.tempTip3 = "小地圖的尺寸和座標、追蹤框的座標，可點擊「"..L.posApply.."」直接套用。功能開關與世界地圖設定需重載介面後生效。"
 	L.dragInfo = "Alt+右鍵：臨時性拖動框體"
 	L.scrollInfo = "Alt+滾輪：臨時縮放小地圖"
@@ -69,7 +69,7 @@ elseif GetLocale() == "zhCN" then
 
 	L.WMFTip = "世界地图模块会在你同时启用 Leatrix Maps 时自动禁用。"
 	L.tempTip1 = "Alt 功能是临时性功能，提供给需要追踪某些特定目标的偶发情况，所以它们的变动不会被保存。"
-	L.tempTip2 = "所有 Alt 功能造成的更改会在重载界面或点击＂"..L.posApply.."＂后复原。"
+	L.tempTip2 = "Alt 临时调整会在重载界面后复原；小地图与追踪框也可点击＂"..L.posApply.."＂复原。"
 	L.tempTip3 = "小地图的尺寸和坐标、追踪框的坐标，可点击＂"..L.posApply.."＂直接应用。功能开关与世界地图设置需重载界面后生效。"
 	L.dragInfo = "Alt+右键临时性拖动框体"
 	L.scrollInfo = "Alt+滚轮临时缩放小地图"
@@ -103,7 +103,7 @@ else
 
 	L.WMFTip = "World map module will automatically disable when 'Leatrix Maps' is enable."
 	L.tempTip1 = "Alt-function is a temporary function, for people wanna track something recently, they will not be saved to settgins."
-	L.tempTip2 = 'Any scale and position change caused by alt-function will reset after you reload or click "'..L.posApply..'" button.'
+	L.tempTip2 = 'Reloading the UI restores temporary Alt adjustments. You can also restore minimap size/position and tracker position with "'..L.posApply..'".'
 	L.tempTip3 = 'Apply minimap size and position and tracker position without reloading. Feature switches and world map settings take effect after a UI reload.'
 	L.dragInfo = "Alt-right click to drag"
 	L.scrollInfo = "Alt-scroll scale minimap"
