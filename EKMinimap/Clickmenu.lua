@@ -140,8 +140,8 @@ local function GenerateMenu(_, rootDescription)
 		TimeManager_Toggle()
 	end)
 
-	-- 行事曆："ui-hud-calendar-1-up"
-	CreateIconButton(rootDescription, L.Calendar, CreateTextureMarkup("Interface\\Calendar\\UI-Calendar-Button", 128, 64, 16, 16, 0, .390625, 0, .78125), function()
+	-- 行事曆："ui-hud-calendar-1-up" "Interface\\Calendar\\UI-Calendar-Button"
+	CreateIconButton(rootDescription, L.Calendar, "Interface\\Icons\\INV_Misc_Note_02", function()
 		if F.CombatError() then return end
 		ToggleCalendar()
 	end)

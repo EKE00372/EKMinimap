@@ -2,6 +2,7 @@ local addon, ns = ...
 local C, F, G, L = unpack(ns)
 local GetLocale = GetLocale
 
+-- 各語系的指令排序不同，優先取本地化名稱。
 L.Calendar = (SLASH_CALENDAR1 ~= "/calendar" and SLASH_CALENDAR1 or SLASH_CALENDAR2):sub(2)
 
 --===================================================--
@@ -43,6 +44,7 @@ if GetLocale() == "zhTW" then
 elseif GetLocale() == "zhCN" then
 
 	L.ToggleConfig = "开启设置选项"
+	L.Calendar = "行事历"
 
 	L.QuestWatchOpt = "追踪框"
 	L.SizeOpt = "缩放"
