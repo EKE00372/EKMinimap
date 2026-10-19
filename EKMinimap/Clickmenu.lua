@@ -17,9 +17,10 @@ end
 
 -- 圖示
 local function CreateIconButton(rootDescription, text, icon, callback)
-	local atlasInfo = type(icon) == "string" and C_Texture.GetAtlasInfo(icon)
 	local markup
-	if atlasInfo then
+	if type(icon) == "string" and icon:sub(1, 2) == "|T" then
+		markup = icon
+	elseif type(icon) == "string" and C_Texture.GetAtlasInfo(icon) then
 		markup = CreateAtlasMarkup(icon, 16, 16)
 	else
 		markup = CreateSimpleTextureMarkup(icon, 16, 16)
@@ -43,7 +44,7 @@ local function GenerateMenu(_, rootDescription)
 		ToggleSpellBook(BOOKTYPE_SPELL)
 	end)
 
-	-- 沿各版本原生天賦入口的可用條件。
+	-- 天賦
 	local canUseTalents
 	if G.IsMists then
 		canUseTalents = C_SpecializationInfo.CanPlayerUseTalentSpecUI()
@@ -57,7 +58,8 @@ local function GenerateMenu(_, rootDescription)
 		end)
 	end
 
-	CreateIconButton(rootDescription, ACHIEVEMENT_BUTTON, "Interface\\ACHIEVEMENTFRAME\\UI-Achievement-Shield", function()
+	-- 成就："Interface\\ACHIEVEMENTFRAME\\UI-Achievement-Shield" "Interface\\Buttons\\UI-MicroButton-Achievement-Up"
+	CreateIconButton(rootDescription, ACHIEVEMENT_BUTTON, "Interface\\MINIMAP\\TRACKING\\QuestBlob", function()
 		if F.CombatError() then return end
 		ToggleAchievementFrame()
 	end)
@@ -83,8 +85,8 @@ local function GenerateMenu(_, rootDescription)
 		ToggleFriendsFrame(FRIEND_TAB_FRIENDS)
 	end)
 
-	-- 組隊："Interface\\TUTORIALFRAME\\UI-TutorialFrame-AttackCursor"
-	CreateIconButton(rootDescription, LFG_BUTTON, "friends-icon-eye", function()
+	-- 組隊："Interface\\TUTORIALFRAME\\UI-TutorialFrame-AttackCursor" "friends-icon-eye"
+	CreateIconButton(rootDescription, LFG_BUTTON, CreateTextureMarkup("Interface\\LFGFrame\\LFG-Eye", 512, 256, 16, 16, 0, .125, 0, .25), function()
 		if F.CombatError() then return end
 		PVEFrame_ToggleFrame("GroupFinderFrame")
 	end)
@@ -94,13 +96,15 @@ local function GenerateMenu(_, rootDescription)
 		TogglePVPFrame()
 	end)
 
-	CreateIconButton(rootDescription, COLLECTIONS, "Interface\\CURSOR\\Crosshair\\WildPetCapturable", function()
+	-- 收藏："Interface\\Icons\\Item_Shop_GiftBox01" "Interface\\Buttons\\UI-MicroButton-Mounts-Up"
+	CreateIconButton(rootDescription, COLLECTIONS, "Interface\\Cursor\\WildPetCapturable", function()
 		if F.CombatError() then return end
 		ToggleCollectionsJournal()
 	end)
 
 	if CanShowEncounterJournal() then
-		CreateIconButton(rootDescription, ENCOUNTER_JOURNAL, "Interface\\ENCOUNTERJOURNAL\\UI-EJ-HeroicTextIcon", function()
+		-- 手冊："Interface\\ENCOUNTERJOURNAL\\UI-EJ-HeroicTextIcon"
+		CreateIconButton(rootDescription, ENCOUNTER_JOURNAL, CreateTextureMarkup("Interface\\Buttons\\UI-MicroButton-EJ-Up", 64, 64, 16, 16, 0, 1, .359375, 1), function()
 			if F.CombatError() then return end
 			ToggleEncounterJournal()
 		end)
@@ -136,7 +140,8 @@ local function GenerateMenu(_, rootDescription)
 		TimeManager_Toggle()
 	end)
 
-	CreateIconButton(rootDescription, L.Calendar, "ui-hud-calendar-1-up", function()
+	-- 行事曆："ui-hud-calendar-1-up"
+	CreateIconButton(rootDescription, L.Calendar, CreateTextureMarkup("Interface\\Calendar\\UI-Calendar-Button", 128, 64, 16, 16, 0, .390625, 0, .78125), function()
 		if F.CombatError() then return end
 		ToggleCalendar()
 	end)

@@ -37,18 +37,18 @@ G.IsMists = (WOW_PROJECT_ID == WOW_PROJECT_MISTS_CLASSIC)
 
 	F.AnchorOptions = { "TOP", "TOPLEFT", "TOPRIGHT", "CENTER", "LEFT", "BOTTOM", "BOTTOMLEFT", "BOTTOMRIGHT", "RIGHT" }
 	F.GUIOptionGroups = {
-		{ label = "QuestWatchOpt", column = 2, y = 24, options = {
+		{ label = "QuestWatchOpt", column = 1, y = 24, options = {
 			{ type = "toggle", key = "QuestWatchStyle", label = "QuestWatchStyleOpt", default = true },
 			{ type = "toggle", key = "QuestWatchStar", label = "QuestWatchStarOpt", default = true },
 			{ type = "dropdown", key = "QuestWatchAnchor", label = "AnchorOpt", default = "TOPRIGHT", width = 120, height = 20 },
 			{ type = "edit", key = "QuestWatchX", label = "XOpt", default = -140, width = 50, height = 20, rowColumn = 1 },
 			{ type = "edit", key = "QuestWatchY", label = "YOpt", default = -220, width = 50, height = 20, rowColumn = 2 },
 		} },
-		{ name = WORLDMAP_BUTTON, column = 1, y = 232, options = {
-			{ type = "toggle", key = "WorldMapFade", label = "fadeOpt", tooltip = "WMFTip", default = true },
+		{ name = WORLDMAP_BUTTON, column = 1, y = 184, tooltip = "WMFTip", options = {
+			{ type = "toggle", key = "WorldMapFade", label = "fadeOpt", default = true },
 			{ type = "slider", key = "WorldMapAlpha", label = "AlphaOpt", default = .5, min = 0, max = 10, step = 1, coeff = .1 },
 		} },
-		{ name = MINIMAP_LABEL, column = 1, y = 24, options = {
+		{ name = MINIMAP_LABEL, column = 2, y = 24, options = {
 			{ type = "toggle", key = "ClickMenu", label = "ClickMenuOpt", default = true },
 			{ type = "toggle", key = "CharacterIcon", label = "IconOpt", default = true },
 			{ type = "toggle", key = "HoverClock", label = "HoverClockOpt", default = true },
