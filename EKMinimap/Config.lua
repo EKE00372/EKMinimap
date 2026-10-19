@@ -22,7 +22,6 @@ local buttonInset = 20
 -----------------    [[ Functions ]]    -----------------
 --=====================================================--
 
--- 提示反映存檔與已生效設定的差異；改回原值後清除提示。
 local function UpdateStatus()
 	MainFrame.StatusText:SetText(F.HasPendingEKMChanges() and "|cff00ffff"..L.StatusChanged.."|r" or "")
 end
@@ -65,7 +64,6 @@ local function CreateCheckBox(self, text, value)
 	local cb = CreateFrame("CheckButton", nil, row, "UICheckButtonTemplate")
 	cb:SetPoint("LEFT", row, "LEFT", -4, 0)
 	cb:SetHighlightTexture("Interface\\ChatFrame\\ChatFrameBackground")
-	-- 原生 32px 按鈕的點擊範圍收在 26px 列內，不伸入鄰列。
 	cb:SetHitRectInsets(4, 0, 3, 3)
 
 	local hl = cb:GetHighlightTexture()
@@ -284,7 +282,7 @@ local function BuildGUI()
 	tinsert(UISpecialFrames, "EKMinimapOptions")
 
 	MainFrame:SetFrameStrata("DIALOG")
-	MainFrame:SetSize(panelInset * 2 + columnWidth * 2 + columnGap, 408)
+	MainFrame:SetSize(panelInset * 2 + columnWidth * 2 + columnGap, 368)
 	MainFrame:SetPoint("CENTER", UIParent)
 	MainFrame:SetMovable(true)
 	MainFrame:EnableMouse(true)
@@ -303,7 +301,6 @@ local function BuildGUI()
 	end)
 	MainFrame:SetScript("OnEvent", function(self) self:Hide() end)
 	MainFrame.OptionControls = {}
-	local rightX = panelInset + columnWidth + columnGap
 	MainFrame.StatusText = F.CreateFS(MainFrame, "", "LEFT", nil, nil, nil, configFontSize)
 	MainFrame.StatusText:SetWidth(columnWidth)
 	MainFrame.StatusText:SetWordWrap(true)
@@ -311,10 +308,13 @@ local function BuildGUI()
 	-- Main title
 	F.CreateFS(MainFrame, "|cff00ffffEK|rMinimap "..v, "CENTER", "TOP", 0, 14, configFontSize + 4)
 
-	-- 小地圖／世界地圖沿左欄排列，追蹤框與資訊沿右欄排列。
 	for _, group in ipairs(F.GUIOptionGroups) do
 		local x = panelInset + (group.column - 1) * (columnWidth + columnGap)
-		F.CreateFS(MainFrame, "|cff00ffff"..(group.name or L[group.label]).."|r", "LEFT", "TOPLEFT", x, -group.y, configFontSize + 2)
+		local title = F.CreateFS(MainFrame, "|cff00ffff"..(group.name or L[group.label]).."|r", "LEFT", "TOPLEFT", x, -group.y, configFontSize + 2)
+		if group.tooltip then
+			local tip = CreateTooltip(MainFrame, G.Info, "ANCHOR_RIGHT", L[group.tooltip])
+			tip:SetPoint("LEFT", title, "RIGHT", 4, 0)
+		end
 		local y = -group.y - 24
 		local inPositionSection = false
 		for _, option in ipairs(group.options) do
@@ -334,27 +334,23 @@ local function BuildGUI()
 				inPositionSection = true
 			end
 			if option.type == "edit" then
-				-- 同組 X／Y 共用一列，兩個控制項仍各自儲存與刷新。
+				-- XY 共用一列，各自儲存與刷新。
 				control:SetPoint("TOPLEFT", MainFrame, x + (option.rowColumn - 1) * (control:GetWidth() + 10), y)
 				if option.rowColumn == 2 then y = y - rowHeight - rowGap end
 			else
 				control:SetPoint("TOPLEFT", MainFrame, x, y)
 				y = y - rowHeight - rowGap
 			end
-			if option.tooltip then
-				local tip = CreateTooltip(control, G.Info, "ANCHOR_RIGHT", L[option.tooltip])
-				tip:SetPoint("LEFT", control.text, "RIGHT", 4, 2)
-			end
 			tinsert(MainFrame.OptionControls, control)
 		end
 	end
 
 	-- infos
-	F.CreateFS(MainFrame, "|cff00ffff"..INFO.."|r", "LEFT", "TOPLEFT", rightX, -232, configFontSize + 2)
+	F.CreateFS(MainFrame, "|cff00ffff"..INFO.."|r", "LEFT", "TOPLEFT", panelInset, -284, configFontSize + 2)
 	local q = CreateTooltip(MainFrame, G.Question, "ANCHOR_LEFT", L.tempTip1.."\n\n"..L.tempTip2)
-	q:SetPoint("TOPLEFT", MainFrame, rightX, -252)
+	q:SetPoint("TOPLEFT", MainFrame, panelInset, -304)
 	q:SetSize(28, 28)
-	-- 說明沿用原字級，放在右欄選項下方。
+
 	local infoDrag = F.CreateFS(MainFrame, L.dragInfo, "LEFT", nil, nil, nil, G.fontSize)
 	infoDrag:ClearAllPoints()
 	infoDrag:SetPoint("TOPLEFT", q, "TOPRIGHT", 8, 0)
@@ -372,7 +368,6 @@ local function BuildGUI()
 	reloadButton:SetScript("OnClick", function() ReloadUI() end)
 
 	local reposButton = CreateButton(MainFrame, columnWidth, 28, L.posApply)
-	-- 重載提示隨套用按鈕定位，換行時向上延伸。
 	reposButton:SetPoint("BOTTOMRIGHT", MainFrame, -buttonInset, buttonInset + 38)
 	MainFrame.StatusText:ClearAllPoints()
 	MainFrame.StatusText:SetPoint("BOTTOMLEFT", reposButton, "TOPLEFT", 0, 8)
@@ -395,7 +390,6 @@ local function BuildGUI()
 	MainFrame:Hide()
 end
 
--- 重開時同步存檔值，不保存尚未按 Enter 的草稿。
 F.CreateEKMOptions = function()
 	if F.CombatError() then return end
 	if not MainFrame then BuildGUI() end
