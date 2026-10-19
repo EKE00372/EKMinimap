@@ -141,9 +141,7 @@ local function setQWF()
 			frame:StopMovingOrSizing()
 		end)
 		-- Show tooltip for drag
-		QWFMove:SetScript("OnEnter", function(self)
-			QWF_Tooltip(self)
-		end)
+		QWFMove:SetScript("OnEnter", QWF_Tooltip)
 		QWFMove:SetScript("OnLeave", function(self)
 			GameTooltip:Hide()
 		end)
@@ -278,7 +276,6 @@ end
 
 local function OnEvent(self)
 	self:UnregisterEvent("PLAYER_LOGIN")
-	-- 所有一般插件載入後才判斷 Questie，停用時仍保留設定呼叫契約。
 	if not F.GetEKMOption("QuestWatchStyle") or C_AddOns.IsAddOnLoaded("Questie") then return end
 	trackerEnabled = true
 	setQWF()
