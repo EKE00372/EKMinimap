@@ -86,7 +86,7 @@ local function setMinimap()
 
 	Minimap:SetArchBlobRingScalar(0)
 	Minimap:SetQuestBlobRingScalar(0)
-	MinimapCluster.BorderTop:Hide()
+	if MinimapCluster.BorderTop then MinimapCluster.BorderTop:Hide() end
 	MinimapCluster.ZoneTextButton:Hide()
 
 	-- Keep the housing static overlay available while hiding Blizzard's round border.
@@ -113,7 +113,8 @@ local function setMinimap()
 		["Durability"] = DurabilityFrame,
 	}
 
-	for _, f in ipairs(hideAll) do
+	-- Forever 不再建立 InstanceDifficulty，需跳過清單中的空位。
+	for _, f in pairs(hideAll) do
 		f:Hide()
 		hooksecurefunc(f, "Show", function(self) self:Hide() end)
 	end
@@ -128,6 +129,15 @@ local function setMinimap()
 	-- Mail Frame / 信件提示
 	MailFrame:SetFrameLevel(11)
 	MailFrame:SetScale(1.2)
+	if G.IsForever then
+		MailFrame:SetSize(20, 15)
+		MailFrame.MailIcon:SetAtlas("ui-hud-minimap-mail-up", true)
+
+		-- 保留原生顯示狀態，供角色圖示判斷活動入口是否可用。
+		local button = MinimapBackdrop.ExternalEventURLButton
+		button:SetAlpha(0)
+		button:EnableMouse(false)
+	end
 
 	-- Tracking menu / 追蹤選單
 	-- To keep menu, don't hide the icon
@@ -202,8 +212,9 @@ local Stat = CreateFrame("Button", "EKMinimapTooltipButton", Minimap)
 	AddonCompartmentFrame:SetAlpha(0)
 	AddonCompartmentFrame:EnableMouse(false)
 
--- 資料片按鈕
+-- 角色圖示左鍵：Forever 活動網址／Retail 資料片。
 local function canOpenLandingPage()
+	if G.IsForever then return MinimapBackdrop.ExternalEventURLButton:IsShown() end
 	if not GameRulesUtil.ShouldShowExpansionLandingPageButton() then return false end
 	if ExpansionLandingPageMinimapButton:IsExpansionOverlayMode() then return true end
 	if not ExpansionLandingPageMinimapButton:IsInGarrisonMode() then return false end
@@ -324,7 +335,7 @@ local function createGarrisonTooltip(self)
 		end
 	end
 	
-	local landingTitle = canOpenLandingPage() and ExpansionLandingPageMinimapButton.title
+	local landingTitle = canOpenLandingPage() and (G.IsForever and GAMEMENU_EXTERNALEVENT or ExpansionLandingPageMinimapButton.title)
 	GameTooltip:AddLine(" ")
 	if landingTitle then
 		GameTooltip:AddDoubleLine(" ", "|TInterface\\TUTORIALFRAME\\UI-TUTORIAL-FRAME:13:11:0:-1:512:512:12:66:230:307|t "..landingTitle, 1,1,1,1,1,1)
@@ -510,7 +521,11 @@ end
 			end
 		elseif button == "LeftButton" and canOpenLandingPage() then
 			if F.CombatError() then return end
-			ExpansionLandingPageMinimapButton:Click()
+			if G.IsForever then
+				MinimapBackdrop.ExternalEventURLButton:OnClick()
+			else
+				ExpansionLandingPageMinimapButton:Click()
+			end
 		end
 	end)
 	
