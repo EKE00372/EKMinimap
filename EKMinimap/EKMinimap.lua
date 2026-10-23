@@ -185,6 +185,8 @@ local function QueueStatus()
 		end
 	end
 	hooksecurefunc(QueueStatusFrame, "Update", hookAnchor)
+	-- 編輯模式重排不一定更新佇列內容，需在原生定位完成後恢復錨點。
+	hooksecurefunc(QueueStatusFrame, "UpdatePosition", hookAnchor)
 
 	hookAnchor()
 end
